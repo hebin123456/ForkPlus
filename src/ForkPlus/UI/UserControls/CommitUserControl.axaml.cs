@@ -206,10 +206,9 @@ namespace ForkPlus.UI.UserControls
 				{
 					return false;
 				}
-				if (StageJob != null)
-				{
-					return false;
-				}
+				// 修复（2026-09-14）：暂存操作进行中不再禁用提交标题/描述输入框——提交消息与
+				// 暂存动作无因果关系，灰→亮切换是提交区域最直观的"跟着刷新"观感。
+				// Commit 按钮仍由 IsCommitAllowed 独立守卫（含 StageJob 检查），不会误提交。
 				if (CommittingInProgress)
 				{
 					return false;
@@ -1359,8 +1358,12 @@ namespace ForkPlus.UI.UserControls
 				unstagedFiles = MergeWithUnchangedFiles(unstagedFiles, stagedFiles);
 			}
 			_updateDiffAction.Cancel();
-			FileDiffControl.Content = null;
-			_diffPopupWindow?.UpdateDiff(null);
+			// 修复（2026-09-14，"下方提交区域跟着 FileDiff 刷新而刷新"）：刷新开头不再无条件
+			// 清空 diff——Content=null 会把 diff 子视图换成 Fallback 再整体销毁重建，且该重建
+			// 链（StagedFilesItemSourceChanged → UpdateCommitSection/UpdateStagedDiffStats）会把
+			// 下方提交区域全部可见状态重新驱动一遍（灰→亮、统计清空回填、布局跳动 = 闪烁）。
+			// 改为保留当前 diff 展示，待列表刷新确定选中文件后：有选中 → 热替换加载新 diff；
+			// 无选中 → 此时才清空（主视图与弹窗对称处理，见 UpdateDiff null 分支）。
 			_refreshing = true;
 			try
 			{
@@ -1375,6 +1378,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				// v3.10.2：移除 5000 文件数阈值，大列表同样自动加载选中文件的 diff。
 				_updateDiffAction.InvokeNow(new ChangedFileArgs(selectedFile, loadLargeUntrackedFiles: false));
+			}
+			else
+			{
+				FileDiffControl.Content = null;
+				_diffPopupWindow?.UpdateDiff(null);
 			}
 			UpdateCommitSection();
 			_ = RepositoryUserControl.GitModule;
@@ -1573,9 +1581,10 @@ namespace ForkPlus.UI.UserControls
 					ClearStagedDiffStats();
 					return;
 				}
-				string repositoryPath = GitModule.Path;
-				ClearStagedDiffStats();
-				(int added, int deleted)? stats = await Task.Run(() => GetStagedDiffStats(repositoryPath, amendMode));
+			string repositoryPath = GitModule.Path;
+			// 修复（2026-09-14）：重新计算前不再清空 "+N/-N"（requestId 已提供并发保护）——
+			// 保留旧值直到新值就绪，避免每次状态刷新统计指示都灭一次再亮（提交区域闪烁来源之一）。
+			(int added, int deleted)? stats = await Task.Run(() => GetStagedDiffStats(repositoryPath, amendMode));
 				if (requestId != _stagedDiffStatsRequestId)
 				{
 					return;

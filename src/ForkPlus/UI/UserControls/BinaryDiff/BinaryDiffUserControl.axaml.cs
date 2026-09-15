@@ -126,10 +126,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 											Log.Error(gitCommandResult2.Error.FriendlyDescription);
 										}
 									}
-									_srcImageData = ImageData.Create(result2, isLfs: true, srcLfsContent.IsTracked);
-									_hexSrcData = result2; // v3.4.1：存原始字节供 Hex 视图
-									DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-									DstFileContentUserControl.DiffImageSource = DiffImageSource;
+								_srcImageData = ImageData.Create(result2, isLfs: true, srcLfsContent.IsTracked);
+								_hexSrcData = result2; // v3.4.1：存原始字节供 Hex 视图
+								DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
+								// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
+								DstFileContentUserControl.DiffImageSource = DiffImageSource;
+								SrcFileContentUserControl.DiffImageSource = DiffImageSource;
 									SrcFileContentUserControl.SetLfsImageData(result2);
 									RefreshViewModes();
 								}
@@ -184,10 +186,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 											Log.Error(gitCommandResult.Error.FriendlyDescription);
 										}
 									}
-									_dstImageData = ImageData.Create(result, isLfs: true, dstLfsContent.IsTracked);
-									_hexDstData = result; // v3.4.1：存原始字节供 Hex 视图
-								DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-								DstFileContentUserControl.SetLfsImageData(result, DiffImageSource);
+								_dstImageData = ImageData.Create(result, isLfs: true, dstLfsContent.IsTracked);
+								_hexDstData = result; // v3.4.1：存原始字节供 Hex 视图
+							DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
+							// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
+							DstFileContentUserControl.SetLfsImageData(result, DiffImageSource);
+							SrcFileContentUserControl.DiffImageSource = DiffImageSource;
 								RefreshViewModes();
 								}
 							});
@@ -421,7 +425,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 10.0, 0.0);
 				string statusLabel = (showTitle ? "removed" : null);
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				SrcFileContentUserControl.SetContent(srcContent, statusLabel, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
+				// 修复（2026-09-14）：单边展示（对侧无图/二进制）也把差异掩码传给可见侧，
+				// 高亮像素开关在该场景下同样生效（此前只在左右双图分支传右侧，漏了单边分支）。
+				SrcFileContentUserControl.SetContent(srcContent, statusLabel, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush, DiffImageSource);
 				SrcFileContentUserControl.Show();
 				DstFileContentUserControl.Collapse();
 			}
@@ -446,7 +452,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				Grid.SetColumnSpan(SrcFileContentUserControl, 1);
 				SrcFileContentUserControl.Margin = new Thickness(10.0, 0.0, 5.0, 0.0);
 				string statusLabel3 = (showTitle ? "old" : null);
-				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush);
+				// 修复（2026-09-14，高亮像素双侧显示）：差异掩码此前只传右侧（new），左图的高亮
+				// 像素被画到右图上。改为左右两侧各自叠加同一份掩码——左图在自己身上看到
+				// “将要变化的位置”，右图在自己身上看到“已变化的位置”，两栏各自高亮。
+				SrcFileContentUserControl.SetContent(_srcBinaryContent, statusLabel3, global::ForkPlus.UI.Theme.Diff.RemovedForegroundBrush, DiffImageSource);
 				Grid.SetColumn(DstFileContentUserControl, 1);
 				Grid.SetColumnSpan(DstFileContentUserControl, 1);
 				DstFileContentUserControl.Margin = new Thickness(5.0, 0.0, 10.0, 0.0);
@@ -473,10 +482,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 							Log.Error(gitCommandResult2.Error.FriendlyDescription);
 						}
 					}
-					_srcImageData = ImageData.Create(result, isLfs: true, lfsContent.IsTracked);
-					_hexSrcData = result; // v3.4.1：存原始字节供 Hex 视图
+				_srcImageData = ImageData.Create(result, isLfs: true, lfsContent.IsTracked);
+				_hexSrcData = result; // v3.4.1：存原始字节供 Hex 视图
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				SrcFileContentUserControl.SetLfsImageData(result);
+				// 修复（2026-09-14，高亮像素双侧显示）：本地 LFS 缓存路径同样给左侧补传掩码。
+				SrcFileContentUserControl.SetLfsImageData(result, DiffImageSource);
 				}
 			}
 			if (_dstBinaryContent is LfsContent { BinaryFileType: BinaryFileType.LfsImage } lfsContent2)

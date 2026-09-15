@@ -125,7 +125,7 @@
                    Margin="0,0,0,0"
                    Minimum="{TemplateBinding Minimum}"
                    Maximum="{TemplateBinding Maximum}"
-                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   Value="{TemplateBinding Value, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding ViewportSize}"
                    Orientation="{TemplateBinding Orientation}"
                    x:Name="PART_Track">
@@ -177,7 +177,7 @@
                        Margin="0,0,0,0"
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
-                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       Value="{TemplateBinding Value, Mode=TwoWay}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}"
                        x:Name="PART_Track">
@@ -260,7 +260,7 @@
                    Margin="0,0,0,0"
                    Minimum="{TemplateBinding Minimum}"
                    Maximum="{TemplateBinding Maximum}"
-                   Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                   Value="{TemplateBinding Value, Mode=TwoWay}"
                    ViewportSize="{TemplateBinding ViewportSize}"
                    Orientation="{TemplateBinding Orientation}"
                    x:Name="PART_Track">
@@ -310,7 +310,7 @@
                        Margin="0,0,0,0"
                        Minimum="{TemplateBinding Minimum}"
                        Maximum="{TemplateBinding Maximum}"
-                       Value="{Binding Value, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       Value="{TemplateBinding Value, Mode=TwoWay}"
                        ViewportSize="{TemplateBinding ViewportSize}"
                        Orientation="{TemplateBinding Orientation}"
                        x:Name="PART_Track">

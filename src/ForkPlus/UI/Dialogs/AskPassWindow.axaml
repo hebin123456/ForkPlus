@@ -24,10 +24,12 @@
       <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" x:Name="InputTextBox" />
       <TextBox Text="" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" PasswordChar="●" x:Name="InputPasswordBox" />
       <CheckBox Grid.Column="1" Grid.Row="1" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember in Credential Manager" ToolTip.Tip="Remember in Windows Credential Manager" x:Name="RememberCheckBox" />
-      <!-- 第二档"记住密码"：下次弹窗仍出现，但密码框自动预填（弹窗内自动填充） -->
-      <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember password" ToolTip.Tip="Pre-fills the password next time this host asks" x:Name="RememberPasswordCheckBox" />
-      <!-- 第三档"记住密码 + 不再弹出"：凭据静默回填、完全不弹窗；偏好设置 &gt; Credentials 可用开关重新打开 -->
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember password and never ask again" ToolTip.Tip="Use the remembered password silently without this dialog (re-enable prompting in Preferences &gt; Credentials)" x:Name="NeverAskCheckBox" />
+      <!-- 第二档"记住密码"（2026-09-14 起与第三档等效）：密码静默复用、不再弹窗；
+           偏好设置 &gt; Credentials 关掉开关可忘掉密码、恢复询问 -->
+      <CheckBox Grid.Column="1" Grid.Row="2" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember password" ToolTip.Tip="Use the remembered password silently without this dialog (re-enable prompting in Preferences &gt; Credentials)" x:Name="RememberPasswordCheckBox" />
+      <!-- 第三档控件保留但不再展示：静默语义已并入第二档；NeverAskAgain 标记仅作
+           "密码被 erase 后快速失败"开关，偏好页 ToggleSwitch 仍可读写 -->
+      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,6,0,0" HorizontalAlignment="Left" Content="Remember password and never ask again" ToolTip.Tip="Use the remembered password silently without this dialog (re-enable prompting in Preferences &gt; Credentials)" x:Name="NeverAskCheckBox" IsVisible="False" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

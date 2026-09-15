@@ -1811,6 +1811,10 @@ namespace ForkPlus
 			{
 				// 凭据收编（Layer C）get：账号命中回填；未命中查 GCM 兼容键
 				// （GCM 存量凭据无痛迁移）；仍无 → 空响应，git 回落 askpass 链弹 AskPassWindow。
+				// 修复（2026-09-14，"usehttppath 下查不到 GCM 存量凭据"）：get 描述可能带
+				// path=（credential.usehttppath=true，git-mm workspace 常见配置）——候选键
+				// 含 path 级（GCM 该配置下的存储粒度），否则几十条按路径存的凭据永远查不到，
+				// 每次操作都弹询问窗。
 				CredentialHelperArguments credentialHelperArguments = CredentialHelperArguments.Parse(request);
 				if (credentialHelperArguments != null)
 				{
@@ -1822,7 +1826,7 @@ namespace ForkPlus
 						pipeServer.WriteString(credentialHelperArguments.Export());
 						return;
 					}
-					if (GcmCompatibleStore.TryQuery(credentialHelperArguments.Protocol, credentialHelperArguments.Host, credentialHelperArguments.Username, out string storedUsername, out string storedPassword))
+					if (GcmCompatibleStore.TryQuery(credentialHelperArguments.Protocol, credentialHelperArguments.Host, credentialHelperArguments.Username, credentialHelperArguments.Path, out string storedUsername, out string storedPassword))
 				{
 					credentialHelperArguments.Username = storedUsername ?? credentialHelperArguments.Username;
 					credentialHelperArguments.Password = storedPassword;
@@ -1845,21 +1849,25 @@ namespace ForkPlus
 			else if (text2 == "4")
 			{
 				// 凭据收编（Layer C）store：认证成功的凭据写 GCM 兼容键，下次 get 静默命中
-				// （GCM 外部读写互通；非 Windows 为空操作，见设计文档权衡一节）。
+				//（GCM 外部读写互通；非 Windows 为空操作，见设计文档权衡一节）。
+				// 修复（2026-09-14，同 get 处注释）：带 path 时同时写 path 级键（GCM usehttppath
+				// 规则，终端里 GCM 可读）与 host 级键（同 host 静默复用）。
 				CredentialHelperArguments credentialHelperArguments2 = CredentialHelperArguments.Parse(request);
 				if (credentialHelperArguments2 != null)
 				{
-					GcmCompatibleStore.Store(credentialHelperArguments2.Protocol, credentialHelperArguments2.Host, credentialHelperArguments2.Username, credentialHelperArguments2.Password);
+					GcmCompatibleStore.Store(credentialHelperArguments2.Protocol, credentialHelperArguments2.Host, credentialHelperArguments2.Username, credentialHelperArguments2.Path, credentialHelperArguments2.Password);
 				}
 				pipeServer.WriteString(string.Empty);
 			}
 			else if (text2 == "5")
 			{
 				// 凭据收编（Layer C）erase：认证失败时 git 通知抹除，删 GCM 兼容键。
+				// 修复（2026-09-14，同 get 处注释）：候选键含 path 级，防失效密码残留在
+				// path 键上被反复静默回填。
 				CredentialHelperArguments credentialHelperArguments3 = CredentialHelperArguments.Parse(request);
 				if (credentialHelperArguments3 != null)
 				{
-					GcmCompatibleStore.Erase(credentialHelperArguments3.Protocol, credentialHelperArguments3.Host, credentialHelperArguments3.Username);
+					GcmCompatibleStore.Erase(credentialHelperArguments3.Protocol, credentialHelperArguments3.Host, credentialHelperArguments3.Username, credentialHelperArguments3.Path);
 					// 凭据记忆（Layer D）联动：密码已失效——清"记住的密码"防死循环
 					// （否则 get 永远命中旧密码、永远认证失败），保留账号记忆与"不再询问"标记。
 					SavedCredentialStore.Current.ForgetPassword(credentialHelperArguments3.Host);

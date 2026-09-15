@@ -11,6 +11,18 @@ namespace ForkPlus.Git
 		[Null]
 		public string Username { get; set; }
 
+		/// <summary>
+		/// 修复（2026-09-14，"git mm init 弹凭据窗：明明凭据管理器里有凭据还是反复询问"）：
+		/// git 在 credential.usehttppath=true（多仓库按路径区分凭据的常见企业配置，
+		/// git-mm workspace 用户全局启用）时，get/store/erase 的 stdin 描述会带
+		/// `path=仓库路径` 行。此前该行落 default 分支（"Unknown credentials description
+		/// parameter" 告警）被丢弃——导致 GcmCompatibleStore 只能查 host 级键，而 GCM
+		/// 在 usehttppath 下把凭据按完整路径（git:https://host/path.git）存储，
+		/// 永远查不到 → 每次操作都回落 askpass 弹窗。保留 path 供按路径查/存。
+		/// </summary>
+		[Null]
+		public string Path { get; set; }
+
 		[Null]
 		public string Password { get; set; }
 
@@ -34,6 +46,7 @@ namespace ForkPlus.Git
 			string text2 = null;
 			string username = null;
 			string password = null;
+			string path = null;
 			System.Collections.Generic.List<string> capabilities = null;
 			System.Collections.Generic.List<string> wwwAuth = null;
 			string[] array = rawDescription.Split(Consts.Chars.NewLine);
@@ -67,6 +80,9 @@ namespace ForkPlus.Git
 						case "username":
 							username = text5;
 							break;
+						case "path":
+							path = text5;
+							break;
 						case "password":
 							// 凭据收编（Layer C）：git 在 store/erase 时把完整凭据（含 password 行）
 							// 写到 helper 的 stdin，get 时不含。此前该行落 default 分支打
@@ -93,16 +109,18 @@ namespace ForkPlus.Git
 			return new CredentialHelperArguments(text2, text, username)
 			{
 				Password = password,
+				Path = path,
 				Capabilities = capabilities,
 				WwwAuthHeaders = wwwAuth
 			};
 		}
 
-		public CredentialHelperArguments(string host, string protocol, [Null] string username)
+		public CredentialHelperArguments(string host, string protocol, [Null] string username, [Null] string path = null)
 		{
 			Host = host;
 			Protocol = protocol;
 			Username = username;
+			Path = path;
 		}
 
 		public string Export()

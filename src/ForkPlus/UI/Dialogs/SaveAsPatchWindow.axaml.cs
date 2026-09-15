@@ -89,16 +89,20 @@ namespace ForkPlus.UI.Dialogs
 		return "git format-patch " + range;
 	}
 
-	protected override void OnSubmit()
-	{
-		string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? RepositoryManager.Instance.DefaultSourceDir();
+		// 修复（2026-09-14，"另存为补丁内容多时界面卡住"）：ExportPatchGitCommand 原在 UI 线程
+		// 同步执行，大范围补丁（多 commit/大改动）会冻结界面。改为后台执行 + 弹窗 InProgress
+		// 状态（footer spinner，提交按钮经 IsOperationInProgress 自动禁用，防重复提交）。
+		protected override async void OnSubmit()
+		{
+			string initialDirectory = ForkPlusSettings.Default.RecentPatchDirectory ?? RepositoryManager.Instance.DefaultSourceDir();
 			string repositoryName = _gitModule.RepositoryName;
 			string text = (_dst.HasValue ? (repositoryName + "-" + _src.ToAbbreviatedString() + "-" + _dst.Value.ToAbbreviatedString() + Consts.Git.PatchFileExtension) : (repositoryName + "-" + _src.ToAbbreviatedString() + "-" + _revision.Message));
 			text = CutInvalidCharacters(text);
 			if (OpenDialog.SelectPatchSaveLocation(this, Translate("Save patch as..."), initialDirectory, text, out var filePath))
 			{
 				ForkPlusSettings.Default.RecentPatchDirectory = Path.GetDirectoryName(filePath);
-				GitCommandResult gitCommandResult = new ExportPatchGitCommand().Execute(_gitModule, _src, _dst, filePath);
+				SetStatus(ForkPlusDialogStatus.InProgress, "Generating...");
+				GitCommandResult gitCommandResult = await Task.Run(() => new ExportPatchGitCommand().Execute(_gitModule, _src, _dst, filePath));
 				if (!gitCommandResult.Succeeded)
 				{
 					new ErrorWindow(_repositoryUserControl, gitCommandResult.Error).ShowDialog();

@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using ForkPlus.UI.WpfCompat;
+using Avalonia;
 using Avalonia.Controls;
 using ForkPlus.Git.Diff;
 using ForkPlus.Git.Diff.Presentation;
@@ -14,50 +16,46 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private readonly DiffCodeEditor _rightDiffCodeEditor;
 
-		// 修复（2026-09-05，"点击横向滚动条界面弹动"）：
-		// 原逻辑垂直/水平共用一个时间戳防抖，横向滚动触发 ScrollOffsetChanged 时
-		// 会读取当前 Y 偏移并同步到对侧；若对侧的 ScrollOffsetChanged 回调在
-		// 100ms 之外又反向同步，可能造成滚动位置意外变化甚至震荡。
-		// 修复：1) 垂直/水平分别防抖；2) 同步前检查差值，接近则跳过，避免
-		// 无意义的 ScrollOffsetChanged 触发联动循环。
-		private DateTime _lastVerticalScrollTime;
-		private DateTime _lastHorizontalScrollTime;
-		private DiffCodeEditor _lastVerticalEditor;
-		private DiffCodeEditor _lastHorizontalEditor;
-		private double _lastSyncedVerticalOffset = double.NaN;
-		private double _lastSyncedHorizontalOffset = double.NaN;
+		// 修复（2026-09-14，"左右滚动 diff 对齐"）：
+		// 旧方案三道时间性防线（100ms 防抖、_scrollSyncInProgress 断路旗、2s 内 40 次
+		// 熔断挂起 5s）全部按"时间/频次"猜测回声，误伤正常使用：
+		//   1) 用户快速横滚（触控板惯性/滚动条拖拽）本身就是高频写入，会触发熔断 →
+		//      联动暂停 5s → 两栏漂移错位；
+		//   2) 100ms 内交替滚左右两栏被防抖直接丢弃 → 不跟随。
+		// 新方案：回声按"写入值匹配"确定性识别——每次程序化写入对侧前，把目标 (x,y)
+		// 记入 _pendingSyncEcho；对侧随后（同步或布局期）触发的 ScrollOffsetChanged 若
+		// 与写入值一致（±0.5px）即联动回声，直接吞掉。用户滚动的值不会恰好等于写入值，
+		// 必然放行。回声链不可能形成（回声被消费、不再触发写入），时间性防线全部移除。
+		//
+		// 修复（2026-09-14，"Add 场景左侧全空，拖右侧水平滚动条左侧有时不跟随"）：
+		// 写入链要过三道认识（ScrollViewer.CoerceOffset → presenter coerce →
+		// TextView.SetScrollOffset），任一层对补宽 extent 的认识落后一瞬间，写入值就会被
+		// 中途钳小。钳后对侧事件的值 ≠ 写入值 → 回声漏判为"用户滚动" → 反写源侧（拖拽发涩）
+		// 或源侧继续拖、对侧停在钳后值（单侧失步）。两道确定性加固：
+		//   A) 回声匹配扩展为"写入值 或 写入值在对侧文档区的钳制值"——被钳的回声同样是
+		//      联动产物，吞掉不反写源侧；
+		//   B) 写入后经一帧布局验证（ScheduleSelfHeal）：对侧终值仍偏离写入值（被中途
+		//      钳掉未再触发事件）→ 重写一次自愈，限重试 2 次（防极端场景下无限循环）。
+		private readonly Dictionary<DiffCodeEditor, SyncEchoState> _pendingSyncEcho = new Dictionary<DiffCodeEditor, SyncEchoState>();
 
-		// 修复（2026-09-09，与 SideBySideMergeWindow 同类根因）：左右两侧 diff 行数不同
-		// → Extent 不同 → 事件驱动同步在钳制边界互相拉扯形成回声链（100ms 防抖到期即放行
-		// 一轮，~10 次/秒全量重排）。加两道防线：
-		// 1) 回声断路器 _scrollSyncInProgress：同步写入引发的连锁 ScrollOffsetChanged 忽略
-		//    （Offset 赋值后 TextView 于布局期回调，Background 优先级清旗排在布局回调之后）；
-		// 2) 熔断器：2s 内同步超 40 次 → 暂停联动 5s。
-		private bool _scrollSyncInProgress;
-		private DateTime _syncBurstWindowStart = DateTime.MinValue;
-		private int _syncBurstCount;
-		private DateTime _syncSuspendedUntil = DateTime.MinValue;
-
-		private void ArmScrollSyncGuard()
+		/// <summary>一次程序化写入的回声跟踪：目标值 + 自愈重试计数。</summary>
+		private sealed class SyncEchoState
 		{
-			DateTime now = DateTime.Now;
-			if (now - _syncBurstWindowStart > TimeSpan.FromSeconds(2.0))
-			{
-				_syncBurstWindowStart = now;
-				_syncBurstCount = 0;
-			}
-			if (++_syncBurstCount > 40)
-			{
-				_syncSuspendedUntil = now + TimeSpan.FromSeconds(5.0);
-				_scrollSyncInProgress = false;
-				return;
-			}
-			_scrollSyncInProgress = true;
-			Dispatcher.UIThread.Post(delegate
-			{
-				_scrollSyncInProgress = false;
-			}, global::Avalonia.Threading.DispatcherPriority.Background);
+			public Vector Target;
+
+			public int Retries;
 		}
+
+		// 修复（2026-09-14，同上）：AvaloniaEdit TextView 的水平 extent 只由可见行决定
+		//（详见 SideBySideExtentSynchronizer 头注释），左右两侧水平滚动范围天然不等且随
+		// 垂直滚动实时变化 → 一侧有长行另一侧没有时窄侧被钳在 0/max，两栏列错位。
+		// 用同步器把两侧范围统一抬到共同最大值，窄侧可滚入空白区（VS Code 同款行为）。
+		private SideBySideExtentSynchronizer _extentSynchronizer;
+
+		// 修复（2026-09-15，"左右视图行不对齐"）：CJK 行（全局回退 Noto Sans CJK SC）比
+		// ASCII 行槽高高 3.39px（详见 SideBySideLineHeightSynchronizer 头注释），左右两侧
+		// 内容不同时行槽逐行累积差 → 行错位。用同步器把两侧行高统一抬到共同最大值。
+		private SideBySideLineHeightSynchronizer _lineHeightSynchronizer;
 
 		[Null]
 		public CodeEditorScrollPositionCache PositionCache { get; set; }
@@ -122,6 +120,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_leftDiffCodeEditor.SetValue(Grid.ColumnProperty, 0);
 			_rightDiffCodeEditor.SetValue(Grid.ColumnProperty, 1);
 			_leftDiffCodeEditor.VerticalScrollBarVisibility = global::Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden;
+			_extentSynchronizer = new SideBySideExtentSynchronizer(_leftDiffCodeEditor, _rightDiffCodeEditor);
+			_lineHeightSynchronizer = new SideBySideLineHeightSynchronizer(_leftDiffCodeEditor, _rightDiffCodeEditor);
 			_leftDiffCodeEditor.TextArea.TextView.ScrollOffsetChanged += delegate
 			{
 				OnScrollOffsetChanged(_leftDiffCodeEditor);
@@ -135,6 +135,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public void ControlWillBeRemovedFromFileDiffControl()
 		{
 			PositionCache?.SaveScrollPosition(_leftDiffCodeEditor, _rightDiffCodeEditor);
+			_extentSynchronizer?.Dispose();
+			_lineHeightSynchronizer?.Dispose();
 		}
 
 		public void SetDiff(ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location)
@@ -144,6 +146,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			EntireFile = entireFile;
 			Location = location;
 			PositionCache?.SaveScrollPosition(_leftDiffCodeEditor, _rightDiffCodeEditor);
+			_extentSynchronizer?.Reset();
+			// 换文件：行高共享基准清零（新内容 CJK 占比不同），下轮排版按新内容重建。
+			_lineHeightSynchronizer?.Reset();
 			VisualPatch.CreateSideBySideVisualPatch(Diff, EntireFile, Location, out var old, out var @new);
 			_leftDiffCodeEditor.Options.IndentationSize = tabWidth;
 			_leftDiffCodeEditor.VisualPatch = old;
@@ -159,6 +164,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			_leftDiffCodeEditor.FontSize = codeEditorFontSize;
 			_rightDiffCodeEditor.FontSize = codeEditorFontSize;
+			// 改字号：DefaultTextHeight 随之变化，旧 factor 失义，清零重建。
+			_lineHeightSynchronizer?.Reset();
 		}
 
 		public void RefreshDiffWordWrap(bool diffWordWrap)
@@ -187,100 +194,99 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private void OnScrollOffsetChanged(DiffCodeEditor editor)
 		{
-			// 回声断路器 + 熔断（详见字段注释）
-			if (_scrollSyncInProgress || DateTime.Now < _syncSuspendedUntil)
+			DiffCodeEditor peer = ((editor == _leftDiffCodeEditor) ? _rightDiffCodeEditor : _leftDiffCodeEditor);
+			Vector offset = editor.TextArea.TextView.ScrollOffset;
+			// 1) 回声消费：本侧当前偏移与最近一次程序化写入一致（±0.5px）→ 联动回声，吞掉
+			//（写入值匹配的确定性识别，替代旧的 100ms 防抖 + 熔断挂起，详见字段注释）
+			if (_pendingSyncEcho.TryGetValue(editor, out SyncEchoState echo))
 			{
+				if (IsClose(offset, echo.Target))
+				{
+					_pendingSyncEcho.Remove(editor);
+					return;
+				}
+				// 加固 A：写入值在本侧文档区的钳制值也视为回声——写入链中某一层认识落后时
+				// 写入值会被中途钳小，钳后事件值必然 ≠ 写入值。不识别它就会漏判成用户滚动
+				// 反写源侧（拖拽发涩/单侧停住）。被钳的回声不反写，交由 ScheduleSelfHeal 自愈。
+				Vector clampedTarget = new Vector(
+					editor.ClampHorizontalOffsetToDocumentArea(echo.Target.X),
+					editor.ClampVerticalOffsetToDocumentArea(echo.Target.Y));
+				if (IsClose(offset, clampedTarget))
+				{
+					ScheduleSelfHeal(editor, echo);
+					return;
+				}
+				// 不匹配的旧表项作废（本次事件来自用户滚动或其它来源）
+				_pendingSyncEcho.Remove(editor);
+			}
+			// 2) 用户滚动 → 对侧跟随。逐轴计算目标：
+			//   - 源偏移须在源自身文档区内（Is*WithinDocumentArea，防越界传播）；
+			//   - 目标先夹到对侧自己的文档区（2026-09-12 修复保留：偏短侧钳到自身末尾对齐定格；
+			//     水平轴配合 ExtentSynchronizer 两侧范围恒等后，钳制实际不再发生）。
+			Vector peerOffset = peer.TextArea.TextView.ScrollOffset;
+			double targetX = peerOffset.X;
+			double targetY = peerOffset.Y;
+			bool changed = false;
+			if (editor.IsHorizontalOffsetWithinDocumentArea(offset.X))
+			{
+				double clampedX = peer.ClampHorizontalOffsetToDocumentArea(offset.X);
+				if (Math.Abs(peerOffset.X - clampedX) > 0.5)
+				{
+					targetX = clampedX;
+					changed = true;
+				}
+			}
+			if (editor.IsVerticalOffsetWithinDocumentArea(offset.Y))
+			{
+				double clampedY = peer.ClampVerticalOffsetToDocumentArea(offset.Y);
+				if (Math.Abs(peerOffset.Y - clampedY) > 0.5)
+				{
+					targetY = clampedY;
+					changed = true;
+				}
+			}
+			// 3) 双轴一次写入（ScrollToOffsetCompat 单次 Offset 赋值 → 恰一次回声事件，
+			//    与 _pendingSyncEcho 的一表一项一一对应）
+			if (changed)
+			{
+				SyncEchoState newEcho = new SyncEchoState { Target = new Vector(targetX, targetY) };
+				_pendingSyncEcho[peer] = newEcho;
+				peer.ScrollToOffsetCompat(targetX, targetY);
+				// 加固 B：布局后验证对侧终值；被中途钳掉且未再触发事件时重写自愈。
+				ScheduleSelfHeal(peer, newEcho);
+			}
+		}
+
+		/// <summary>写入后自愈：经一帧布局（Render 优先级 Post）读对侧终值，仍偏离写入值
+		///（被中间层钳掉且钳后值恰好不再触发事件）则重写一次；限重试 2 次防循环。</summary>
+		private void ScheduleSelfHeal(DiffCodeEditor peer, SyncEchoState echo)
+		{
+			if (echo.Retries >= 2)
+			{
+				_pendingSyncEcho.Remove(peer);
 				return;
 			}
-			double verticalOffset = editor.TextArea.TextView.ScrollOffset.Y;
-			double horizontalOffset = editor.TextArea.TextView.ScrollOffset.X;
-			bool wroteToPeers = false;
-
-			// ── 垂直滚动同步 ──
-			if (editor.IsVerticalOffsetWithinDocumentArea(verticalOffset))
+			echo.Retries++;
+			Dispatcher.UIThread.Post(delegate
 			{
-				// 防抖：同一方向 100ms 内来自对侧的联动回调直接忽略
-				if (!(DateTime.Now - _lastVerticalScrollTime < TimeSpan.FromMilliseconds(100.0)
-					&& editor != _lastVerticalEditor))
+				// 表项已被正常回声消费（终值达成）或已被更新一次写入替换 → 无需自愈。
+				if (!_pendingSyncEcho.TryGetValue(peer, out SyncEchoState current) || !ReferenceEquals(current, echo))
 				{
-					// 同步前检查：如果目标编辑器当前偏移已经接近目标值，则跳过，
-					// 避免无意义的 ScrollTo 调用触发 ScrollOffsetChanged 形成循环。
-					// 目标偏移先 ClampVerticalOffsetToDocumentArea 夹到它自己的文档区
-					// （偏长侧滚到偏短侧够不到的位置时，把偏短侧钳到其自身文档末尾而
-					// "对齐定格"，而不是跳过高（它停留在原处、滚动条还有空余可继续下滚
-					// —— 2026-09-12 FileDiff 左右不对齐修复）。
-					const double vTolerance = 0.5;
-					bool synced = false;
-					if (editor != _leftDiffCodeEditor)
-					{
-						double targetLeft = _leftDiffCodeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
-						if (Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - targetLeft) > vTolerance)
-						{
-							_leftDiffCodeEditor.ScrollToVerticalOffsetCompat(targetLeft);
-							synced = true;
-						}
-					}
-					if (editor != _rightDiffCodeEditor)
-					{
-						double targetRight = _rightDiffCodeEditor.ClampVerticalOffsetToDocumentArea(verticalOffset);
-						if (Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.Y - targetRight) > vTolerance)
-						{
-							_rightDiffCodeEditor.ScrollToVerticalOffsetCompat(targetRight);
-							synced = true;
-						}
-					}
-					if (synced)
-					{
-						_lastVerticalScrollTime = DateTime.Now;
-						_lastVerticalEditor = editor;
-						_lastSyncedVerticalOffset = verticalOffset;
-						wroteToPeers = true;
-					}
+					return;
 				}
-			}
-
-			// ── 水平滚动同步 ──
-			if (editor.IsHorizontalOffsetWithinDocumentArea(horizontalOffset))
-			{
-				if (!(DateTime.Now - _lastHorizontalScrollTime < TimeSpan.FromMilliseconds(100.0)
-					&& editor != _lastHorizontalEditor))
+				Vector actual = peer.TextArea.TextView.ScrollOffset;
+				if (IsClose(actual, echo.Target))
 				{
-					// 与垂直同步同源修复（2026-09-12）：水平目标偏移也先夹到对侧自己
-					// 的文档区，偏窄侧钳到其自身文档末尾"对齐定格"，不再留可继续横滚空余。
-					const double hTolerance = 0.5;
-					bool synced = false;
-					if (editor != _leftDiffCodeEditor)
-					{
-						double targetLeft = _leftDiffCodeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
-						if (Math.Abs(_leftDiffCodeEditor.TextArea.TextView.ScrollOffset.X - targetLeft) > hTolerance)
-						{
-							_leftDiffCodeEditor.ScrollToHorizontalOffsetCompat(targetLeft);
-							synced = true;
-						}
-					}
-					if (editor != _rightDiffCodeEditor)
-					{
-						double targetRight = _rightDiffCodeEditor.ClampHorizontalOffsetToDocumentArea(horizontalOffset);
-						if (Math.Abs(_rightDiffCodeEditor.TextArea.TextView.ScrollOffset.X - targetRight) > hTolerance)
-						{
-							_rightDiffCodeEditor.ScrollToHorizontalOffsetCompat(targetRight);
-							synced = true;
-						}
-					}
-					if (synced)
-					{
-						_lastHorizontalScrollTime = DateTime.Now;
-						_lastHorizontalEditor = editor;
-						_lastSyncedHorizontalOffset = horizontalOffset;
-						wroteToPeers = true;
-					}
+					_pendingSyncEcho.Remove(peer);
+					return;
 				}
-			}
+				peer.ScrollToOffsetCompat(echo.Target.X, echo.Target.Y);
+			}, DispatcherPriority.Render);
+		}
 
-			if (wroteToPeers)
-			{
-				ArmScrollSyncGuard();
-			}
+		private static bool IsClose(Vector a, Vector b)
+		{
+			return Math.Abs(a.X - b.X) <= 0.5 && Math.Abs(a.Y - b.Y) <= 0.5;
 		}
 	}
 }

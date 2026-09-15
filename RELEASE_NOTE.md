@@ -2,6 +2,44 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.1.2
+
+> 凭据链路系列修复 + 另存为补丁后台进度化 + FileDiff SideBySide 严格对齐系列 + 一批 WPF→Avalonia 迁移遗留 UI 修复：credential.usehttppath=true（git mm workspace 常见配置）下明明凭据管理器里有凭据还是反复弹窗；git mm 自有询问变体解析失败；"记住密码"勾选后仍反复询问；另存为补丁内容多时界面卡住；带 "\ No newline at end of file" 的 diff 左右错位一行；CJK 行高差导致左右视图行不对齐；loading 环形动画转不起来；滑块把手钉死不动；行号与代码垂直错位；二进制差异高亮像素只显示一侧。
+
+### 新增
+
+- **另存为补丁进度弹窗（PatchProgressWindow）**：补丁生成（逐文件拼 `git diff --binary`）移出 UI 线程后台执行，新增进度弹窗实时显示已处理/总文件数与当前文件路径，`CreatePatchGitCommand` 增加 progress 回调（Action<已处理数, 总数>），内容多的补丁不再卡住整个界面；失败在弹窗内提示，完成后自动落盘。
+- **8 语言国际化**：凭据弹窗描述改用本地化格式键（"Username for '{0}':" / "Password for '{0}':"，不再直接显示 git 英文原文）、"静默使用已记住的密码（可在偏好设置重新开启询问）"提示、凭据页新静默语义文案（"记住密码"静默复用、关开关忘掉密码恢复询问），覆盖 en / zh-Hans / zh-Hant / de-DE / es-ES / fr-FR / ja-JP / ko-KR 全部 8 种语言。
+
+### 修复
+
+- **credential.usehttppath=true 下反复弹凭据窗（明明凭据管理器里有凭据）**：git 在 `credential.usehttppath=true`（git mm workspace 用户全局配置，多仓库按路径区分凭据）时 get/store/erase 的 stdin 描述带 `path=仓库路径` 行，此前该行落 default 分支被丢弃——只能查 host 级键，而 GCM 在 usehttppath 下按完整路径（`git:https://host/path.git`）存储，永远查不到 → 每次操作都回落 askpass 弹窗。修复为解析并保留 path：查询候选键按 path 级 → user@host 级 → host 级从具体到宽泛命中即返回；写入同时落 path 级（GCM usehttppath 规则——终端里 GCM 也能读到 ForkPlus 存的凭据，双向互通）+ host 级（同 host 其它无 path 上下文静默复用，多仓工作区不每仓各弹一次）；erase 对全部候选键删除，防止失效密码残留在任一键上被反复静默回填（get 命中旧密码 → 永远认证失败）。
+- **git mm 自有询问变体解析失败（密码弹窗落兜底分支 → 反复弹、不写记忆）**：git-mm 的 askpass 询问是"小写 + URL 不带引号 + password 变体 userinfo 为空"（`username for https://host/path` / `password for https://@host/path`，生产日志实锤），与 git 标准格式（`Password for 'https://user@host':`）全部不匹配。修复为兼容两代格式（大小写不敏感 + 裸 URL 正则 + 空 userinfo 变体）。
+- **"记住密码"勾选后仍反复询问**：凭据弹窗三档记忆语义（预填用户名 / 预填密码 / 静默不弹）收敛为两档——"记住密码"即静默：密码落盘后 credential get / askpass 全链路静默回填、完全不弹窗；偏好设置凭据页开关同步改语义：关 = 忘掉该 host 密码并恢复弹窗（此前仅清标记不恢复弹窗），"对所有主机重新询问" = 忘掉全部密码、保留账号。
+- **askpass 单词询问答过又弹标准格式用户名/密码 + 再分别弹一遍用户名和密码**：git mm init/sync 的裸单词询问（"Username" / "Password"）与标准格式询问之间新增会话桥接——同一 git mm 会话内单词询问得到的身份直接复用，不再连环弹窗；Username 弹窗不再显示成密码框（git-mm 经 GIT_ASKPASS 询问时提示误判）；密码框禁止输入中文等非 ASCII 字符（git HTTPS 密码/token 均为可打印 ASCII）。
+- **FileDiff SideBySide 带 "\ No newline at end of file" 的块左右错位一行**：该 pragma 行只加在所属一侧（Deleted→左 / Added→右），而 Alignment 空行补偿只按 Deleted/Added 行数差计算、未计入 pragma 行，导致带单侧标记的 diff 左右行数差 1、之后所有行错位一行。修复为 change 块两侧总行数统一按 max(Deleted+pragma, Added+pragma) 对齐，短的一侧在块尾补 Alignment 空行（无 pragma 时与原行为完全等价）；同时修复末行 context 无换行的标记误查 Deleted 位（应查 Context 位）导致 SideBySide/Split 视图静默丢弃该提示。
+- **SideBySide 左右视图行不对齐（CJK 行高差）**：全局字体回退 Noto Sans CJK SC 的 CJK 行行槽高比 ASCII 行高约 3.39px，两侧可见行集不同时行高不同、逐行累计后左右错位越来越明显。新增共享最大行高同步器（SideBySideLineHeightSynchronizer）：跟踪两侧可见行的最大自然行高（单调不缩）统一应用到两侧编辑器。
+- **SideBySide 左右滚动不对齐系列（水平 extent / 两滚动条末端失步 / Add 场景左侧全空拖右侧不跟随）**：AvaloniaEdit TextView 的水平 extent 只由可见行决定，虚拟化下左右两侧 extent 不一致，拖一侧水平滚动条另一侧到不了/回弹；两侧水平滚动条都拖到末端时因取整差失步。新增 SideBySideExtentSynchronizer 统一对齐，滚动条双轴一次写入（拆两次赋值会触发两次滚动事件造成抖动）；TouchpadAwareScrollViewer 的 `Value = y` 本地值写法与绑定源竞争导致 SideBySide 两滚动条失步，同步修复（改 TemplateBinding 双向绑定）。
+- **loading 环形动画转不起来 + 刷新按钮与 loading 指示器重叠**：WPF Storyboard 迁移时被注释后 CircularProgressBar spinner 静止。新增 SpinnerBehavior 附加行为复刻追逐动画（纯 Avalonia 渲染时钟），全部 busy 指示器（Issues / PR / 通知中心刷新等）恢复旋转；Issues / PR / 通知中心的刷新按钮与 loading 指示器同 cell 初始都可见导致一直重叠，改为互斥驱动；通知中心的 OnVisualParentChanged WPF 框架回调迁移遗漏同步补齐。
+- **滑块把手钉死不动**：WPF Slider 会在代码后台把 Minimum/Maximum/Value 推给 Track，Avalonia 12 不推送——迁移时模板绑定丢失导致拖动滑块时值正常变化但中间把手不动；RepeatButton 部件名同步按 Avalonia 12 命名改回（PART_DecreaseButton/PART_IncreaseButton），点击轨道跳跃定位恢复接线。
+- **列表 item 高亮全宽出血**：WPF 隐式 ListBox 样式给所有列表挂 ItemContainerStyle（item 高亮左右内缩 4px + 圆角），迁移时该 Setter 被当"WPF 专有属性"删除且未补回 Avalonia 等价物 ItemContainerTheme → 活动管理器作业列表、仓库列表、外部工具列表等未显式指定 item 主题的列表回落 FluentTheme 默认模板。补回。
+- **行号与代码细微垂直错位（全部编辑器视图）**：行号此前画在行槽顶而非与代码文本基线对齐，行号整体比代码行偏高。Diff / Merge / ClearType / CodeEditor 四处行号边距统一改基线对齐（GetLineTextBaselineY）。
+- **展开全部代码后拖动选取区域界面回弹**：AvaloniaEdit 12.0.0 的选区渲染缺陷，CodeEditor 侧规避修复。
+- **二进制差异"高亮像素"只显示一侧**：差异掩码此前只传右侧（new），左图（old）高亮不显示（含本地 LFS 缓存路径）；单边展示（对侧无图/二进制）同样把掩码传给可见侧。
+- **"重置此版本"流三处边角（v4.1.1 收尾）**：用户主动取消重置（Footer Cancel → runner.Cancel）恢复窗口常态；确认弹窗泵 dispatcher 期间在途检查结果到达不再被 `_resetInProgress` 压制丢失（检查完成后正确展示）；updater 起进程即崩/早退不发 error 管道消息时也能正确报错并恢复可重试。
+- **暂存操作进行中提交标题/描述输入框被禁用 + 提交区域跟着 FileDiff 刷新而刷新**：暂存（stage/unstage）与提交消息编辑无关，不再禁用输入框；列表数据签名不变时跳过提交区域整体刷新（此前点一个文件 diff 刷新一次、提交区输入跟着丢焦点）；"+N/-N" 统计重算期间不再闪空（requestId 已提供并发保护，无需先清空）。
+- **仓库设置页暴露未就绪的 Lean Branching 入口**：工具栏菜单已于先前版本整块移除，设置页残留开关同步隐藏。
+- **测试覆盖**：新增 7 个 SideBySide 对齐/滚动同步回归测试文件（VisualPatch pragma 对齐 / 多 chunk 对齐 / 水平同步 / HBar 末端同步 / Add 场景左侧空复现 / 滚动压力 / 综合回归），凭据侧补 usehttppath 键构造、git-mm 变体解析、静默回填、开关忘密码等单元与 E2E 断言。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.1.2-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.1.2-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.1.2-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.1.2-macos-arm64.zip` |
+
 ## v4.1.1
 
 > 升级区域新增"重置此版本"入口：版本偶尔会坏掉（升级中断/文件缺失/损坏）又无新版本可用时，不再需要手动删包重装——在"检查更新"窗口点"重置此版本"，先确认重置当前版本（重新从 GitHub 拉当前版本安装包解压替换本地安装），再二次确认是否同时重置设置，随后走 v4.1.0 的完整替换链路（下载 → 解压 → 关闭应用 → 备份替换安装目录 → 自动重启）就地修复当前版本。

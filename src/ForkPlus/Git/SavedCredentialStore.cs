@@ -14,14 +14,13 @@ namespace ForkPlus.Git
 	///
 	/// 背景：Layer C 的 <see cref="GcmCompatibleStore"/> 只在 Windows 上生效（Advapi32），
 	/// Linux/macOS 的 store/erase 一直是空操作——非 Windows 用户每次 fetch/push 都要
-	/// 重输账号密码。本存储补齐该缺口，并落实凭据弹窗三档记忆语义：
+	/// 重输账号密码。本存储补齐该缺口，并落实凭据弹窗记忆语义
+	/// （2026-09-14 起"记住密码"与"不再弹出"两档并入同一静默语义）：
 	/// - 第一档（默认行为，无勾选框）：自动记住上次输入的账号，host → username 映射，
 	///   Username 弹窗预填；
-	/// - 第二档"记住密码"（显式勾选）：password 非空即"已记住"，下次仍弹窗但密码框
-	///   预填（弹窗内自动填充，用户确认后提交）；
-	/// - 第三档"记住密码 + 不再弹出"（显式勾选）：password + NeverAskAgain 标记，
-	///   credential get / askpass 全链路静默回填（完全不弹窗），凭据缺失时快速失败，
-	///   可在偏好设置的凭据页用开关重新打开。
+	/// - "记住密码"（显式勾选）：password 非空即"已记住"，credential get / askpass
+	///   全链路静默回填（完全不弹窗）；NeverAskAgain 标记不再参与静默命中，仅保留
+	///   偏好页开关状态 + 密码被 erase 后的快速失败标记两语义。
 	///
 	/// 记录按 host 唯一（与 git credential helper 的 host 级语义对齐；password prompt
 	/// 携带的 username 只作记录内容，不作键的一部分）。密码失效时 git 调 erase
@@ -59,12 +58,22 @@ namespace ForkPlus.Git
 			}
 		}
 
-		// git askpass 的 HTTP(S) 询问格式（git 的 askpass 提示不带尾随空格的变体也兼容）：
+		// git askpass 的 HTTP(S) 询问格式（git 的 askpass 提示不带尾随空格的变体也兼容；
+		// IgnoreCase 兼容个别工具/旧版 git 的大小写差异）：
 		//   Username for 'https://example.com':
 		//   Password for 'https://user@example.com':
-		private static readonly Regex UsernamePromptRegex = new Regex("^Username for '([^']+)'", RegexOptions.Compiled);
+		// 修复（2026-09-15，生产日志实锤的 git-mm 变体）：git-mm 自有询问是
+		// 小写 + URL 不带引号，password 变体 userinfo 为空（https://@host/path）：
+		//   username for https://codehub-git-codeartsx.rnd.yinwang.com/.../manifest.git
+		//   password for https://@codehub-git-codeartsx.rnd.yinwang.com/.../manifest.git
+		// 旧解析全部不匹配 → 密码弹窗落兜底分支（无"记住密码"勾选、不写记忆）→ 反复弹。
+		private static readonly Regex UsernamePromptRegex = new Regex("^Username for '([^']+)'", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-		private static readonly Regex PasswordPromptRegex = new Regex("^Password for '([^']+)'", RegexOptions.Compiled);
+		private static readonly Regex UsernamePromptBareUrlRegex = new Regex("^Username for (https?://[^\\s']+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+		private static readonly Regex PasswordPromptRegex = new Regex("^Password for '([^']+)'", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+		private static readonly Regex PasswordPromptBareUrlRegex = new Regex("^Password for (https?://[^\\s']+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 		private readonly object _sync = new object();
 
@@ -102,9 +111,77 @@ namespace ForkPlus.Git
 			return previous;
 		}
 
+		// ============================ 会话级 git-mm 单词提示缓存 ============================
+		// git-mm 经 GIT_ASKPASS 的单词提示（"username"/"password"）不带 URL，无法关联
+		// host 做持久化（也解释了单词密码弹窗为何没有"记住密码"勾选框）；但一次
+		// git mm init/sync 内的所有单词询问几乎必然是同一身份。修复（2026-09-14，
+		//"单词提示反复弹用户名+密码"）：会话内（进程生命周期）首次弹窗询问，之后
+		// 静默复用；标准格式询问（带 URL）在 host 无记忆时也从会话缓存桥接回填并
+		// 顺带落盘 host 记忆（下次会话起永久静默）。
+		private static readonly object _sessionSync = new object();
+
+		[Null]
+		private static string _sessionBareUsername;
+
+		[Null]
+		private static string _sessionBarePassword;
+
+		public static bool TryGetSessionBareUsername([Null] out string username)
+		{
+			lock (_sessionSync)
+			{
+				username = _sessionBareUsername;
+				return !string.IsNullOrEmpty(username);
+			}
+		}
+
+		public static bool TryGetSessionBarePassword([Null] out string password)
+		{
+			lock (_sessionSync)
+			{
+				password = _sessionBarePassword;
+				return !string.IsNullOrEmpty(password);
+			}
+		}
+
+		public static void RememberSessionBareUsername([Null] string username)
+		{
+			if (string.IsNullOrEmpty(username))
+			{
+				return;
+			}
+			lock (_sessionSync)
+			{
+				_sessionBareUsername = username;
+			}
+		}
+
+		public static void RememberSessionBarePassword([Null] string password)
+		{
+			if (string.IsNullOrEmpty(password))
+			{
+				return;
+			}
+			lock (_sessionSync)
+			{
+				_sessionBarePassword = password;
+			}
+		}
+
+		/// <summary>测试隔离：清空会话级单词提示缓存（生产不调用）。</summary>
+		internal static void ClearSessionBareCredentialsForTests()
+		{
+			lock (_sessionSync)
+			{
+				_sessionBareUsername = null;
+				_sessionBarePassword = null;
+			}
+		}
+
 		// ============================ askpass prompt 解析 ============================
 
-		/// <summary>解析 Username 询问（仅 HTTP(S)）。命中时给出 host。</summary>
+		/// <summary>解析 Username 询问（仅 HTTP(S)）。命中时给出 host。支持 git 标准带引号
+		/// 与 git-mm 无引号（小写 "username for https://..."）两种格式。</summary>
 		public static bool TryParseUsernamePrompt([Null] string prompt, out string host)
 		{
 			host = null;
@@ -115,12 +192,18 @@ namespace ForkPlus.Git
 			Match match = UsernamePromptRegex.Match(prompt);
 			if (!match.Success)
 			{
+				// 修复（2026-09-15）：git-mm 变体——URL 不带引号
+				match = UsernamePromptBareUrlRegex.Match(prompt);
+			}
+			if (!match.Success)
+			{
 				return false;
 			}
 			return TryParseCredentialUrl(match.Groups[1].Value, out host, out string _);
 		}
 
-		/// <summary>解析 Password 询问（仅 HTTP(S)）。命中时给出 host 与 prompt 携带的 username（可空）。</summary>
+		/// <summary>解析 Password 询问（仅 HTTP(S)）。命中时给出 host 与 prompt 携带的 username（可空）。
+		/// 支持 git 标准带引号与 git-mm 无引号（"password for https://@host/path"，userinfo 可为空）两种格式。</summary>
 		public static bool TryParsePasswordPrompt([Null] string prompt, out string host, [Null] out string username)
 		{
 			host = null;
@@ -132,6 +215,11 @@ namespace ForkPlus.Git
 			Match match = PasswordPromptRegex.Match(prompt);
 			if (!match.Success)
 			{
+				// 修复（2026-09-15）：git-mm 变体——URL 不带引号
+				match = PasswordPromptBareUrlRegex.Match(prompt);
+			}
+			if (!match.Success)
+			{
 				return false;
 			}
 			return TryParseCredentialUrl(match.Groups[1].Value, out host, out username);
@@ -141,6 +229,12 @@ namespace ForkPlus.Git
 		{
 			host = null;
 			username = null;
+			// 修复（2026-09-15）：git-mm password 变体的空 userinfo（https://@host/path）——
+			// 剥掉空 "@"，统一按无 userinfo 解析（Uri 对空 userinfo 的容忍度不可靠）
+			if (url.Contains("://@"))
+			{
+				url = url.Replace("://@", "://");
+			}
 			if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
 			{
 				return false;
@@ -197,10 +291,14 @@ namespace ForkPlus.Git
 		}
 
 		/// <summary>
-		/// 第三档（记住密码 + 不再弹出）静默命中：password 与 NeverAskAgain 皆备时
-		/// credential get / askpass 直接回填，完全不弹窗。
-		/// 仅"记住密码"未开"不再弹出"（第二档）不命中——保持弹窗（密码框预填）；
-		/// 仅记账号（第一档）同样不命中——弹窗预填账号。
+		/// "已记住密码"静默命中：password 非空即 credential get / askpass 直接回填，
+		/// 完全不弹窗（修复（2026-09-14，"勾了记住密码还不停询问"）：第二档"记住密码"
+		/// 与第三档"不再弹出"并入同一静默语义——明文本就落盘，弹窗确认无安全增益，
+		/// 反而每次操作都打断用户）。
+		/// NeverAskAgain 标记不再参与命中，仅保留两个语义：偏好页开关状态 + 密码被
+		/// erase 后的快速失败标记（凭据缺失时不弹窗直接空响应，见
+		/// <see cref="ShowAskPassWindowCommand"/>）。仅记账号（第一档）不命中——
+		/// 弹窗预填账号。
 		/// </summary>
 		public bool TryGetSilentCredential([Null] string host, [Null] out string username, [Null] out string password)
 		{
@@ -213,7 +311,7 @@ namespace ForkPlus.Git
 			lock (_sync)
 			{
 				SavedCredential entry = _entries.FirstOrDefault((SavedCredential e) => string.Equals(e.Host, host, StringComparison.OrdinalIgnoreCase));
-				if (entry == null || !entry.HasPassword || !entry.NeverAskAgain)
+				if (entry == null || !entry.HasPassword)
 				{
 					return false;
 				}
@@ -362,6 +460,38 @@ namespace ForkPlus.Git
 					{
 						entry.NeverAskAgain = false;
 						changed = true;
+					}
+				}
+				if (changed)
+				{
+					Save();
+				}
+			}
+		}
+
+		/// <summary>
+		/// 全局"重新询问"（偏好设置页 Ask Again for All Hosts，2026-09-14 起）：
+		/// 清全部密码与"不再询问"标记，保留账号记忆（第一档默认行为不可关）。
+		/// 修复（2026-09-14，"勾了记住密码还不停询问"）：静默语义改为"记住密码即静默"
+		/// 后，仅清标记（<see cref="ClearAllNeverAsk"/>）不再恢复弹窗——必须连密码一起
+		/// 忘掉才真正"重新询问"。清空后变全空的条目顺手删除，避免垃圾条目堆积。
+		/// </summary>
+		public void ForgetAllPasswords()
+		{
+			lock (_sync)
+			{
+				bool changed = false;
+				foreach (SavedCredential entry in _entries.ToList())
+				{
+					if (entry.HasPassword || entry.NeverAskAgain)
+					{
+						entry.Password = null;
+						entry.NeverAskAgain = false;
+						changed = true;
+					}
+					if (entry.Username == null && entry.Password == null && !entry.NeverAskAgain)
+					{
+						_entries.Remove(entry);
 					}
 				}
 				if (changed)

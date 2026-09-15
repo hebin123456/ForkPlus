@@ -354,6 +354,22 @@ namespace ForkPlus.UI.UserControls.Preferences
 				string original = GetOriginal(element, OriginalHeaderProperty, itemsHeader);
 				headeredItemsControl.Header = Translate(original, dictionary);
 			}
+			// 修复（2026-09-14，i18n）：Avalonia 12 里 MenuItem : HeaderedSelectingItemsControl，
+			// 不再是 WPF 的 HeaderedItemsControl → 上面的 Header 分支匹配不上 MenuItem.Header，
+			// XAML 声明的菜单项（"Save As..."、问题跟踪器 "Add New Rule" 等）全部漏翻译（WPF 迁移回归）。
+			// 补上 HeaderedSelectingItemsControl 分支恢复覆盖；未命中词典的串原样返回，无副作用。
+			if (element is HeaderedSelectingItemsControl headeredSelectingItemsControl && headeredSelectingItemsControl.Header is string selectingHeader && !HasBinding(element, HeaderedSelectingItemsControl.HeaderProperty))
+			{
+				string original = GetOriginal(element, OriginalHeaderProperty, selectingHeader);
+				headeredSelectingItemsControl.Header = Translate(original, dictionary);
+			}
+			// 修复（2026-09-14，i18n）：Run（内联文本，如 "Change the avatar at"）不是 TextBlock，
+			// TextBlock.Text 分支匹配不上 → 含 Inlines 的富文本 Run 全部漏翻译。补 Run 分支。
+			if (element is global::Avalonia.Controls.Documents.Run { Text: string runText } run)
+			{
+				string original = GetOriginal(element, OriginalTextProperty, runText);
+				run.Text = Translate(original, dictionary);
+			}
 			if (element is ContentControl contentControl && contentControl.Content is string content && !HasBinding(element, ContentControl.ContentProperty))
 			{
 				string original = GetOriginal(element, OriginalContentProperty, content);

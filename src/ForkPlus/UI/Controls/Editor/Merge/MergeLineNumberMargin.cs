@@ -153,10 +153,12 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 				}
 				if (_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out var value))
 				{
-					// v3.13 修复（行号被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin) 以 origin
-					// 为右上角向左绘制；Avalonia 的 origin 恒为左上角，须显式减去文本宽度防右缘溢出。
-					FormattedText text = CreateFormattedText(value.ToString(), brush);
-					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y + 1.0));
+				// v3.13 修复（行号被代码区遮挡）：WPF 的 RTL FormattedText DrawText(origin) 以 origin
+				// 为右上角向左绘制；Avalonia 的 origin 恒为左上角，须显式减去文本宽度防右缘溢出。
+				// 2026-09-15 修复（行号与代码垂直错位）：改基线对齐（GetLineTextBaselineY），
+				// 消除 CJK 行/槽内居中偏移导致的行号与代码错位。
+				FormattedText text = CreateFormattedText(value.ToString(), brush);
+				drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin - text.Width, GetLineTextBaselineY(visualLine) - text.Baseline));
 				}
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - 2.0, 0.0), new Point(base.Bounds.Size.Width - 2.0, base.Bounds.Size.Height));

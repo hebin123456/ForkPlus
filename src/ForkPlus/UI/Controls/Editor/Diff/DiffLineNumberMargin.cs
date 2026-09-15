@@ -181,25 +181,27 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					{
 						continue;
 					}
+					// 2026-09-15 修复：基线对齐（见 GetLineTextBaselineY 头注释），± 标记同理按自身 Baseline 落线。
+					double baselineY = GetLineTextBaselineY(visualLine);
 					int? from = value.From;
 					if (from.HasValue)
 					{
-						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), (base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), (base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth) / 2.0, baselineY);
 						if (_showDiffMarks && !value.To.HasValue)
 						{
 							// v3.12 修复：WPF 的 RTL FormattedText DrawText(origin) 以 origin 为右上角向左绘制，
 							// 原坐标 (Width-1) 即"右缘贴 Width-1"；Avalonia 的 origin 恒为左上角，须显式减宽度，
-							// 否则 ±标记溢出 margin 右边界 ~7px 被代码区遮住。
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							// 否则 ±标记溢出 margin 右边界 ~7px 被代码区遮住一点。
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, baselineY - _minusText.Baseline));
 						}
 					}
 					from = value.To;
 					if (from.HasValue)
 					{
-						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine.VisualTop - base.TextView.ScrollOffset.Y);
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, baselineY);
 						if (_showDiffMarks && !value.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, visualLine.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, baselineY - _plusText.Baseline));
 						}
 					}
 				}
@@ -212,13 +214,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					{
 						continue;
 					}
+					double baselineY2 = GetLineTextBaselineY(visualLine2);
 					int? from = value2.From;
 					if (from.HasValue)
 					{
-						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine2.VisualTop - base.TextView.ScrollOffset.Y);
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, baselineY2);
 						if (_showDiffMarks && !value2.To.HasValue)
 						{
-							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, visualLine2.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_minusText, new Point(base.Bounds.Size.Width - 1.0 - _minusText.Width, baselineY2 - _minusText.Baseline));
 						}
 					}
 				}
@@ -231,13 +234,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					{
 						continue;
 					}
+					double baselineY3 = GetLineTextBaselineY(visualLine3);
 					int? from = value3.To;
 					if (from.HasValue)
 					{
-						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, visualLine3.VisualTop - base.TextView.ScrollOffset.Y);
+						DrawRightAlignedText(drawingContext, from.GetValueOrDefault().ToString(), base.Bounds.Size.Width - HorizontalMargin - DiffMarksColumnWidth, baselineY3);
 						if (_showDiffMarks && !value3.From.HasValue)
 						{
-							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, visualLine3.VisualTop - 2.0 - base.TextView.ScrollOffset.Y));
+							drawingContext.DrawText(_plusText, new Point(base.Bounds.Size.Width - 1.0 - _plusText.Width, baselineY3 - _plusText.Baseline));
 						}
 					}
 				}
@@ -288,10 +292,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			return new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.RightToLeft, typeface, emSize, _brush);
 		}
 
-		private void DrawRightAlignedText(DrawingContext drawingContext, string text, double right, double top)
+		/// <summary>右对齐绘制行号/数字，<paramref name="baseline" /> 为文本基线在视口内的 Y
+		///（2026-09-15 修复：按 FormattedText.Baseline 落到代码基线上，替代旧的槽顶对齐，
+		/// 消除 CJK 行/字号差异导致的行号与代码垂直错位，详见 ClearTypeLineNumberMargin.GetLineTextBaselineY）。</summary>
+		private void DrawRightAlignedText(DrawingContext drawingContext, string text, double right, double baseline)
 		{
 			FormattedText formattedText = CreateFormattedText(text);
-			drawingContext.DrawText(formattedText, new Point(right - formattedText.Width, top));
+			drawingContext.DrawText(formattedText, new Point(right - formattedText.Width, baseline - formattedText.Baseline));
 		}
 	}
 }

@@ -2332,13 +2332,16 @@
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Configuración importada correctamente.\nForkPlus se reiniciará ahora para aplicar la nueva configuración.",
     "Force push": "Push forzado",
     "Credentials": "Credenciales",
-    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Credenciales HTTP(S) guardadas. Los nombres de usuario se recuerdan automáticamente; «Recordar contraseña» rellena la contraseña en el diálogo; «No preguntar» la usa en silencio. Añada credenciales por adelantado aquí; el interruptor reactiva la petición en cualquier momento.",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' is reused silently without prompting. Add credentials in advance here — turn off a switch to forget its password and be asked again.": "Credenciales HTTP(S) guardadas. Los nombres de usuario se recuerdan automáticamente; la contraseña recordada se reutiliza en silencio sin preguntar. Añada credenciales por adelantado aquí; apague un interruptor para olvidar su contraseña y que se le pregunte de nuevo.",
     "Host (e.g. github.com)": "Host (p. ej. github.com)",
     "Ask Again for All Hosts": "Volver a preguntar para todos los hosts",
     "Never ask": "No preguntar",
     "Ask": "Preguntar",
     "No saved credentials yet.": "Aún no hay credenciales guardadas.",
     "Host": "Host",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Si está activado, esta credencial se usa en silencio sin preguntar; desactívelo para que se le pregunte de nuevo."
+    "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.": "Si está activado, esta credencial se usa en silencio sin preguntar; desactívelo para olvidar la contraseña y que se le pregunte de nuevo.",
+    "Username for '{0}':": "Nombre de usuario para '{0}':",
+    "Password for '{0}':": "Contraseña para '{0}':",
+    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "Usa la contraseña recordada en silencio sin este diálogo (reactive la petición en Preferencias > Credenciales)"
   }
 }

@@ -52,10 +52,12 @@
       <Span>
         <Run>Change the avatar at</Run> <HyperlinkButton NavigateUri="https://gravatar.com" Theme="{DynamicResource BlueHyperlinkStyle}"><TextBlock HorizontalAlignment="Center" Text="gravatar.com" /></HyperlinkButton></Span>
     </TextBlock>
-    <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
-    <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Text="Lean Branching" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
-    <TextBlock Grid.Column="0" Grid.Row="7" Text="Main Branch:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-    <ComboBox Grid.Row="7" Grid.Column="1" Margin="0,4,0,4" SelectionChanged="MainBranchComboBox_SelectionChanged" x:Name="MainBranchComboBox" ItemContainerTheme="{DynamicResource MainBranchComboBoxItemStyle}">
+    <!-- 修复（2026-09-14）：Lean Branching 功能暂不对外暴露（工具栏菜单已于 2026-09-10 整块移除，
+         此处是它在 UI 上仅存的入口），按同样口径隐藏本区块。设置项持久化与 git mm 命令行用法不受影响。 -->
+    <Separator Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" IsVisible="False" />
+    <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3" Text="Lean Branching" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" IsVisible="False" />
+    <TextBlock Grid.Column="0" Grid.Row="7" Text="Main Branch:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False" />
+    <ComboBox Grid.Row="7" Grid.Column="1" Margin="0,4,0,4" SelectionChanged="MainBranchComboBox_SelectionChanged" x:Name="MainBranchComboBox" ItemContainerTheme="{DynamicResource MainBranchComboBoxItemStyle}" IsVisible="False">
       <ComboBox.ItemsPanel>
         <ItemsPanelTemplate>
           <VirtualizingStackPanel />
@@ -74,7 +76,7 @@
         </DataTemplate>
       </ComboBox.ItemTemplate>
     </ComboBox>
-    <CheckBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="No fast-forward on merge" IsCheckedChanged="NoFastForwardCheckBox_Changed" x:Name="NoFastForwardCheckBox" />
+    <CheckBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="No fast-forward on merge" IsCheckedChanged="NoFastForwardCheckBox_Changed" x:Name="NoFastForwardCheckBox" IsVisible="False" />
     <Separator Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
     <TextBlock Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Text="Diff View" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
     <TextBlock Grid.Column="0" Grid.Row="11" Text="Tab Width:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" />

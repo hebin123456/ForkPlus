@@ -313,7 +313,9 @@ namespace ForkPlus.Tests
 				Assert.False(username.RememberCheckBox.IsVisible, "Username 模式无 Remember");
 				// 标题/描述装配（chrome 文本，经视觉树断言——DialogTitle/DialogDescription 为 protected）
 				Assert.Contains("fpe2e-askpass-repo", AllTexts(username));
-				Assert.Contains("Username for 'https://github.com':", AllTexts(username));
+				// 修复（2026-09-14，"弹窗内容未国际化"）：描述改用本地化格式键
+				// （"Username for '{0}':"，8 语言词条），不再显示 git 英文原文
+				Assert.Contains(TrFormat("Username for '{0}':", "https://github.com"), AllTexts(username));
 
 				// 输入 → Submit → Result 装配 + 关窗
 				username.InputTextBox.Text = "octocat";

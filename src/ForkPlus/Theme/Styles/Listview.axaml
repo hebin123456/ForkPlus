@@ -319,6 +319,13 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Padding" Value="0,4,0,0" />
     <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    <!-- 修复（2026-09-14，与 WPF 版样式对齐）：WPF 隐式 ListBox 样式给所有列表挂
+         ItemContainerStyle=ListBoxItemStyle（item 高亮左右各内缩 4px + 圆角，见
+         ListItemRoundedBorderStyle）。迁移时该 Setter 被当"WPF 专有属性"删除且未补回
+         Avalonia 等价物 ItemContainerTheme → 未显式指定 item 主题的列表（活动管理器
+         作业列表、仓库列表、外部工具列表等）回落 FluentTheme 默认模板，高亮全宽出血
+         （视觉上 item "太宽"）。此处补回；显式设置了 ItemContainerTheme 的列表不受影响。 -->
+    <Setter Property="ItemContainerTheme" Value="{DynamicResource ListBoxItemStyle}" />
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
     <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->

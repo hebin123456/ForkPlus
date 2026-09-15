@@ -43,12 +43,18 @@
             <Rectangle Height="4.0" Fill="#FF0078D4" x:Name="PART_SelectionRange" IsVisible="False" />
           </Canvas>
         </Border>
-        <Track Grid.Row="1" x:Name="PART_Track">
+        <!-- 修复（2026-09-14）：WPF Slider 会在代码后台把 Minimum/Maximum/Value 推给 Track，
+             Avalonia 12 的 Slider 不推送——Track 值/方向必须由模板绑定接线（Fluent 默认主题同款）。
+             迁移时绑定丢失导致：Track.Value 恒为默认 0、Orientation 恒为默认 Vertical →
+             拖动滑块时图像透明度正常变化但中间把手（thumb）钉死不动。
+             同时 RepeatButton 部件名按 Avalonia 12 改为 PART_DecreaseButton/PART_IncreaseButton
+             （原 PART_DecreaseLarge/PART_IncreaseLarge 是 WPF 命名，点击轨道跳跃定位未接线）。 -->
+        <Track Grid.Row="1" x:Name="PART_Track" Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}" Value="{TemplateBinding Value, Mode=TwoWay}" Orientation="Horizontal">
           <Track.DecreaseButton>
-            <RepeatButton x:Name="PART_DecreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
+            <RepeatButton x:Name="PART_DecreaseButton" Theme="{DynamicResource RepeatButtonTransparent}" />
           </Track.DecreaseButton>
           <Track.IncreaseButton>
-            <RepeatButton x:Name="PART_IncreaseLarge" Theme="{DynamicResource RepeatButtonTransparent}" />
+            <RepeatButton x:Name="PART_IncreaseButton" Theme="{DynamicResource RepeatButtonTransparent}" />
           </Track.IncreaseButton>
           <Track.Thumb>
             <Thumb Height="18" Width="11" VerticalAlignment="Center" Focusable="False" Template="{DynamicResource SliderThumbHorizontalDefault}" x:Name="Thumb" />

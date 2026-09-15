@@ -105,18 +105,21 @@ namespace ForkPlus.UI.Controls
 			double x = Math.Clamp(sv.Offset.X + deltaX, 0.0, Math.Max(0.0, sv.ScrollBarMaximum.X));
 			double y = Math.Clamp(sv.Offset.Y + deltaY, 0.0, max);
 			sv.Offset = new Vector(x, y);
-			// 同步 thumb：Avalonia 内部 Offset→ScrollBar.Value 反向同步在拖过 thumb 后失效，
-			// 手动把 vbar/hbar.Value 设成新 Offset，强制 thumb 跟随。
+			// 同步 thumb：与 TouchpadAwareScrollViewer 2026-09-15 修复同款——必须用 SetCurrentValue
+			// 而非 `Value =` 本地值赋值：本地值会永久压死 ScrollBar 的 Template 优先级
+			// Value↔Offset 绑定（AttachToScrollViewer 的 IfUnset 语义被破坏），滚过一次滚轮后
+			// 程序化 Offset 写入只动视图不动 thumb（SideBySide 左右同步失步的根因，诊断探针
+			// 实证）。SetCurrentValue 不改变值来源优先级，绑定继续双向生效。
 			if (sv.GetTemplateChild("PART_VerticalScrollBar") is global::Avalonia.Controls.Primitives.ScrollBar vbar2)
 			{
-				vbar2.Value = y;
+				vbar2.SetCurrentValue(RangeBase.ValueProperty, y);
 				// 2026-09-11：仅设 Value 不够（thumb 视觉可能不刷新），强制 invalidate
 				// 让 ScrollBar 模板重算 thumb 位置，确保 thumb 视觉跟随。
 				vbar2.InvalidateVisual();
 			}
 			if (sv.GetTemplateChild("PART_HorizontalScrollBar") is global::Avalonia.Controls.Primitives.ScrollBar hbar2)
 			{
-				hbar2.Value = x;
+				hbar2.SetCurrentValue(RangeBase.ValueProperty, x);
 				hbar2.InvalidateVisual();
 			}
 		}

@@ -64,6 +64,68 @@ namespace ForkPlus.Tests
 				GcmCompatibleStore.BuildStoreTargetName("http", "example.com", null));
 		}
 
+		// 修复（2026-09-14，"git mm init 弹凭据窗：明明凭据管理器里有凭据还是反复询问"）：
+		// credential.usehttppath=true 时 GCM 按完整路径存凭据（键含仓库路径、不含 username，
+		// username 记在凭据条目上）。带 path 的候选/写入键必须覆盖该粒度。
+		[Fact]
+		public void BuildQueryTargetNames_WithPath_PathKeyFirstThenBroaderFallbacks()
+		{
+			// 具体到宽泛：path 级（GCM usehttppath 存储粒度）→ user@host 级 → host 级。
+			string[] names = GcmCompatibleStore.BuildQueryTargetNames(
+				"https", "codehub-git-codeartsx.rnd.yinwang.com", "h00003968",
+				"innersource/T4VB_G/TNC/build/manifest.git");
+
+			Assert.Equal(new[]
+			{
+				"git:https://codehub-git-codeartsx.rnd.yinwang.com/innersource/T4VB_G/TNC/build/manifest.git",
+				"git:https://h00003968@codehub-git-codeartsx.rnd.yinwang.com/innersource/T4VB_G/TNC/build/manifest.git",
+				"git:https://h00003968@codehub-git-codeartsx.rnd.yinwang.com",
+				"git:https://codehub-git-codeartsx.rnd.yinwang.com"
+			}, names);
+		}
+
+		[Fact]
+		public void BuildQueryTargetNames_WithPathWithoutUsername_PathKeyThenHostKey()
+		{
+			// get 首次询问通常无 username（URL 未内嵌）：path 级 + host 级。
+			string[] names = GcmCompatibleStore.BuildQueryTargetNames(
+				"https", "codehub-git-codeartsx.rnd.yinwang.com", null,
+				"innersource/T4VB_G/TNC/build/manifest.git");
+
+			Assert.Equal(new[]
+			{
+				"git:https://codehub-git-codeartsx.rnd.yinwang.com/innersource/T4VB_G/TNC/build/manifest.git",
+				"git:https://codehub-git-codeartsx.rnd.yinwang.com"
+			}, names);
+		}
+
+		[Fact]
+		public void BuildQueryTargetNames_WithEmptyPath_DegeneratesToHostLevel()
+		{
+			// 空 path 视为缺失：候选与 3 参版本一致（兼容 usehttppath=false 的默认场景）。
+			string[] names = GcmCompatibleStore.BuildQueryTargetNames("https", "github.com", "alice", "");
+
+			Assert.Equal(new[] { "git:https://alice@github.com", "git:https://github.com" }, names);
+		}
+
+		[Fact]
+		public void BuildStoreTargetName_WithPath_WritesPathLevelKeyLikeGcm()
+		{
+			// GCM usehttppath 规则：键含路径、不含 username（username 记在条目上）。
+			Assert.Equal(
+				"git:https://codehub-git-codeartsx.rnd.yinwang.com/innersource/T4VB_G/TNC/build/manifest.git",
+				GcmCompatibleStore.BuildStoreTargetName(
+					"https", "codehub-git-codeartsx.rnd.yinwang.com", "h00003968",
+					"innersource/T4VB_G/TNC/build/manifest.git"));
+		}
+
+		[Fact]
+		public void BuildStoreTargetName_WithoutPath_FallsBackToUserHostKey()
+		{
+			Assert.Equal("git:https://alice@github.com",
+				GcmCompatibleStore.BuildStoreTargetName("https", "github.com", "alice", null));
+		}
+
 		[Fact]
 		public void TryQuery_EmptyOrNullHost_ReturnsFalseBeforeAnyPlatformCall()
 		{

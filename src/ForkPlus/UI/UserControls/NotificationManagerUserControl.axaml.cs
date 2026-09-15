@@ -38,6 +38,10 @@ namespace ForkPlus.UI.UserControls
 			{
 				NotificationManager.Current.Refresh();
 			};
+			// 修复（2026-09-14）：初始即互斥驱动一次（此前只在 Popup Opened/IsUpdating 翻转时
+			// 才刷新，且两条触发链在 Avalonia 迁移后失效，见 OnAttachedToVisualTree 注释），
+			// 避免刷新按钮与 loading 指示器初始同显重叠。
+			RefreshBusyIndicator();
 		}
 
 		/// <summary>MainWindow.ApplyLocalization 回调入口。
@@ -48,14 +52,26 @@ namespace ForkPlus.UI.UserControls
 			HeaderLabel.Text = PreferencesLocalization.Translate("Notifications", ForkPlusSettings.Default.UiLanguage);
 		}
 
-		protected void OnVisualParentChanged(global::Avalonia.AvaloniaObject oldParent)
+		// 修复（2026-09-14）：原 OnVisualParentChanged(DependencyObject) 是 WPF 框架回调，
+		// 迁移后既没有 override 关键字、Avalonia 的 Visual 也没有该虚方法 → 永远不会被框架
+		// 调用，Popup 的 Opened/Closed 从未订阅（ShowPopup/HidePopup 失效、打开面板时
+		// 刷新按钮与 loading 的互斥状态也不会同步）。改挂 Avalonia 真实的附加/脱离视觉树回调。
+		protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
 		{
-			Log.Info("NotificationManagerUserControl.OnVisualParentChanged()");
-			if (_parentPopup != null)
-			{
-				_parentPopup.Opened -= ParentPopup_Opened;
-				_parentPopup.Closed -= ParentPopup_Closed;
-			}
+			base.OnAttachedToVisualTree(e);
+			Log.Info("NotificationManagerUserControl.OnAttachedToVisualTree()");
+			AttachParentPopup();
+		}
+
+		protected override void OnDetachedFromVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			base.OnDetachedFromVisualTree(e);
+			DetachParentPopup();
+		}
+
+		private void AttachParentPopup()
+		{
+			DetachParentPopup();
 			_parentPopup = this.Parent<Popup>();
 			_parentButton = _parentPopup?.PlacementTarget as ToggleButton;
 			if (_parentPopup == null || _parentButton == null)
@@ -64,6 +80,15 @@ namespace ForkPlus.UI.UserControls
 			}
 			_parentPopup.Opened += ParentPopup_Opened;
 			_parentPopup.Closed += ParentPopup_Closed;
+		}
+
+		private void DetachParentPopup()
+		{
+			if (_parentPopup != null)
+			{
+				_parentPopup.Opened -= ParentPopup_Opened;
+				_parentPopup.Closed -= ParentPopup_Closed;
+			}
 		}
 
 		public void ShowPopup()
@@ -110,7 +135,9 @@ namespace ForkPlus.UI.UserControls
 
 		private void NotificationManager_IsUpdatingChanged(object sender, EventArgs e)
 		{
-			if (base.IsVisible)
+			// Migration note：WPF base.IsVisible 是“计算可见性”（Popup 关闭时为 false），
+			// Avalonia 的 IsVisible 只是本地属性（恒为 true）→ 改用 Popup 是否展开判断。
+			if (_parentPopup == null || _parentPopup.IsOpen)
 			{
 				RefreshBusyIndicator();
 			}
@@ -118,7 +145,7 @@ namespace ForkPlus.UI.UserControls
 
 		private void NotificationManager_NotificationsChanged(object sender, EventArgs e)
 		{
-			if (base.IsVisible)
+			if (_parentPopup == null || _parentPopup.IsOpen)
 			{
 				RefreshNotifications();
 			}

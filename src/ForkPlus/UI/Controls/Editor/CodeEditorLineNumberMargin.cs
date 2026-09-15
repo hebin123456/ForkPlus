@@ -95,8 +95,10 @@ namespace ForkPlus.UI.Controls.Editor
 					// 以 origin 为右上角向左绘制（原版行号右缘贴 Width-10）；Avalonia 的 origin 恒为
 					// 左上角，须显式减去文本宽度，否则文本从 Width-10 向右溢出 margin 边界——
 					// 一位数勉强在界内，两位数右缘溢出 ~4px、三位数更多，被代码区遮住。
+					// 2026-09-15 修复（行号与代码垂直错位）：改基线对齐——行号按自身 Baseline 落到
+					// 代码基线上（GetLineTextBaselineY），替代槽顶对齐，消除 CJK 行/居中偏移导致的错位。
 					FormattedText text = CreateFormattedText(visualLine.FirstDocumentLine.LineNumber.ToString());
-					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0 - text.Width, visualLine.VisualTop - base.TextView.ScrollOffset.Y));
+					drawingContext.DrawText(text, new Point(base.Bounds.Size.Width - HorizontalMargin * 2.0 - text.Width, GetLineTextBaselineY(visualLine) - text.Baseline));
 				}
 			}
 			drawingContext.DrawLine(_separatorPen, new Point(base.Bounds.Size.Width - HorizontalMargin, 0.0), new Point(base.Bounds.Size.Width - HorizontalMargin, base.Bounds.Size.Height));

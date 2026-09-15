@@ -11,6 +11,9 @@
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />
     <Setter Property="IsIndeterminate" Value="True" />
+    <!-- 修复（2026-09-14，"loading 动画转不起来"）：WPF Storyboard 被注释后 spinner 静止，
+         由 SpinnerBehavior 附加行为复刻追逐动画（见 UI/CircularProgressBar/SpinnerBehavior.cs）。 -->
+    <Setter Property="circularProgressBar:SpinnerBehavior.IsActive" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ProgressBar">

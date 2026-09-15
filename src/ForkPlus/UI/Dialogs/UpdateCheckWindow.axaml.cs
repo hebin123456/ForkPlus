@@ -45,6 +45,14 @@ namespace ForkPlus.UI.Dialogs
 		/// <summary>重置流进行中（内容区让位给进度面板，检查结果作废不再回填）。</summary>
 		private bool _resetInProgress;
 
+		/// <summary>修复（2026-09-14）：用户主动取消重置（Footer Cancel → runner.Cancel）。
+		/// 区分“用户取消”（安静恢复 UI）与“updater 异常早退”（必须报错，见 OnResetRunnerExited）。</summary>
+		private bool _userCancelledReset;
+
+		/// <summary>修复（2026-09-14）：确认弹窗期间检查结果到达但被 _resetInProgress 压制未展示。
+		/// 用户放弃重置时据此决定是否补展示，避免结果凭空丢失或重复检查。</summary>
+		private bool _resultSuppressed;
+
 		/// <summary>E2E 测试注入：替换默认 UpdateChecker（避免真实出网与 MarkChecked 落盘）。</summary>
 		internal UpdateChecker CheckerForTests
 		{
@@ -121,12 +129,17 @@ namespace ForkPlus.UI.Dialogs
 			}, token);
 		}
 
-		private void OnCheckCompleted(UpdateInfo info)
+	private void OnCheckCompleted(UpdateInfo info)
+	{
+		if (_resetInProgress)
 		{
-			if (_resetInProgress)
-			{
-				return; // 重置流已接管内容区，检查结果作废
-			}
+			// 修复（2026-09-14）：重置流接管（或确认弹窗泵 dispatcher 期间）到达的结果
+			// 暂存不展示——此前直接丢弃，用户放弃重置后结果凭空消失；也避免迟到结果
+			// 在重置进度面板之上弹出“已是最新版本”造成误读。
+			_result = info;
+			_resultSuppressed = true;
+			return;
+		}
 			_result = info;
 			CheckingPanel.IsVisible = false;
 			ResultPanel.IsVisible = true;
@@ -171,19 +184,44 @@ namespace ForkPlus.UI.Dialogs
 		/// 重置入口：① 确认重置当前版本（破坏性：重新下载并替换本地安装）→
 		/// ② 二次确认是否同时重置设置 → ③ 启动重置流。任一步取消即中止。
 		/// </summary>
-		private void ResetVersionButton_Click(object sender, RoutedEventArgs e)
+	private void ResetVersionButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (_resetInProgress)
 		{
-			if (_resetInProgress)
-			{
-				return; // 防重入
-			}
+			return; // 防重入
+		}
+		// 修复（2026-09-14）：确认弹窗是 ShowDialog 模态，会泵 dispatcher——期间在途检查
+		// 可能完成并把结果面板顶上来。提前置 _resetInProgress 屏蔽迟到结果；用户放弃
+		// 重置时按 _resultSuppressed 决定是否补展示（见 ResetAbandonedBeforeStart）。
+		_resetInProgress = true;
+		try
+		{
 			if (!ConfirmResetVersion())
 			{
+				ResetAbandonedBeforeStart();
 				return;
 			}
 			bool resetSettings = ConfirmResetSettings();
 			StartVersionReset(resetSettings);
 		}
+		catch
+		{
+			ResetAbandonedBeforeStart();
+			throw;
+		}
+	}
+
+	/// <summary>用户在确认弹窗放弃重置（重置流未启动）：解除结果压制，补展示或继续等待在途检查。</summary>
+	private void ResetAbandonedBeforeStart()
+	{
+		_resetInProgress = false;
+		if (_resultSuppressed)
+		{
+			_resultSuppressed = false;
+			// 检查已完成过（结果被压制）：恢复结果区展示（_result==null 时按失败/重查处理）
+			RestoreCheckUi();
+		}
+	}
 
 		/// <summary>第一次确认：重置当前版本（重新下载替换本地安装）。</summary>
 		private bool ConfirmResetVersion()
@@ -242,10 +280,12 @@ namespace ForkPlus.UI.Dialogs
 					?? AutoUpdateRunner.CreateForVersionReset(resetSettings);
 				_resetRunner.Progress += OnResetProgress;
 				_resetRunner.Exited += OnResetRunnerExited;
-				// 中止在途检查：结果作废，内容区让位给重置进度面板
-				CancelPendingCheck();
-				_resetInProgress = true;
-				_resetFailed = false;
+			// 中止在途检查：结果作废，内容区让位给重置进度面板
+			CancelPendingCheck();
+			_resetInProgress = true;
+			_resetFailed = false;
+			_userCancelledReset = false;
+			_resultSuppressed = false;
 				DownloadPanel.Reset();
 				CheckingPanel.IsVisible = false;
 				ResultPanel.IsVisible = false;
@@ -330,9 +370,21 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!_resetFailed)
 			{
-				// 用户取消（或 updater 意外早退）：恢复检查 UI 允许重试或关闭
+				// 修复（2026-09-14）：updater 起进程即崩/早退时不会发 error 管道消息，
+				// 此前一律按“用户取消”静默恢复 UI，并把重置前留下的“已是最新版本”
+				// 结果原样亮回——用户看到的就是“点重置此版本却提示最新版本”。
+				// 现在读取退出码区分：非用户取消且退出码非 0 → 按失败报错（0 成功 /
+				// 130 取消 / 1 失败，见 AutoUpdater Program.cs）。
+				bool userCancelled = _userCancelledReset;
+				int? exitCode = _resetRunner?.ExitCode;
 				RestoreCheckUi();
+				if (!userCancelled && exitCode != 0)
+				{
+					SetStatus(ForkPlusDialogStatus.Error, PreferencesLocalization.FormatCurrent(
+						"Update failed: {0}", "updater exited unexpectedly (code " + exitCode?.ToString() ?? "unknown" + ")"));
+				}
 			}
+			_userCancelledReset = false;
 			DisposeResetRunner();
 		}
 
@@ -343,6 +395,7 @@ namespace ForkPlus.UI.Dialogs
 		private void RestoreCheckUi()
 		{
 			_resetInProgress = false;
+			_resultSuppressed = false;
 			DownloadPanel.IsVisible = false;
 			ResetVersionButton.IsVisible = true;
 			ClearStatus();
@@ -428,6 +481,7 @@ namespace ForkPlus.UI.Dialogs
 			// 重置下载中：Footer Cancel = 取消下载（Kill updater，恢复 UI 可重试），不关窗
 			if (_resetRunner != null && _resetRunner.IsRunning)
 			{
+				_userCancelledReset = true; // OnResetRunnerExited 据此安静恢复（不误报失败）
 				_resetRunner.Cancel();
 				return;
 			}

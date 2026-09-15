@@ -2332,13 +2332,16 @@
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "구성을 가져왔습니다.\nForkPlus가 곧 다시 시작되어 새 설정을 적용합니다.",
     "Force push": "강제 푸시",
     "Credentials": "자격 증명",
-    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "저장된 HTTP(S) 자격 증명입니다. 사용자 이름은 자동으로 기억되며, '비밀번호 기억'은 대화상자에 비밀번호를 미리 채우고, '묻지 않음'은 확인 없이 사용합니다. 여기서 자격 증명을 미리 추가할 수 있으며, 스위치로 언제든 확인 창을 다시 켤 수 있습니다.",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' is reused silently without prompting. Add credentials in advance here — turn off a switch to forget its password and be asked again.": "저장된 HTTP(S) 자격 증명입니다. 사용자 이름은 자동으로 기억되며, 기억된 비밀번호는 확인 없이 자동으로 재사용됩니다. 여기서 자격 증명을 미리 추가할 수 있으며, 스위치를 끄면 해당 비밀번호를 잊고 다시 묻습니다.",
     "Host (e.g. github.com)": "호스트(예: github.com)",
     "Ask Again for All Hosts": "모든 호스트에 대해 다시 묻기",
     "Never ask": "묻지 않기",
     "Ask": "묻기",
     "No saved credentials yet.": "저장된 자격 증명이 없습니다.",
     "Host": "호스트",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "켜면 확인 없이 이 자격 증명을 사용합니다. 끄면 다시 묻습니다."
+    "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.": "켜면 확인 없이 이 자격 증명을 사용합니다. 끄면 비밀번호를 잊고 다시 묻습니다.",
+    "Username for '{0}':": "'{0}'의 사용자 이름:",
+    "Password for '{0}':": "'{0}'의 비밀번호:",
+    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "기억된 비밀번호를 이 대화상자 없이 자동으로 사용합니다(환경설정 > 자격 증명에서 다시 묻도록 켤 수 있음)"
   }
 }

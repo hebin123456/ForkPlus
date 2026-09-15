@@ -105,16 +105,22 @@ namespace ForkPlus.UI.Controls
 		double x = Math.Clamp(Offset.X + deltaX, 0.0, Math.Max(0.0, ScrollBarMaximum.X));
 		double y = Math.Clamp(Offset.Y + deltaY, 0.0, Math.Max(0.0, ScrollBarMaximum.Y));
 		Offset = new Vector(x, y);
-		// 修复（2026-09-10，"滚轮滚动有用但 thumb 不跟随"）：Avalonia 内部 Offset→ScrollBar.Value
-		// 反向同步在拖过 thumb 后失效，thumb 卡住。这里手动把 vbar/hbar.Value 设成新 Offset，
-		// 强制 thumb 跟随移动（Value 与 Offset 同单位，设同值不触发循环）。
+		// 修复（2026-09-15，"SideBySide 两滚动条失步"）：2026-09-10 的修复用 `Value = y` 本地值
+		// 赋值强制 thumb 跟随，但本地值优先级高于 ScrollBar.AttachToScrollViewer 建立的
+		// Template 优先级 Value↔ScrollViewer.Offset 绑定（IfUnset 语义被破坏），滚过一次滚轮后
+		// 绑定即被永久压死：此后任何程序化 Offset 写入（SideBySide 左右同步）视图移动而
+		// thumb 冻结——诊断探针实证：拖左栏至 300 时右栏视图滚到 300、hbar.Value 仍停在 50，
+		// 两栏滚动条失步（2026-09-10 修复要解的"thumb 不跟随"正是这同一绑定被别处压死的症状，
+		// 用本地值再压一次只是把问题转移到了程序化写入路径）。改用 SetCurrentValue：不改变
+		// 值来源优先级，Template 绑定继续双向生效，thumb 始终跟随 Offset（Avalonia 原生
+		// ScrollBar 拖拽路径即此 API）。
 		if (_vbar != null)
 		{
-			_vbar.Value = y;
+			_vbar.SetCurrentValue(global::Avalonia.Controls.Primitives.RangeBase.ValueProperty, y);
 		}
 		if (_hbar != null)
 		{
-			_hbar.Value = x;
+			_hbar.SetCurrentValue(global::Avalonia.Controls.Primitives.RangeBase.ValueProperty, x);
 		}
 	}
 	}

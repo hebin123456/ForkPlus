@@ -207,6 +207,16 @@ namespace ForkPlus.Git.Diff.Presentation
 				visualLines.Add(CreateVisualLine(ctx, LineType.Context, stringValue, i));
 				num++;
 			}
+			// 修复（2026-09-14，"FileDiff SideBySide 左右不严格对齐"）：
+			// "\ No newline at end of file" pragma 行只加在所属一侧（Deleted→左 / Added→右），
+			// 而 Alignment 空行补偿只按 Deleted/Added 行数差计算、未计入 pragma 行，
+			// 导致带单侧标记的 diff 左右行数差 1，之后所有行错位一行。
+			// 修复：change 块两侧总行数统一按 max(Deleted+pragmaD, Added+pragmaA) 对齐，
+			// 短的一侧在块尾补 Alignment 空行（无 pragma 时与原 max(0, A-D)/max(0, D-A) 完全等价）。
+			bool flag = (subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Deleted) != 0;
+			bool flag2 = (subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Added) != 0;
+			int num5 = subChunk.Deleted.Length + (flag ? 1 : 0);
+			int num6 = subChunk.Added.Length + (flag2 ? 1 : 0);
 			int count2 = visualLines.Count;
 			int num2 = count2;
 			if (ctx.ViewMode != DiffViewMode.SideBySideNew)
@@ -215,7 +225,7 @@ namespace ForkPlus.Git.Diff.Presentation
 				{
 					string stringValue2 = diff.Lines[j];
 					visualLines.Add(CreateVisualLine(ctx, LineType.Deleted, stringValue2, j));
-					if ((subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Deleted) != 0 && j == subChunk.Deleted.End - 1)
+					if (flag && j == subChunk.Deleted.End - 1)
 					{
 						list.Add(visualLines.Count);
 						visualLines.Add(CreateNoNewlineAtEndOfFilePragmaVisualLine(ctx));
@@ -231,7 +241,7 @@ namespace ForkPlus.Git.Diff.Presentation
 				{
 					string stringValue3 = diff.Lines[k];
 					visualLines.Add(CreateVisualLine(ctx, LineType.Added, stringValue3, k));
-					if ((subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Added) != 0 && k == subChunk.Added.End - 1)
+					if (flag2 && k == subChunk.Added.End - 1)
 					{
 						list.Add(visualLines.Count);
 						visualLines.Add(CreateNoNewlineAtEndOfFilePragmaVisualLine(ctx));
@@ -239,16 +249,18 @@ namespace ForkPlus.Git.Diff.Presentation
 				}
 				num3 += subChunk.Added.Length;
 			}
-			if (ctx.ViewMode == DiffViewMode.SideBySideOld && subChunk.Added.Length > subChunk.Deleted.Length)
+			if (ctx.ViewMode == DiffViewMode.SideBySideOld)
 			{
-				for (int l = 0; l < subChunk.Added.Length - subChunk.Deleted.Length; l++)
+				int num7 = Math.Max(num5, num6) - num5;
+				for (int l = 0; l < num7; l++)
 				{
 					visualLines.Add(CreateAlignmentVisualLine(ctx));
 				}
 			}
-			else if (ctx.ViewMode == DiffViewMode.SideBySideNew && subChunk.Deleted.Length > subChunk.Added.Length)
+			else if (ctx.ViewMode == DiffViewMode.SideBySideNew)
 			{
-				for (int m = 0; m < subChunk.Deleted.Length - subChunk.Added.Length; m++)
+				int num8 = Math.Max(num5, num6) - num6;
+				for (int m = 0; m < num8; m++)
 				{
 					visualLines.Add(CreateAlignmentVisualLine(ctx));
 				}
@@ -259,7 +271,11 @@ namespace ForkPlus.Git.Diff.Presentation
 			{
 				string stringValue4 = diff.Lines[n];
 				visualLines.Add(CreateVisualLine(ctx, LineType.Context, stringValue4, n));
-				if ((subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Deleted) != 0 && n == subChunk.PostContext.End - 1)
+				// 修复（2026-09-14）：末行 context 无换行的标记解析到的是 Context 位（见
+				// PatchParser.ParseSubChunk），此处原误查 Deleted 位导致 SideBySide/Split
+				// 视图静默丢弃该 "\ No newline" 提示；与 PatchExtensions（Split 权威渲染）对齐。
+				// 该 pragma 两侧同步追加，不影响左右行数对齐。
+				if ((subChunk.NoNewLineAtEndOfFile & NoNewLineAtEndOfFile.Context) != 0 && n == subChunk.PostContext.End - 1)
 				{
 					list.Add(visualLines.Count);
 					visualLines.Add(CreateNoNewlineAtEndOfFilePragmaVisualLine(ctx));

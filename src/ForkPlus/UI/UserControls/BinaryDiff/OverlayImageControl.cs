@@ -120,10 +120,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				Draw(drawingContext, _oldImageSource, imageRect, HorizontalClip.Old, ClipX);
 				Rect imageRect2 = GetImageRect(_newImageSize, targetRect);
 				Draw(drawingContext, _newImageSource, imageRect2, HorizontalClip.New, ClipX, NewOpacity);
-				if (HighlightImageDiff && _diffImageSource != null)
-				{
-					Draw(drawingContext, _diffImageSource, imageRect2, HorizontalClip.New, ClipX, NewOpacity);
-				}
+			if (HighlightImageDiff && _diffImageSource != null)
+			{
+				// 修复（2026-09-14，高亮像素双侧显示）：掩码此前只画在 new 图矩形（分割线右侧），
+				// 左图的高亮像素被显示到了右边。改为左右各画一份：Old 掩码随左图裁剪/透明度、
+				// New 掩码随右图裁剪/透明度——Swipe 模式分割线两侧各自高亮，洋葱皮模式两份全幅叠加。
+				Draw(drawingContext, _diffImageSource, imageRect, HorizontalClip.Old, ClipX);
+				Draw(drawingContext, _diffImageSource, imageRect2, HorizontalClip.New, ClipX, NewOpacity);
+			}
 			}
 		}
 

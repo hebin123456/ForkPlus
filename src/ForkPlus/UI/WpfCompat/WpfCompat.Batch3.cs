@@ -49,6 +49,17 @@ namespace ForkPlus.UI.WpfCompat
             sv.Offset = sv.Offset.WithX(offset);
         }
 
+        // 修复（2026-09-14，SideBySide 滚动同步）：双轴一次写入。拆两次赋值
+        // （WithX/WithY 各一次）会让对侧 TextView 触发两次 ScrollOffsetChanged，
+        // 回声匹配同步无法把两次事件与一次写入对上。一次赋值 → 恰一次回声事件。
+        /// <summary>双轴一次性滚动 TextEditor（一次 Offset 赋值 → 恰一次回声事件）。</summary>
+        public static void ScrollToOffsetCompat(this AvaloniaEdit.TextEditor editor, double x, double y)
+        {
+            ScrollViewer sv = FindEditorScrollViewer(editor);
+            if (sv == null) return;
+            sv.Offset = new Vector(x, y);
+        }
+
         // TextEditor.ScrollViewer 是 AvaloniaEdit internal，从模板部件/可视树里找
         // PART_ScrollViewer（找不到具名的则退回第一个 ScrollViewer，兼容自定义模板）。
         private static ScrollViewer FindEditorScrollViewer(AvaloniaEdit.TextEditor editor)

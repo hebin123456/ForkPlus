@@ -1,0 +1,17 @@
+<dialogs:ForkPlusDialogWindow Width="420" SizeToContent="Height" CanResize="False" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PatchProgressWindow" xmlns="https://github.com/avaloniaui">
+  <!-- 布局（对齐 PullWindow/SaveAsPatchWindow 约定）：ForkPlusDialogWindow 的 chrome 把
+       64x64 logo 注入 (Row 0, Column 0)（RowSpan 2）、标题注入 (Row 0, Column 1)、
+       footer 注入末行；内容 Grid 需两列——列 0 宽 80 给 logo 让位、内容放 (1,1)。 -->
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,10,0,10" FontSize="13" TextWrapping="Wrap" x:Name="FilePathTextBlock" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" />
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

@@ -2332,13 +2332,16 @@
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Konfiguration erfolgreich importiert.\nForkPlus wird jetzt neu gestartet, um die neuen Einstellungen zu übernehmen.",
     "Force push": "Force-Push",
     "Credentials": "Anmeldedaten",
-    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Gespeicherte HTTP(S)-Anmeldedaten. Benutzernamen werden automatisch gespeichert; „Passwort merken“ füllt das Passwort im Dialog vor; „Nicht mehr fragen“ verwendet es stillschweigend. Hier können Anmeldedaten vorab hinzugefügt werden — der Schalter aktiviert die Abfrage jederzeit wieder.",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' is reused silently without prompting. Add credentials in advance here — turn off a switch to forget its password and be asked again.": "Gespeicherte HTTP(S)-Anmeldedaten. Benutzernamen werden automatisch gespeichert; ein gemerktes Passwort wird stillschweigend wiederverwendet, ohne zu fragen. Hier können Anmeldedaten vorab hinzugefügt werden — schalten Sie einen Eintrag aus, um sein Passwort zu vergessen und wieder gefragt zu werden.",
     "Host (e.g. github.com)": "Host (z. B. github.com)",
     "Ask Again for All Hosts": "Für alle Hosts erneut fragen",
     "Never ask": "Nicht mehr fragen",
     "Ask": "Fragen",
     "No saved credentials yet.": "Noch keine gespeicherten Anmeldedaten.",
     "Host": "Host",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Wenn aktiviert, werden diese Anmeldedaten stillschweigend verwendet; deaktivieren Sie den Schalter, um wieder gefragt zu werden."
+    "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.": "Wenn aktiviert, werden diese Anmeldedaten stillschweigend verwendet; deaktivieren Sie den Schalter, um das Passwort zu vergessen und wieder gefragt zu werden.",
+    "Username for '{0}':": "Benutzername für '{0}':",
+    "Password for '{0}':": "Passwort für '{0}':",
+    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "Verwendet das gemerkte Passwort stillschweigend ohne diesen Dialog (Abfrage unter Einstellungen > Anmeldedaten reaktivieren)"
   }
 }

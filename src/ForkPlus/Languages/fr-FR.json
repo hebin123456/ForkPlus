@@ -2332,13 +2332,16 @@
     "Configuration imported successfully.\nForkPlus will now restart to apply the new settings.": "Configuration importée avec succès.\nForkPlus va maintenant redémarrer pour appliquer les nouveaux paramètres.",
     "Force push": "Push forcé",
     "Credentials": "Identifiants",
-    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.": "Identifiants HTTP(S) enregistrés. Les noms d'utilisateur sont mémorisés automatiquement ; « Mémoriser le mot de passe » préremplit le mot de passe dans la boîte de dialogue ; « Ne plus demander » l'utilise en silence. Ajoutez des identifiants à l'avance ici — le commutateur réactive la demande à tout moment.",
+    "Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' is reused silently without prompting. Add credentials in advance here — turn off a switch to forget its password and be asked again.": "Identifiants HTTP(S) enregistrés. Les noms d'utilisateur sont mémorisés automatiquement ; le mot de passe mémorisé est réutilisé en silence sans demande. Ajoutez des identifiants à l'avance ici ; désactivez un commutateur pour oublier son mot de passe et être redemandé.",
     "Host (e.g. github.com)": "Hôte (ex. github.com)",
     "Ask Again for All Hosts": "Redemander pour tous les hôtes",
     "Never ask": "Ne plus demander",
     "Ask": "Demander",
     "No saved credentials yet.": "Aucun identifiant enregistré pour le moment.",
     "Host": "Hôte",
-    "When enabled, this credential is used silently without prompting; turn it off to be asked again.": "Si activé, cet identifiant est utilisé en silence sans demande ; désactivez-le pour être redemandé."
+    "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.": "Si activé, cet identifiant est utilisé en silence sans demande ; désactivez-le pour oublier le mot de passe et être redemandé.",
+    "Username for '{0}':": "Nom d'utilisateur pour '{0}' :",
+    "Password for '{0}':": "Mot de passe pour '{0}' :",
+    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "Utilise le mot de passe mémorisé en silence sans cette boîte de dialogue (réactivez la demande dans Préférences > Identifiants)"
   }
 }

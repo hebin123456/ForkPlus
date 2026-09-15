@@ -15,13 +15,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 	/// <summary>
 	/// 偏好设置 &gt; Credentials：凭据记忆（Layer D）管理页。
 	///
-	/// 三档语义（与凭据弹窗一致，见 SavedCredentialStore 头注释）：
+	/// 记忆语义（与凭据弹窗一致，见 SavedCredentialStore 头注释；2026-09-14 起
+	/// "记住密码"即静默复用，不再每次弹窗确认）：
 	/// 第一档记账号为默认行为（不可关）；本页支持：
 	/// - 提前录入：host + 账号 + 密码 + "不再弹出"开关，Add 一次写入（Upsert）；
 	/// - 单条编辑：行内账号/密码框 + Save；
-	/// - "不再弹出"开关（ToggleSwitch）：即时生效，关掉即恢复弹窗（重新弹出的开关）；
+	/// - "不再弹出"开关（ToggleSwitch）：即时生效——开=静默（凭据缺失快速失败）；
+	///   关=忘掉该 host 密码并恢复弹窗（修复（2026-09-14，"关掉开关仍静默"：
+	///   静默语义并入"记住密码"后，仅清标记不再恢复弹窗，必须连密码一起忘掉））；
 	/// - 单条 Remove：整条删除（下次询问从零开始）；
-	/// - "Ask Again for All Hosts"：全局恢复弹窗。
+	/// - "Ask Again for All Hosts"：忘掉全部密码、恢复弹窗（账号记忆保留）。
 	/// 凭据操作即时落盘（弹窗提交/认证 erase 联动都直接写 store），无需整页 Save。
 	/// </summary>
 	public partial class CredentialsUserControl : UserControl, ForkPlus.UI.ILocalizableControl
@@ -42,7 +45,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		public void ApplyLocalization()
 		{
 			// 动态行文本经 PreferencesLocalization.Current 构建，语言切换时重建
-			DescriptionTextBlock.Text = PreferencesLocalization.Current("Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' pre-fills the password in the dialog; 'Never ask' uses it silently. Add credentials in advance here — the switch re-enables prompting at any time.");
+			// 修复（2026-09-14，文案与新静默语义对齐）：旧文案"pre-fills the password
+			// in the dialog"描述的是已废除的"第二档弹窗预填"行为，按现行语义改写
+			DescriptionTextBlock.Text = PreferencesLocalization.Current("Saved HTTP(S) credentials. User names are remembered automatically; 'Remember password' is reused silently without prompting. Add credentials in advance here — turn off a switch to forget its password and be asked again.");
 			AddHostTextBox.Placeholder = PreferencesLocalization.Current("Host (e.g. github.com)");
 			AddUsernameTextBox.Placeholder = PreferencesLocalization.Current("User name");
 			AddPasswordTextBox.Placeholder = PreferencesLocalization.Current("Password");
@@ -50,7 +55,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			AskAllAgainButton.Content = PreferencesLocalization.Current("Ask Again for All Hosts");
 			AddNeverAskToggle.OnContent = PreferencesLocalization.Current("Never ask");
 			AddNeverAskToggle.OffContent = PreferencesLocalization.Current("Ask");
-			ToolTip.SetTip(AddNeverAskToggle, PreferencesLocalization.Current("When enabled, this credential is used silently without prompting; turn it off to be asked again."));
+			ToolTip.SetTip(AddNeverAskToggle, PreferencesLocalization.Current("When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again."));
 			LoadCredentials();
 		}
 
@@ -245,8 +250,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 		{
 			if (sender is ToggleSwitch toggle && toggle.Tag is string host)
 			{
-				// 开关即时生效：开=第三档静默，关=恢复弹窗（第二档预填/第一档预填账号）
-				SavedCredentialStore.Current.SetNeverAsk(host, toggle.IsChecked.GetValueOrDefault());
+				if (toggle.IsChecked.GetValueOrDefault())
+				{
+					// 开=静默（凭据缺失时快速失败）
+					SavedCredentialStore.Current.SetNeverAsk(host, true);
+				}
+				else
+				{
+					// 修复（2026-09-14，"关掉开关仍静默"）：静默语义并入"记住密码"后，
+					// 仅清 NeverAskAgain 不再恢复弹窗——必须连密码一起忘掉才真正重新询问
+					// （账号记忆保留，弹窗仍会预填账号）
+					SavedCredentialStore.Current.ForgetPassword(host);
+					SavedCredentialStore.Current.SetNeverAsk(host, false);
+				}
 			}
 		}
 
@@ -283,7 +299,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void AskAllAgainButton_Click(object sender, RoutedEventArgs e)
 		{
-			SavedCredentialStore.Current.ClearAllNeverAsk();
+			// 修复（2026-09-14，"全局重开仍静默"）：忘掉全部密码（+清标记），保留账号
+			// 记忆——仅清标记（ClearAllNeverAsk）在静默语义并入"记住密码"后不再恢复弹窗
+			SavedCredentialStore.Current.ForgetAllPasswords();
 			LoadCredentials();
 		}
 	}

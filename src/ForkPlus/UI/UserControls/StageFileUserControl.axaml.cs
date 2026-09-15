@@ -31,6 +31,15 @@ namespace ForkPlus.UI.UserControls
 
 		private bool _stopHandlingSelectionEvents;
 
+		/// <summary>
+		/// 修复（2026-09-14，"提交区域跟着 diff 刷新而刷新"）：记录上次列表数据的签名
+		///（路径+变更类型序列）。SetData/SetDataAsync 数据未变时不再触发
+		/// StagedFilesItemSourceChanged——该事件会把 CommitUserControl 的提交区域
+		///（按钮状态/统计/警告）整体重新驱动一遍，无变化刷新也触发即表现为闪烁。
+		/// </summary>
+		[Null]
+		private string _lastListDataSignature;
+
 		private readonly DelayedAction<string> _refreshFilterAction;
 
 		public ChangedFile[] AllUnstagedFiles => UnstagedFilesFileListUserControl.Items;
@@ -192,7 +201,7 @@ namespace ForkPlus.UI.UserControls
 			StagedFilesFileListUserControl.SetItemSource(stagedFiles, forceRefresh: false, stagedFiles.Length != 0);
 			ContainsUnmergedItems = unstagedFiles.Any((ChangedFile x) => x.ChangeType == ChangeType.Unmerged);
 			StagedItemsCount = stagedFiles.Length;
-			StagedFilesItemSourceChanged?.Invoke(this, EventArgs.Empty);
+			RaiseListDataChangedIfNeeded(unstagedFiles, stagedFiles);
 			if (selectFirstAvailableFile)
 			{
 				RefreshSelection();
@@ -207,13 +216,26 @@ namespace ForkPlus.UI.UserControls
 			await StagedFilesFileListUserControl.SetItemSourceAsync(stagedFiles, forceRefresh: false, stagedFiles.Length != 0);
 			ContainsUnmergedItems = unstagedFiles.Any((ChangedFile x) => x.ChangeType == ChangeType.Unmerged);
 			StagedItemsCount = stagedFiles.Length;
-			StagedFilesItemSourceChanged?.Invoke(this, EventArgs.Empty);
+			RaiseListDataChangedIfNeeded(unstagedFiles, stagedFiles);
 			if (selectFirstAvailableFile)
 			{
 				RefreshSelection();
 			}
 			RefreshStageAllButton();
 			RefreshStageButtons();
+		}
+
+		/// <summary>数据签名未变化时跳过 StagedFilesItemSourceChanged（见 _lastListDataSignature 注释）。</summary>
+		private void RaiseListDataChangedIfNeeded(ChangedFile[] unstagedFiles, ChangedFile[] stagedFiles)
+		{
+			string signature = string.Join(";", unstagedFiles.Select((ChangedFile x) => x.Path + "|" + x.ChangeType))
+				+ "##" + string.Join(";", stagedFiles.Select((ChangedFile x) => x.Path + "|" + x.ChangeType));
+			bool changed = signature != _lastListDataSignature;
+			_lastListDataSignature = signature;
+			if (changed)
+			{
+				StagedFilesItemSourceChanged?.Invoke(this, EventArgs.Empty);
+			}
 		}
 
 		public void ApplyLocalization()
