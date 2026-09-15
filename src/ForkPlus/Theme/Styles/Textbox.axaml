@@ -34,6 +34,19 @@
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
 <!-- Migration note：WPF 专有属性 Setter 已删（Avalonia 无此属性） -->
     <Setter Property="CornerRadius" Value="3" />
+    <!-- 修复（2026-09-15 v4.1.2，"首次启动'更新内容'弹窗正文无滚动条、超框无法拉取"根因）：
+         模板内层 PART_ScrollViewer 原先硬编码 HSBV/VSBV=Hidden，XAML 里写的
+         ScrollViewer.VerticalScrollBarVisibility="Auto" 被彻底无视 → 正文超框时
+         既无滚动条也无法拉取（PlaceholderTextBox 主题 2026-09-12 已修同款，
+         本处是漏网的主 TextBox 主题）。改为与官方 Fluent 主题一致：TemplateBinding
+         到 TextBox 上的 ScrollViewer.* 附加属性。此处用主题 Setter 把默认值固定为
+         Hidden：未显式设滚动属性的输入框保持"可滚动但不显示滚动条"（对齐 WPF
+         原版 PART_ContentHost），显式设 Auto 的（ReleaseNotesWindow /
+         UpdateCheckWindow / UpdateAvailableWindow 正文、TagDetailsWindow、
+         自定义命令输出、推送 squash 消息、提交模板/正则多行框等）在内容超框时
+         出现滚动条。局部值优先于主题 Setter，不会互相干扰。 -->
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="TextBox">
@@ -54,7 +67,7 @@
                  Background 必须显式 Transparent——本仓库 ScrollViewer 主题默认 Background=
                  ScrollViewerBackground（各皮肤不透明色），否则会盖掉 TextBox 自身背景。
                  Focusable=False 对齐 WPF 原版 PART_ContentHost，防止抢占 Tab 焦点。 -->
-            <ScrollViewer x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+            <ScrollViewer x:Name="PART_ScrollViewer" Background="Transparent" Focusable="False" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
               <TextPresenter x:Name="PART_TextPresenter" Margin="{TemplateBinding Padding}" Text="{TemplateBinding Text}" SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}" CaretIndex="{TemplateBinding CaretIndex}" PasswordChar="{TemplateBinding PasswordChar}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}" />
             </ScrollViewer>
           </Border>

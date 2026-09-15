@@ -71,6 +71,33 @@ namespace ForkPlus.Tests
 				conflict = UiClick.FindAll<MergeConflictUserControl>(window).FirstOrDefault();
 				return conflict != null;
 			}), "选中 Unmerged 文件后应出现 MergeConflictUserControl（CommitFileDiffControl 分发路径）");
+			// ===== 等 SetConflict 完成对目标文件的装配（FileNameTextBlock.FilePath 在
+			// SetConflict 开头即写入，非目标文件装配/未跑完都继续等）=====
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				return conflict.FileNameTextBlock.FilePath == filePath;
+			}), "MergeConflictUserControl 未完成冲突装配（SetConflict 未对 " + filePath + " 跑完）");
+			// ===== 等冲突装配链静默（E2e05 同款口径：Content 引用连续 4 轮不变）=====
+			// 打开仓库触发的多轮状态刷新 + 列表选中恢复会竞争性重载同一文件的 diff
+			//（UpdateDiff → Task.Run(git diff) → Post 回调热替换 Content → OnPropertyChanged
+			// 同步 UpdateView → ShowSubView 复用现有 MergeConflictUserControl → SetConflict
+			// 重设双 CheckBox 勾选 + Merge 按钮文案）。迟到的 SetConflict 会把测试的
+			// 程序化 Toggle 清回默认双勾（CI e2e-2 实证 2026-09-15：ChooseTheirs 用例
+			// Toggle(Local,false) 后断言按钮仍"合并"）。Content 引用连续 4 轮（~200ms）
+			// 不变视为静默；飞行中的 git diff 回调落地会更换引用 → 自动续等。
+			object lastContent = null;
+			int stableRounds = 0;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				object current = commit.FileDiffControl.Content;
+				if (current != null && object.ReferenceEquals(current, lastContent))
+				{
+					return ++stableRounds >= 4;
+				}
+				stableRounds = 0;
+				lastContent = current;
+				return false;
+			}), "冲突视图 diff 加载未静默（后台状态刷新持续重载 SetConflict）");
 			return conflict;
 		}
 

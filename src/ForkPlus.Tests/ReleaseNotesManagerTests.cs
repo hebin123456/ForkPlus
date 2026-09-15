@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Settings;
@@ -218,6 +219,38 @@ namespace ForkPlus.Tests
 			{
 				ForkPlusSettings.Default.UiLanguage = originalLanguage;
 			}
+			});
+		}
+
+		[Fact]
+		public void ReleaseNotesWindow_LongContent_ShowsAutoVerticalScrollbarAndScrolls()
+		{
+			// v4.1.2 回归（2026-09-15，"首次启动'更新内容'弹窗正文无滚动条、超框内容无法拉取"）：
+			// 主 TextBox 主题模板的 PART_ScrollViewer 曾硬编码 VSBV=Hidden，弹窗 XAML 上的
+			// ScrollViewer.VerticalScrollBarVisibility="Auto" 被彻底无视。修复为 TemplateBinding
+			// 附加属性（主题默认仍 Hidden，未显式设置的输入框行为不变）后：长正文应把
+			// Auto 传入内层 ScrollViewer 且内容超出视口可滚动（口径同 GitIgnoreDialogTests
+			// 对 PlaceholderTextBox 同款修复的回归断言）。
+			HeadlessAppBootstrap.Run(delegate
+			{
+				string notes = string.Join("\n", Enumerable.Range(1, 120).Select(i => "第 " + i + " 行：v4.1.2 更新内容条目示例文本，用于撑出超过文本框最大高度的长正文"));
+				var window = new ReleaseNotesWindow("4.1.2", notes);
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs();
+				try
+				{
+					ScrollViewer viewer = window.ReleaseNotesTextBox.GetVisualDescendants()
+						.OfType<ScrollViewer>().FirstOrDefault(x => x.Name == "PART_ScrollViewer");
+					Assert.NotNull(viewer);
+					Assert.Equal(ScrollBarVisibility.Auto, viewer.VerticalScrollBarVisibility);
+					Assert.True(viewer.Extent.Height > viewer.Viewport.Height, "长正文应超出视口（可滚动）");
+				}
+				finally
+				{
+					window.Close();
+					Dispatcher.UIThread.RunJobs();
+				}
 			});
 		}
 
