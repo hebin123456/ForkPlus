@@ -256,7 +256,7 @@ namespace ForkPlus.Tests
 				string notesText;
 				try
 				{
-					notesText = releaseNotes.ReleaseNotesTextBox?.Text;
+					notesText = releaseNotes.NotesMarkdown;
 				}
 				catch
 				{

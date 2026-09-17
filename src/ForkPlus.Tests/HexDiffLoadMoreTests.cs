@@ -22,6 +22,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
 using Xunit;
 
@@ -191,13 +192,35 @@ namespace ForkPlus.Tests
 						stage.UnstagedFilesFileListUserControl.SelectFile("data.bin");
 						Dispatcher.UIThread.RunJobs();
 
-						// 非图片大二进制 → FileDiffControl 直发 HexDiffUserControl
+						// v3.7.2：非图片大二进制 → 默认简略卡片视图，点击 Hex 切换后懒装配 HexDiffUserControl
+						// 每次轮询重新获取激活的 FileDiffControl 子视图（unstaged 加载可能整体替换
+						// 控件，旧引用失效），并强制走 Hex 切换。装配信号用生产 ShowHexDiffView 必然
+						// 赋值的 HexDiffViewContainer.Content 是否为 HexDiffUserControl 来判断——
+						// headless 下容器 IsVisible 不一定反映（可见性不落地），但 SetContent 一定会发生。
+						BinaryDiffUserControl cards = null;
 						HexDiffUserControl hexDiff = null;
-						Assert.True(UiClick.WaitFor(delegate
+						bool assembled = UiClick.WaitFor(delegate
 						{
-							hexDiff = UiClick.FindAll<HexDiffUserControl>(window).FirstOrDefault();
+							var cand = UiClick.FindAll<ForkPlus.UI.Controls.FileDiffControl>(window)
+								.Select(f => f.CurrentSubView as BinaryDiffUserControl)
+								.FirstOrDefault(b => b != null && b.HexRadioButton.IsVisible);
+							if (cand == null)
+							{
+								return false;
+							}
+							cards = cand;
+							if (cand.HexRadioButton.IsChecked == true)
+							{
+								cand.HexRadioButton.IsChecked = false;
+								Dispatcher.UIThread.RunJobs();
+							}
+							cand.HexRadioButton.IsChecked = true;
+							Dispatcher.UIThread.RunJobs();
+							Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+							hexDiff = cand.HexDiffViewContainer.Content as HexDiffUserControl;
 							return hexDiff != null;
-						}), "大二进制应直发 HexDiffUserControl");
+						}, 15000);
+						Assert.True(assembled, "点击 Hex 后应装配 HexDiffUserControl");
 
 						// 首屏 16KB 异步加载完成后，"加载更多"按钮出现
 						Button loadMore = null;

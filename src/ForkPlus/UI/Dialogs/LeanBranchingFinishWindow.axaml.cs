@@ -213,7 +213,7 @@ namespace ForkPlus.UI.Dialogs
 				}
 				base.Dispatcher.Post(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+					SetStatus(ForkPlusDialogStatus.InProgress, Translate("Checkout..."));
 				});
 				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, localMain, monitor);
 				if (!checkoutResult.Succeeded && !(checkoutResult.Error is GitCommandError.Cancelled))
@@ -229,7 +229,7 @@ namespace ForkPlus.UI.Dialogs
 					if (!gitModule.Settings.LeanBranchingNoFastForward && behindAheadCountResponse.Result.Left == 1)
 					{
 						mergeType = MergeType.FastForward;
-						monitor.AppendOutputLine("'" + activeBranch.Name + "' consists of a single commit. Using fast-forward");
+						monitor.AppendOutputLine(string.Format(Translate("'{0}' consists of a single commit. Using fast-forward"), activeBranch.Name));
 					}
 					else
 					{

@@ -110,7 +110,11 @@ namespace ForkPlus.Accounts.AiServices
 			}
 			try
 			{
-				if (Regex.IsMatch(NormalizeCommitMessageForRegex(message), pattern, RegexOptions.Singleline))
+				// 修复（2026-09-16）：AI 提示词声明的是「Go regular expression」，Go RE2 默认
+				// `.` 不跨换行；原先 RegexOptions.Singleline 让 `.` 匹配 `\n`，导致本地校验
+				// 通过、Go 服务端却拒绝（如 `^feat: .+$` 带 description 时）。
+				// 现与 Go 默认语义对齐：不加 Singleline；需要跨行时可在正则里用 (?s) 或 [\s\S]。
+				if (Regex.IsMatch(NormalizeCommitMessageForRegex(message), pattern, RegexOptions.None))
 				{
 					return true;
 				}

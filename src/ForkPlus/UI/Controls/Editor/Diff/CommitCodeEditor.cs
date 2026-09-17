@@ -21,6 +21,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		public bool IsNewOrUntracked { get; set; }
 
+		// 修复（2026-09-16，"对 xx 个文件进行代码检视页面要屏蔽 暂存/丢弃 浮窗"）：
+		// AI 代码检视等只读 diff 场景置 false——选区/hunk 旁不再弹出 Stage/Discard 悬浮按钮。
+		// 默认 true 保持提交页原行为。
+		public bool ShowStageDiscardButtons { get; set; } = true;
+
 		[Null]
 		public CommitCodeEditor Sibling { get; set; }
 

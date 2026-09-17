@@ -11,16 +11,11 @@
             <StackPanel.Children>
               <Grid HorizontalAlignment="Left">
                 <Grid.Children>
-                  <ContentControl Margin="0,10,0,6" x:Name="OldLfsLabel">
-                    <Label.Theme>
-                      <DynamicResource ResourceKey="LfsLabel" />
-                    </Label.Theme>
-                  </ContentControl>
-                  <ContentControl Margin="0,10,0,6" x:Name="OldNotLfsLabel">
-                    <Label.Theme>
-                      <DynamicResource ResourceKey="NotLfsLabel" />
-                    </Label.Theme>
-                  </ContentControl>
+                  <!-- 修复（2026-09-16，"缺 not LFS 徽章"）：ContentControl + Label.Theme
+                       对 TextBlock 主题不生效，改 TextBlock + Theme（同 Swipe 视图写法）。 -->
+                  <!-- 修复（2026-09-16）：文本在用点本地值给出（Theme 的 Text setter 不生效），见 BinaryContentUserControl 注释。 -->
+                  <TextBlock Margin="0,10,0,6" x:Name="OldLfsLabel" Text="LFS" Theme="{DynamicResource LfsLabel}" />
+                  <TextBlock Margin="0,10,0,6" x:Name="OldNotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
                 </Grid.Children>
               </Grid>
               <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="old" HorizontalAlignment="Right" x:Name="OldTextBlock">
@@ -34,16 +29,8 @@
             <StackPanel.Children>
               <Grid HorizontalAlignment="Right">
                 <Grid.Children>
-                  <ContentControl Margin="0,10,0,6" x:Name="NewLfsLabel">
-                    <Label.Theme>
-                      <DynamicResource ResourceKey="LfsLabel" />
-                    </Label.Theme>
-                  </ContentControl>
-                  <ContentControl Margin="0,10,0,6" x:Name="NewNotLfsLabel">
-                    <Label.Theme>
-                      <DynamicResource ResourceKey="NotLfsLabel" />
-                    </Label.Theme>
-                  </ContentControl>
+                  <TextBlock Margin="0,10,0,6" x:Name="NewLfsLabel" Text="LFS" Theme="{DynamicResource LfsLabel}" />
+                  <TextBlock Margin="0,10,0,6" x:Name="NewNotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
                 </Grid.Children>
               </Grid>
               <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="new" HorizontalAlignment="Right" x:Name="NewTextBlock">

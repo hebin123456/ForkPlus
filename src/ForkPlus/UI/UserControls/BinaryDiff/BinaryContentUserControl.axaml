@@ -21,21 +21,18 @@
     <Grid.Children>
       <Grid Margin="0,10,0,6">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="42" />
+          <ColumnDefinition Width="48" />
           <ColumnDefinition />
-          <ColumnDefinition Width="42" />
+          <ColumnDefinition Width="48" />
         </Grid.ColumnDefinitions>
         <Grid.Children>
-          <ContentControl Grid.Column="0" x:Name="LfsLabel" HorizontalAlignment="Left">
-            <Label.Theme>
-              <DynamicResource ResourceKey="LfsLabel" />
-            </Label.Theme>
-          </ContentControl>
-          <ContentControl Grid.Column="0" x:Name="NotLfsLabel">
-            <Label.Theme>
-              <DynamicResource ResourceKey="NotLfsLabel" />
-            </Label.Theme>
-          </ContentControl>
+          <!-- 修复（2026-09-16，"not LFS 徽章红底看不见字"）：Avalonia 12 中经
+               Theme="{DynamicResource ...}" 应用的 ControlTheme，其 Text setter 不生效
+               （Background 等其余 setter 正常），且 MainWindow.ApplyLocalization 遍历
+               TextBlock 会把 Text 盖成本地 null 值。文本必须在用点以本地值给出
+               （同本文件 "old"/"new" 标签写法）；"LFS"/"not LFS" 为产品术语不翻译。 -->
+          <TextBlock Grid.Column="0" x:Name="LfsLabel" Text="LFS" HorizontalAlignment="Left" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Grid.Column="0" x:Name="NotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
           <TextBlock Grid.Column="1" Margin="4,0,4,0" HorizontalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" />
         </Grid.Children>
       </Grid>

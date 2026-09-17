@@ -22,7 +22,7 @@ using Avalonia.Threading;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
-	public partial class BinaryDiffUserControl : UserControl, ForkPlus.UI.ILocalizableControl
+	public partial class BinaryDiffUserControl : UserControl, ForkPlus.UI.ILocalizableControl, ForkPlus.UI.Controls.DiffControlContainer.IFileDiffControlSubControl
 	{
 		private bool _showTitle;
 
@@ -61,6 +61,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		private MemoryStream _hexDstData;
 		[Null]
 		private HexDiffUserControl _hexDiffView;
+		// v3.7.2：当前字节是否已 SetContent 到 _hexDiffView（避免侧栏来回切换重复全量重载）
+		private bool _hexContentLoaded;
 
 		[Null]
 		public global::Avalonia.Media.Imaging.Bitmap DiffImageSource
@@ -296,7 +298,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			});
 		}
 
-		public void UpdateDiff(RepositoryUserControl repositoryUserControl, DiffContent diffContent, bool showTitle = true)
+		// v3.7.2（"OTF 变更没有 hex 对比"）：新增可选参数 hexContent——FileDiffControl 对
+		// ≤50MB 非 LFS 二进制后台预载的两侧字节，传入后底部工具栏的 Hex 切换可用
+		// （此前工具栏仅双侧均为图片时显示，非图片二进制完全无 Hex 入口）。
+		public void UpdateDiff(RepositoryUserControl repositoryUserControl, DiffContent diffContent, bool showTitle = true, HexDiffContent hexContent = null)
 		{
 			_repositoryUserControl = repositoryUserControl;
 			_showTitle = showTitle;
@@ -305,8 +310,17 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			_changedFile = changedFile;
 			_hexSrcData = null;
 			_hexDstData = null;
+			_hexContentLoaded = false;
+			if (hexContent != null)
+			{
+				_hexSrcData = hexContent.SrcData;
+				_hexDstData = hexContent.DstData;
+			}
 			if (_hexDiffView != null)
 			{
+				// 取消旧 hex 视图的后台加载并释放其内容（内部 HexDiffContent 包装的是
+				// 上一份文件的字节流），避免换文件后旧任务回填 UI
+				_hexDiffView.ControlWillBeRemovedFromFileDiffControl();
 				HexDiffViewContainer.Content = null;
 				_hexDiffView = null;
 			}
@@ -579,7 +593,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		/// <summary>v3.4.1：懒创建 HexDiffUserControl 并加载原始字节。</summary>
+		/// <summary>v3.4.1：懒创建 HexDiffUserControl 并加载原始字节。
+		/// v3.7.2：同一份数据只 SetContent 一次（_hexContentLoaded 标记）——侧栏切走再切回
+		/// 时不重新解析/不丢"加载更多"进度；换文件由 UpdateDiff 重置标记。</summary>
 		private void ShowHexDiffView()
 		{
 			if (_hexDiffView == null)
@@ -587,18 +603,46 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				_hexDiffView = new HexDiffUserControl();
 				HexDiffViewContainer.Content = _hexDiffView;
 			}
-			if (_changedFile != null && (_hexSrcData != null || _hexDstData != null))
+			if (!_hexContentLoaded && _changedFile != null && (_hexSrcData != null || _hexDstData != null))
 			{
 				HexDiffContent hexContent = new HexDiffContent(_changedFile, _hexSrcData, _hexDstData);
 				_hexDiffView.SetContent(hexContent);
+				_hexContentLoaded = true;
 			}
+		}
+
+		/// <summary>v3.7.2：宿主 FileDiffControl（DiffControlContainer）切换子视图时清理——
+		/// 取消内部 HexDiffUserControl 的后台加载并释放两侧字节，避免旧任务回填已卸载的 UI。</summary>
+		public void ControlWillBeRemovedFromFileDiffControl()
+		{
+			if (_hexDiffView != null)
+			{
+				_hexDiffView.ControlWillBeRemovedFromFileDiffControl();
+				_hexDiffView = null;
+				HexDiffViewContainer.Content = null;
+			}
+			_hexContentLoaded = false;
+			_hexSrcData = null;
+			_hexDstData = null;
+			_activeSrcSmudgeJob?.Monitor.Cancel();
+			_activeDstSmudgeJob?.Monitor.Cancel();
 		}
 
 		private void RefreshViewModes()
 		{
-			if (_srcImageData != null && _dstImageData != null)
+			// v3.7.2（"OTF 变更没有 hex 对比"）：非图片二进制（UnknownBinaryDiffContent，
+			// 如 OTF/字体/音视频）同样显示工具栏——Side-by-Side + Hex（对齐 3.13.2：卡片
+			// 视图带 LFS 徽章，且可切 hex 对比）。Swipe/Onion Skin 仅对双侧图片有意义。
+			bool bothImages = _srcImageData != null && _dstImageData != null;
+			bool hasBinarySides = _srcBinaryContent != null || _dstBinaryContent != null;
+			if (bothImages || hasBinarySides)
 			{
 				ViewModeButtonsContainer.Show();
+				SwipeRadioButton.IsVisible = bothImages;
+				OnionSkinRadioButton.IsVisible = bothImages;
+				// Hex 仅在两侧字节可用时显示（图片自带字节；10–50MB 二进制由
+				// FileDiffControl 预载传入；>50MB 或加载失败则隐藏）
+				HexRadioButton.IsVisible = _hexSrcData != null || _hexDstData != null;
 			}
 			else
 			{

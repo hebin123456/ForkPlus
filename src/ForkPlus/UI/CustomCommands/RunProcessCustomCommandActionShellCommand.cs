@@ -12,7 +12,7 @@ namespace ForkPlus.UI.CustomCommands
 	{
 		public GitCommandResult<string> Execute(ProcessCustomCommandAction action, CustomCommandEnvironment environment, JobMonitor monitor)
 		{
-			monitor.Update(monitor.TotalProgress, "Running...");
+			monitor.Update(monitor.TotalProgress, PreferencesLocalization.Current("Running..."));
 			string stringToReplace = Environment.ExpandEnvironmentVariables(action.Path);
 			stringToReplace = environment.ReplaceVariablesWithValues(stringToReplace);
 			string[] array = ParseArguments(action.Parameters).CompactMap(delegate(string x)
@@ -53,7 +53,7 @@ namespace ForkPlus.UI.CustomCommands
 			}
 			if (gitRequestResult.Success)
 			{
-				monitor.Success("Finished");
+				monitor.Success(PreferencesLocalization.Current("Finished"));
 				return GitCommandResult<string>.Success(fullOutput.ToString());
 			}
 			monitor.Fail(PreferencesLocalization.Current("Error"));

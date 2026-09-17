@@ -9,7 +9,7 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult Execute(GitModule gitModule, IReadOnlyList<string> filePaths, JobMonitor monitor)
 		{
-			string message = ((filePaths.Count == 1) ? ("Locking '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Locking {filePaths.Count} files");
+			string message = ((filePaths.Count == 1) ? PreferencesLocalization.FormatCurrent("Locking '{0}'", PathHelper.GetReadableFileName(filePaths[0])) : PreferencesLocalization.FormatCurrent("Locking {0} files", filePaths.Count));
 			monitor.Update(0.0, message);
 			ProcessOutputHandler processOutputHandler = new ProcessOutputHandler(monitor);
 			GitCommandError gitCommandError = null;
@@ -37,7 +37,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(PreferencesLocalization.Current("LFS lock failed"));
 				return GitCommandResult.Failure(gitCommandError);
 			}
-			string resultMessage = ((filePaths.Count == 1) ? ("Locked '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Locked {filePaths.Count} files");
+			string resultMessage = ((filePaths.Count == 1) ? PreferencesLocalization.FormatCurrent("Locked '{0}'", PathHelper.GetReadableFileName(filePaths[0])) : PreferencesLocalization.FormatCurrent("Locked {0} files", filePaths.Count));
 			monitor.Success(resultMessage);
 			return GitCommandResult.Success();
 		}

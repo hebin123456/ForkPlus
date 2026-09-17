@@ -67,24 +67,24 @@ namespace ForkPlus.UI.Commands
 		private static void Consolidate(ChangedFile[] old, string[] requestedPaths, ChangedFile[] refreshed, out ChangedFile[] resultChangedFiles, out int resultChangedFilesCount, JobMonitor monitor)
 		{
 			List<ChangedFile> list = new List<ChangedFile>(Math.Max(old.Length, refreshed.Length));
-			monitor.AppendOutputLine("Old: ");
+			monitor.AppendOutputLine(PreferencesLocalization.Current("Old: "));
 			ChangedFile[] array = old;
 			foreach (ChangedFile changedFile in array)
 			{
 				Trace(monitor, Description(changedFile));
 			}
-			monitor.AppendOutputLine("\nRequested: ");
+			monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Requested: "));
 			foreach (string message in requestedPaths)
 			{
 				Trace(monitor, message);
 			}
-			monitor.AppendOutputLine("\nResponse: ");
+			monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Response: "));
 			array = refreshed;
 			foreach (ChangedFile changedFile2 in array)
 			{
 				Trace(monitor, Description(changedFile2));
 			}
-			monitor.AppendOutputLine("\nRefreshed: ");
+			monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Refreshed: "));
 			int j = 0;
 			int k = 0;
 			resultChangedFilesCount = 0;
@@ -137,7 +137,7 @@ namespace ForkPlus.UI.Commands
 				list.Add(refreshed[k]);
 				CountDistinctChangedFiles(list, ref resultChangedFilesCount);
 			}
-			monitor.AppendOutputLine("\nResult: ");
+			monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Result: "));
 			foreach (ChangedFile item in list)
 			{
 				Trace(monitor, Description(item));

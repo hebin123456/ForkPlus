@@ -26,19 +26,26 @@
     <Setter Property="Background" Value="{DynamicResource AccentSecondaryBrush}" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="#FFFFFFFF" />
-<!-- Migration note：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
-
+    <Setter Property="TextAlignment" Value="Center" />
+    <!-- 修复（2026-09-16，"缺 not LFS 徽章"）：WPF 原版文字在模板里（迁移时模板被删 →
+         徽章变成空色块/不渲染）。LFS 为产品术语，各语言均不翻译（与 Languages/*.json
+         的 "LFS" 键一致），按原版直接内联到 ControlTheme（参照 HintTextBlock 的 Text 写法）。 -->
+    <Setter Property="Text" Value="LFS" />
   </ControlTheme>
   <ControlTheme x:Key="NotLfsLabel" TargetType="TextBlock">
     <Setter Property="Height" Value="16" />
-    <Setter Property="Width" Value="42" />
+    <!-- 42→48（2026-09-16，"not LFS" 国际化）：容纳最长译文 ko "LFS 아님"/de "kein LFS"
+         （11px Inter 约 44px）；Text setter 经 Theme="{DynamicResource}" 不生效，实际文本
+         由各用点本地值给出并被 PreferencesLocalization 自动翻译（"not LFS" 键）。 -->
+    <Setter Property="Width" Value="48" />
     <Setter Property="Focusable" Value="False" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Background" Value="#FFFF6663" />
     <Setter Property="FontSize" Value="11" />
     <Setter Property="Foreground" Value="#FFFFFFFF" />
-<!-- Migration note：WPF Setter Property=Template 块已删（Avalonia TextBlock 无 Template，LfsLabel 需改用 ContentControl） -->
-
+    <Setter Property="TextAlignment" Value="Center" />
+    <!-- 修复（2026-09-16）：同上，"not LFS" 原版即英文文案不翻译，恢复模板中丢失的文本。 -->
+    <Setter Property="Text" Value="not LFS" />
   </ControlTheme>
   <ControlTheme x:Key="BugtrackerHyperlinkStyle" TargetType="HyperlinkButton">
     

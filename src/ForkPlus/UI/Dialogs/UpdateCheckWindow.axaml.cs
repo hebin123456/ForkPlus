@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using ForkPlus;
 using ForkPlus.Settings;
+using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -149,7 +150,7 @@ namespace ForkPlus.UI.Dialogs
 				string err = info?.ErrorMessage ?? "Unknown error";
 				VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent("Update check failed: {0}", err);
 				ReleaseNotesLabel.IsVisible = false;
-				ReleaseNotesTextBox.IsVisible = false;
+				ReleaseNotesBox.IsVisible = false;
 				SkipVersionCheckBox.IsVisible = false;
 				ShowSubmitButton = false;
 				StatusTextBlock.Text = "";
@@ -161,9 +162,10 @@ namespace ForkPlus.UI.Dialogs
 				VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent(
 					"A new version {0} is available (current: {1}).",
 					info.LatestVersion, info.CurrentVersion);
-				ReleaseNotesTextBox.Text = string.IsNullOrEmpty(info.ReleaseNotes)
+				ReleaseNotesBox.IsVisible = true;
+				MarkdownNotesRenderer.Render(ReleaseNotesPanel, string.IsNullOrEmpty(info.ReleaseNotes)
 					? info.ReleaseName
-					: info.ReleaseNotes;
+					: info.ReleaseNotes);
 				ShowSubmitButton = true;
 			}
 			else
@@ -172,7 +174,7 @@ namespace ForkPlus.UI.Dialogs
 			VersionInfoTextBlock.Text = PreferencesLocalization.FormatCurrent(
 				"You are using the latest version (v{0}).", info.CurrentVersion);
 			ReleaseNotesLabel.IsVisible = false;
-			ReleaseNotesTextBox.IsVisible = false;
+			ReleaseNotesBox.IsVisible = false;
 			SkipVersionCheckBox.IsVisible = false;
 			ShowSubmitButton = false;
 		}

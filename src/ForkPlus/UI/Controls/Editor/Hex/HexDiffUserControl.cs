@@ -69,13 +69,13 @@ namespace ForkPlus.UI.Controls.Editor.Hex
 	// 避免快速切换文件时旧任务回填到 UI 造成内容错乱。
 	private CancellationTokenSource _loadCts;
 
-	// v3.7.1：增量加载状态。完整字节保留在内存供"加载更多"使用，但只渲染 [0, _renderedLen) 段。
-	// _renderedLen = min(完整长度, 已加载到的偏移)。两侧各自跟踪。
-	private byte[] _srcFull;
-	private byte[] _dstFull;
-	private int _srcRenderedLen;
-	private int _dstRenderedLen;
-	private Button _loadMoreButton;
+		// v3.7.1：增量加载状态。完整字节保留在内存供"加载更多"使用，但只渲染 [0, _renderedLen) 段。
+		// _renderedLen = min(完整长度, 已加载到的偏移)。两侧各自跟踪。
+		private byte[] _srcFull;
+		private byte[] _dstFull;
+		private int _srcRenderedLen;
+		private int _dstRenderedLen;
+		private Button _loadMoreButton;
 
 		public HexDiffUserControl()
 		{

@@ -881,8 +881,8 @@ namespace ForkPlus.UI.Dialogs
 			AllLocalCheckBox.Disable();
 			ResolvedTextBlock.Collapse();
 			LayoutOrientationToggleButton.Collapse();
-			// AI 解决按钮默认隐藏，仅在 Text 模式下显示
-			AiResolveButton.Collapse();
+			// AI 解决按钮默认隐藏，仅在 Text 模式下显示（v4.0.13：外层加了边框容器，整体显隐）
+			AiResolveContainer.Collapse();
 			GitCommandResult<DiffContent> gitCommandResult = new GetWorkingDirectoryFileChangesGitCommand().Execute(_gitModule, _changedFile, null, 3, _gitModule.Settings.TabWidth, ignoreWhitespaces: false, showEntireFile: true, loadLargeUntrackedFiles: false, resolvedConflict: false);
 			if (!gitCommandResult.Succeeded)
 			{
@@ -904,11 +904,11 @@ namespace ForkPlus.UI.Dialogs
 					NextPrevMergeButtonsContainer.Show();
 					ResolvedTextBlock.Show();
 					LayoutOrientationToggleButton.Show();
-					// 仅在 Text 模式且 AI 已配置时显示 AI 解决按钮
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						AiResolveButton.Show();
-					}
+				// 仅在 Text 模式且 AI 已配置时显示 AI 解决按钮（含外层边框容器）
+				if (OpenAiService.IsAiReviewConfigured())
+				{
+					AiResolveContainer.Show();
+				}
 					MergerLayoutOrientation mergerLayoutOrientation = ForkPlusSettings.Default.MergerLayoutOrientation;
 					LayoutOrientationToggleButton.IsChecked = mergerLayoutOrientation == MergerLayoutOrientation.Vertical;
 					UpdateLayoutOrientation(mergerLayoutOrientation);

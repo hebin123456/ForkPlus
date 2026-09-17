@@ -99,49 +99,76 @@ namespace ForkPlus.Tests
 				Assert.True(parsed.Diff != null && parsed.Diff.Type == Diff.FileType.Binary,
 					"revision diff 应为二进制类型");
 
-				object[] holder = new object[1];
-				string[] diagHolder = new string[1];
-				int[] textLens = new int[] { -1, -1 };
-				Dispatcher.UIThread.InvokeAsync(delegate
+			object[] holder = new object[1];
+			string[] diagHolder = new string[1];
+			int[] textLens = new int[] { -1, -1 };
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var repoControl = new RepositoryUserControl();
+				typeof(RepositoryUserControl).GetProperty("GitModule")!
+					.SetValue(repoControl, module);
+
+				var control = new FileDiffControl();
+				control.RepositoryUserControl = repoControl;
+				var window = new Window { Width = 900, Height = 500, Content = control };
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+
+				control.Content = diffResult;
+				// v3.7.2：默认简略卡片视图，点击 Hex 后懒装配 HexDiffUserControl
+				ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl cards = null;
+				for (int i = 0; i < 50; i++)
 				{
-					var repoControl = new RepositoryUserControl();
-					typeof(RepositoryUserControl).GetProperty("GitModule")!
-						.SetValue(repoControl, module);
-
-					var control = new FileDiffControl();
-					control.RepositoryUserControl = repoControl;
-					var window = new Window { Width = 900, Height = 500, Content = control };
-					window.Show();
-					Dispatcher.UIThread.RunJobs();
-
-					control.Content = diffResult;
-					Task.Delay(600).GetAwaiter().GetResult();
+					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					Task.Delay(200).GetAwaiter().GetResult();
-					Dispatcher.UIThread.RunJobs();
-
-					object sub = control.CurrentSubView;
-					holder[0] = sub;
-					var subVisual = sub as Avalonia.Visual;
-					var hexEditors = (subVisual?.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>() ?? Enumerable.Empty<ForkPlus.UI.Controls.Editor.Hex.HexEditor>()).ToArray();
-					for (int i = 0; i < Math.Min(2, hexEditors.Length); i++)
+					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl b)
 					{
-						textLens[i] = hexEditors[i].Text == null ? -1 : hexEditors[i].Text.Length;
+						cards = b;
+						break;
 					}
-					diagHolder[0] = "subView=" + (sub == null ? "<null>" : sub.GetType().Name)
-						+ ", hexEditor数=" + hexEditors.Length
-						+ ", 文本长度=[" + textLens[0] + "," + textLens[1] + "]";
-					window.Close();
-					return 0;
-				}).GetAwaiter().GetResult();
+				}
 
-				string diag = diagHolder[0] ?? "<未执行>";
-				object subView = holder[0];
-				Assert.True(subView is ForkPlus.UI.Controls.Editor.Hex.HexDiffUserControl,
-					"提交历史的二进制 diff 应显示 HexDiff 视图，实际: " + diag);
-				Assert.True(textLens[0] > 0 || textLens[1] > 0,
-					"编辑器文本为空（空白渲染）。" + diag);
+				string diag = "subView=" + (cards == null ? "<null>" : "BinaryDiffUserControl");
+				if (cards != null && cards.HexRadioButton.IsVisible)
+				{
+					cards.HexRadioButton.IsChecked = true;
+					Dispatcher.UIThread.RunJobs();
+					for (int i = 0; i < 50; i++)
+					{
+						Task.Delay(100).GetAwaiter().GetResult();
+						Dispatcher.UIThread.RunJobs();
+						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+						var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+						if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
+						{
+							break;
+						}
+					}
+				}
+				var hexEditors = (cards?.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>() ?? Enumerable.Empty<ForkPlus.UI.Controls.Editor.Hex.HexEditor>()).ToArray();
+				for (int i = 0; i < Math.Min(2, hexEditors.Length); i++)
+				{
+					textLens[i] = hexEditors[i].Text == null ? -1 : hexEditors[i].Text.Length;
+				}
+				diag += ", Hex按钮可见=" + (cards != null && cards.HexRadioButton.IsVisible)
+					+ ", Hex容器可见=" + (cards != null && cards.HexDiffViewContainer.IsVisible)
+					+ ", hexEditor数=" + hexEditors.Length
+					+ ", 文本长度=[" + textLens[0] + "," + textLens[1] + "]";
+				holder[0] = cards;
+				diagHolder[0] = diag;
+				window.Close();
+				return 0;
+			}).GetAwaiter().GetResult();
+
+			string diag = diagHolder[0] ?? "<未执行>";
+			object subView = holder[0];
+			Assert.True(subView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl,
+				"提交历史的二进制 diff 应默认显示简略卡片视图，实际: " + diag);
+			Assert.True(diag.Contains("Hex按钮可见=True") && diag.Contains("Hex容器可见=True"),
+				"点击 Hex 后应进入十六进制对比视图，实际: " + diag);
+			Assert.True(textLens[0] > 0 || textLens[1] > 0,
+				"编辑器文本为空（空白渲染）。" + diag);
 			}
 			finally
 			{

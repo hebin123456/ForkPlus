@@ -199,7 +199,7 @@ namespace ForkPlus.UI.Commands
 			}
 			if (submodulesToUpdate.Length > 0)
 			{
-				monitor.Update(0.0, "Updating submodules...");
+				monitor.Update(0.0, PreferencesLocalization.Current("Updating submodules..."));
 				GitCommandResult gitCommandResult2 = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				if (!gitCommandResult2.Succeeded)
 				{

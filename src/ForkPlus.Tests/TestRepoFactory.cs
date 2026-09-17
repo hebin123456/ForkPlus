@@ -45,6 +45,19 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>搜索滚动仓库：最早一条含唯一关键词 zqneedle（列表行号最大、初始视口外），其后 80 条填充提交。</summary>
+		public static string CreateSearchScroll()
+		{
+			string root = NewTempDir("searchscroll");
+			Init(root);
+			Commit(root, "needle.txt", "needle\n", "zqneedle target commit");
+			for (int i = 0; i < 80; i++)
+			{
+				Commit(root, "filler" + (i % 10) + ".txt", "v" + i + "\n", "filler commit " + i.ToString("000"));
+			}
+			return root;
+		}
+
 		/// <summary>冲突仓库：两分支各自改同一行，checkout conflict 分支（处于冲突状态需要外部 merge）。</summary>
 		public static string CreateConflict()
 		{

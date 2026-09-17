@@ -40,6 +40,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_textEditor = editor;
 		}
 
+		// 修复（2026-09-16）：宿主编辑器关闭 暂存/丢弃 浮窗时（AI 代码检视），不弹 ButtonsAdorner。
+		protected override bool ShowChunkButtons => _textEditor.ShowStageDiscardButtons;
+
 		protected override void RefreshActiveChunk()
 		{
 			CommitDiffSelectedRange chunkUnderMousePointer = GetChunkUnderMousePointer();

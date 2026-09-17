@@ -560,7 +560,7 @@ namespace ForkPlus.Tests
 					}
 					else
 					{
-						Assert.False(update.ReleaseNotesTextBox.IsVisible);
+						Assert.False(update.ReleaseNotesBox.IsVisible);
 						Assert.False(update.SkipVersionCheckBox.IsVisible);
 						Assert.Null(FindButton(update, Tr("Download")));
 					}

@@ -10,7 +10,7 @@ namespace ForkPlus.Git.Commands
 	{
 		public GitCommandResult Execute(GitModule gitModule, IReadOnlyList<string> filePaths, JobMonitor monitor, bool force = false)
 		{
-			string message = ((filePaths.Count == 1) ? ("Unlocking '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Unlocking {filePaths.Count} files");
+			string message = ((filePaths.Count == 1) ? PreferencesLocalization.FormatCurrent("Unlocking '{0}'", PathHelper.GetReadableFileName(filePaths[0])) : PreferencesLocalization.FormatCurrent("Unlocking {0} files", filePaths.Count));
 			monitor.Update(0.0, message);
 			ProcessOutputHandler outputHandler = new ProcessOutputHandler(monitor);
 			bool flag = false;
@@ -57,7 +57,7 @@ namespace ForkPlus.Git.Commands
 				monitor.Fail(PreferencesLocalization.Current("LFS unlock failed"));
 				return GitCommandResult.Failure(new GitRequestResult(-1, "", outputHandler.Stderr()).ToGitCommandError());
 			}
-			string resultMessage = ((filePaths.Count == 1) ? ("Unlocked '" + PathHelper.GetReadableFileName(filePaths[0]) + "'") : $"Unlocked {filePaths.Count} files");
+			string resultMessage = ((filePaths.Count == 1) ? PreferencesLocalization.FormatCurrent("Unlocked '{0}'", PathHelper.GetReadableFileName(filePaths[0])) : PreferencesLocalization.FormatCurrent("Unlocked {0} files", filePaths.Count));
 			monitor.Success(resultMessage);
 			return GitCommandResult.Success();
 		}

@@ -100,16 +100,40 @@ namespace ForkPlus.Tests
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 
-					control.Content = diffResult;
-					Task.Delay(500).GetAwaiter().GetResult();
+				control.Content = diffResult;
+				// v3.7.2：默认简略卡片视图，点击 Hex 后懒装配 HexDiffUserControl
+				ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl cards = null;
+				for (int i = 0; i < 50; i++)
+				{
+					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					Task.Delay(200).GetAwaiter().GetResult();
+					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl b)
+					{
+						cards = b;
+						break;
+					}
+				}
+				if (cards != null && cards.HexRadioButton.IsVisible)
+				{
+					cards.HexRadioButton.IsChecked = true;
 					Dispatcher.UIThread.RunJobs();
+					for (int i = 0; i < 50; i++)
+					{
+						Task.Delay(100).GetAwaiter().GetResult();
+						Dispatcher.UIThread.RunJobs();
+						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+						var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+						if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
+						{
+							break;
+						}
+					}
+				}
 
-					object sub = control.CurrentSubView;
-					result[0] = sub is ForkPlus.UI.Controls.Editor.Hex.HexDiffUserControl ? 1 : 0;
-					result[1] = sub == null ? -1 : sub.GetType().Name.Length; // 占位：非 null
+				object sub = control.CurrentSubView;
+				result[0] = sub is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl ? 1 : 0;
+				result[1] = sub == null ? -1 : sub.GetType().Name.Length; // 占位：非 null
 
 					// 模板里确实存在 LayoutTransformControl（验证测试环境与真实主窗口结构一致）
 					var ltc = window.GetVisualDescendants().OfType<Avalonia.Controls.LayoutTransformControl>().ToArray();
@@ -146,7 +170,7 @@ namespace ForkPlus.Tests
 					return 0;
 				}).GetAwaiter().GetResult();
 
-				Assert.True(result[0] == 1, "二进制 diff 应显示 HexDiff 视图（CustomWindow 模板下）");
+				Assert.True(result[0] == 1, "二进制 diff 应默认显示简略卡片视图（CustomWindow 模板下）");
 				Assert.True(result[2] >= 1, "模板里应存在 LayoutTransformControl，实际 " + result[2]);
 				Assert.True(result[3] > 500,
 					"CustomWindow 模板下渲染近乎全空白（非白像素=" + result[3]

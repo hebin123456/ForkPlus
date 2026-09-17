@@ -31,7 +31,8 @@
                             <userControls:NotificationManagerUserControl x:Name="NotificationManagerUserControl" />
                           </Popup>
                           <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
-                            <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
+                            <!-- Stretch="None"：本地值压过 WindowPathStyle 的 Uniform（Uniform 会把条形垂直居中，见 Window.axaml 修复注释） -->
+                            <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" Stretch="None" />
                           </Button>
                           <Button x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
                             <Path Data="{StaticResource RestoreGeometry}" Theme="{DynamicResource WindowPathStyle}" />

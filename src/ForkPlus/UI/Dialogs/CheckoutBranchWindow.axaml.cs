@@ -247,7 +247,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				if (gitCommandResult2.Error is GitCommandError.CheckoutLocalChangesWouldBeOverwritten && stashAndReapply == StashAndReapply.Possible)
 				{
-					monitor.AppendOutputLine("fork: failed to checkout without overwriting local changes. Trying again with stash and reapply...\n");
+					monitor.AppendOutputLine(PreferencesLocalization.Current("fork: failed to checkout without overwriting local changes. Trying again with stash and reapply...") + "\n");
 					return PerformCheckout(gitModule, branch, fastForwardTo, StashAndReapply.Required, discardLocalChanges, sourceString, submodulesToUpdate, monitor);
 				}
 				UpdateSubmodulesIfNeeded(gitModule, submodulesToUpdate, monitor);
@@ -264,7 +264,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					if (gitCommandResult3.Error is GitCommandError.MergeLocalChangesWouldBeOverwritten && stashAndReapply == StashAndReapply.Possible)
 					{
-						monitor.AppendOutputLine("fork: failed to fast-forward overwriting touching local changes. Trying again with stash and reapply...\n");
+						monitor.AppendOutputLine(PreferencesLocalization.Current("fork: failed to fast-forward overwriting touching local changes. Trying again with stash and reapply...") + "\n");
 						return PerformCheckout(gitModule, branch, fastForwardTo, StashAndReapply.Required, discardLocalChanges, sourceString, submodulesToUpdate, monitor);
 					}
 					UpdateSubmodulesIfNeeded(gitModule, submodulesToUpdate, monitor);

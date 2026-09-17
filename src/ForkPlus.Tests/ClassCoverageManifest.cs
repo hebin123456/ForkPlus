@@ -1150,6 +1150,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/ITreemapDelegate.cs", "interface", "ITreemapDelegate", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/KeyGestureTextConverter.cs", "class", "KeyGestureTextConverter", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/LevelToIndentationConverter.cs", "class", "LevelToIndentationConverter", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Controls/MarkdownNotesRenderer.cs", "class", "MarkdownNotesRenderer", "MarkdownNotesRendererTests.ParseBlocks_SplitsHeadingQuoteBulletTableCodePara", "MarkdownNotesRendererTests.ParseInlines_BoldAndCode_UnclosedLiteral", "MarkdownNotesRendererTests.Render_BuildsNativeControlsForRealSection"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/MenuHeaderTextConverter.cs", "class", "MenuHeaderTextConverter", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/ModernTabControl.cs", "class", "ModernTabControl", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Controls/MultiselectionTreeView.cs", "class", "DropTarget", "UNIT-SOURCE-COVERAGE-001"),

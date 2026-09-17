@@ -1,6 +1,7 @@
 using System;
 using ForkPlus;
 using ForkPlus.Settings;
+using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -46,9 +47,9 @@ namespace ForkPlus.UI.Dialogs
 				updateInfo.LatestVersion, updateInfo.CurrentVersion);
 			SubmitButtonTitle = PreferencesLocalization.Current("Download");
 			CancelButtonTitle = PreferencesLocalization.Current("Later");
-			ReleaseNotesTextBox.Text = string.IsNullOrEmpty(updateInfo.ReleaseNotes)
+			MarkdownNotesRenderer.Render(ReleaseNotesPanel, string.IsNullOrEmpty(updateInfo.ReleaseNotes)
 				? updateInfo.ReleaseName
-				: updateInfo.ReleaseNotes;
+				: updateInfo.ReleaseNotes);
 		}
 
 		protected override void OnSubmit()

@@ -98,6 +98,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_textEditor = textEditor;
 		}
 
+		// 修复（2026-09-16）：宿主编辑器关闭 暂存/丢弃 浮窗时（AI 代码检视），不弹 ButtonsAdorner。
+		protected override bool ShowChunkButtons => _textEditor.ShowStageDiscardButtons;
+
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);

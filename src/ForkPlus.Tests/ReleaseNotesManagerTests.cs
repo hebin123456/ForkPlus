@@ -6,13 +6,15 @@
 // 注入点：NotesProviderForTests / ShowWindowForTests（用例结束必须复位，静态钩子
 // 泄漏会毒化同进程后续用例）。设置自恢复：还原 LastShownReleaseNotesVersion 单例
 // 值与 settings.json 磁盘内容（对齐 SettingsPersistenceRoundTripTests 的收尾口径）。
-// 另含 ReleaseNotesWindow UI 冒烟：标题走 "What's New in {0}" 本地化、正文入只读
-// 文本框、Footer 单 Close 按钮形态与 "Release Notes" 小节标题——风格复用
+// 另含 ReleaseNotesWindow UI 冒烟：标题走 "What's New in {0}" 本地化、正文经
+// MarkdownNotesRenderer 渲染成原生控件（2026-09-17 起替代只读 TextBox 直显源码）、
+// Footer 单 Close 按钮形态与 "Release Notes" 小节标题——风格复用
 // ForkPlusDialogWindow 组件框架（与 UpdateAvailableWindow / UpdateCheckWindow 一致）。
 using System;
 using System.IO;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -199,7 +201,15 @@ namespace ForkPlus.Tests
 					// 标题走 "What's New in {0}" 本地化（zh-Hans = "{0} 更新内容"），
 					// 经 base.Title 同步（DialogTitle setter 同时写 Window.Title）
 					Assert.Equal("4.1.0 更新内容", window.Title);
-					Assert.Equal("更新内容第一行\n更新内容第二行", window.ReleaseNotesTextBox.Text);
+					// 2026-09-17 起正文 markdown 渲染：原始 markdown 经 NotesMarkdown 暴露，
+					// 渲染面板内普通两行 = 一个 para 块（Inlines 单 Run 保留原文换行）
+					Assert.Equal("更新内容第一行\n更新内容第二行", window.NotesMarkdown);
+					Assert.Contains(window.ReleaseNotesPanel.Children.OfType<TextBlock>(),
+						delegate (TextBlock tb)
+						{
+							return string.Join("", tb.Inlines.OfType<Run>().Select(delegate (Run r) { return r.Text; }))
+								== "更新内容第一行\n更新内容第二行";
+						});
 
 					// 与 UpdateAvailableWindow / UpdateCheckWindow 同款 "Release Notes" 小节标题
 					//（基类 Loaded 自动本地化，zh-Hans 下复用既有 "Release Notes" 翻译键 = "更新内容"）
@@ -226,11 +236,10 @@ namespace ForkPlus.Tests
 		public void ReleaseNotesWindow_LongContent_ShowsAutoVerticalScrollbarAndScrolls()
 		{
 			// v4.1.2 回归（2026-09-15，"首次启动'更新内容'弹窗正文无滚动条、超框内容无法拉取"）：
-			// 主 TextBox 主题模板的 PART_ScrollViewer 曾硬编码 VSBV=Hidden，弹窗 XAML 上的
-			// ScrollViewer.VerticalScrollBarVisibility="Auto" 被彻底无视。修复为 TemplateBinding
-			// 附加属性（主题默认仍 Hidden，未显式设置的输入框行为不变）后：长正文应把
-			// Auto 传入内层 ScrollViewer 且内容超出视口可滚动（口径同 GitIgnoreDialogTests
-			// 对 PlaceholderTextBox 同款修复的回归断言）。
+			// 原只读 TextBox 主题模板的 PART_ScrollViewer 曾硬编码 VSBV=Hidden，弹窗 XAML 上的
+			// ScrollViewer.VerticalScrollBarVisibility="Auto" 被彻底无视。2026-09-17 正文改为
+			// markdown 渲染（MarkdownNotesRenderer + 显式 ScrollViewer 包裹）后滚动能力必须保持：
+			// 长正文应出现 Auto 竖向滚动条且内容超出视口可滚动（防改版把 v4.1.2 修好的滚动又丢掉）。
 			HeadlessAppBootstrap.Run(delegate
 			{
 				string notes = string.Join("\n", Enumerable.Range(1, 120).Select(i => "第 " + i + " 行：v4.1.2 更新内容条目示例文本，用于撑出超过文本框最大高度的长正文"));
@@ -240,8 +249,8 @@ namespace ForkPlus.Tests
 				Dispatcher.UIThread.RunJobs();
 				try
 				{
-					ScrollViewer viewer = window.ReleaseNotesTextBox.GetVisualDescendants()
-						.OfType<ScrollViewer>().FirstOrDefault(x => x.Name == "PART_ScrollViewer");
+					ScrollViewer viewer = window.GetVisualDescendants().OfType<ScrollViewer>()
+						.FirstOrDefault(x => ReferenceEquals(x.Content, window.ReleaseNotesPanel));
 					Assert.NotNull(viewer);
 					Assert.Equal(ScrollBarVisibility.Auto, viewer.VerticalScrollBarVisibility);
 					Assert.True(viewer.Extent.Height > viewer.Viewport.Height, "长正文应超出视口（可滚动）");

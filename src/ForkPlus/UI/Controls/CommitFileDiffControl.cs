@@ -21,6 +21,11 @@ namespace ForkPlus.UI.Controls
 
 		public event EventHandler<CommitCodeEditor> Discard;
 
+		// 修复（2026-09-16，"对 xx 个文件进行代码检视页面屏蔽 暂存/丢弃 浮窗"）：
+		// AI 代码检视窗口置 false——文件 diff 选中区域旁不再弹出 Stage/Discard 悬浮按钮。
+		// 默认 true 保持提交页原行为。
+		public bool ShowStageDiscardButtons { get; set; } = true;
+
 		public CommitFileDiffControl()
 		{
 			base.Target = FileDiffControlTarget.Commit;
@@ -153,6 +158,7 @@ namespace ForkPlus.UI.Controls
 					{
 						CommitTextDiffControl commitTextDiffControl2 = new CommitTextDiffControl(base.Target);
 						commitTextDiffControl2.PositionCache = _positionCache;
+						commitTextDiffControl2.ShowStageDiscardButtons = ShowStageDiscardButtons;
 						commitTextDiffControl2.ToggleStage += delegate(object s, CommitCodeEditor editor)
 						{
 							this.ToggleStage?.Invoke(this, editor);
@@ -241,6 +247,7 @@ namespace ForkPlus.UI.Controls
 				{
 					CommitTextDiffControl commitTextDiffControl = new CommitTextDiffControl(base.Target);
 					commitTextDiffControl.PositionCache = _positionCache;
+					commitTextDiffControl.ShowStageDiscardButtons = ShowStageDiscardButtons;
 					commitTextDiffControl.ToggleStage += delegate(object s, CommitCodeEditor editor)
 					{
 						this.ToggleStage?.Invoke(this, editor);

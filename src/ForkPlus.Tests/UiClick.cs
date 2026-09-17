@@ -178,6 +178,7 @@ namespace ForkPlus.Tests
 			while (sw.ElapsedMilliseconds < timeoutMs)
 			{
 				Dispatcher.UIThread.RunJobs();
+				Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
 				bool satisfied;
 				try
 				{

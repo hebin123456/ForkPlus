@@ -10,9 +10,15 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,4,0,0">
-      <!-- 与 UpdateAvailableWindow / UpdateCheckWindow 的结果区同款结构：Release Notes 小节标题 + 只读文本框 -->
+      <!-- 与 UpdateAvailableWindow / UpdateCheckWindow 的结果区同款结构：Release Notes 小节标题 + markdown 渲染正文 -->
       <TextBlock Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,0,0,4" />
-      <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="360" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
+      <!-- 2026-09-17：正文原为只读 TextBox 直接显示 markdown 源码（井号标题、加粗星号、
+           竖线表格），改为 MarkdownNotesRenderer 解析后渲染成原生控件；外框视觉沿用原 TextBox 的边框样式 -->
+      <Border x:Name="ReleaseNotesBox" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="6" MaxHeight="360">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="ReleaseNotesPanel" Margin="2" />
+        </ScrollViewer>
+      </Border>
     </StackPanel>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

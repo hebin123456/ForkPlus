@@ -19,7 +19,12 @@
       <StackPanel x:Name="ResultPanel" IsVisible="False">
         <TextBlock x:Name="VersionInfoTextBlock" FontSize="13" FontWeight="Medium" Margin="0,0,0,6" TextWrapping="Wrap" />
         <TextBlock x:Name="ReleaseNotesLabel" Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,4,0,4" />
-        <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
+        <!-- 2026-09-17：markdown 渲染替代只读 TextBox 源码显示（与 ReleaseNotesWindow / UpdateAvailableWindow 同款） -->
+        <Border x:Name="ReleaseNotesBox" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="6" MaxHeight="220">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="ReleaseNotesPanel" Margin="2" />
+          </ScrollViewer>
+        </Border>
         <CheckBox x:Name="SkipVersionCheckBox" Content="Don't remind me for this version" Margin="0,8,0,0" FontSize="13" />
       </StackPanel>
       <!-- 重置下载中：进度面板（与 UpdateAvailableWindow 自动更新同款，重置流切换显示） -->

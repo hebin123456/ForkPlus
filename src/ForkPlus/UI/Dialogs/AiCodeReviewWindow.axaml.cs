@@ -132,6 +132,9 @@ namespace ForkPlus.UI.Dialogs
 				FileReviewGrid.Show();
 				_fileReviewTarget = fileTarget;
 				FileReviewDiffControl.RepositoryUserControl = repositoryUserControl;
+				// 修复（2026-09-16，"对 xx 个文件进行代码检视页面屏蔽 暂存/丢弃 浮窗"）：
+				// 检视页面是只读场景，文件 diff 选中区域旁的 Stage/Discard 悬浮按钮无意义且易误触。
+				FileReviewDiffControl.ShowStageDiscardButtons = false;
 				InitializeFileReviewList(fileTarget);
 			}
 			else
@@ -1421,7 +1424,10 @@ namespace ForkPlus.UI.Dialogs
 		private void SendAiReviewCompletedNotification(GitModule gitModule, bool success)
 		{
 			string text = RepositoryName(gitModule);
-			if (text != null && !base.IsActive)
+			// 修复（2026-09-16，"检视完成后用系统通知一下，参考 git mm 运行完成"）：
+			// 原先仅在窗口非激活（!IsActive）时通知——用户盯着检视窗口等结果时反而收不到。
+			// 改为与 git mm 完成通知一致：完成/失败都无条件发系统通知。
+			if (text != null)
 			{
 				string arg = WebUtility.HtmlEncode("ai-review:" + base.Title);
 				string arg2 = PreferencesLocalization.Current(success ? "AI Code Review Completed" : "AI Code Review Failed");

@@ -50,6 +50,18 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
+		public bool ShowStageDiscardButtons
+		{
+			get
+			{
+				return _editor.ShowStageDiscardButtons;
+			}
+			set
+			{
+				_editor.ShowStageDiscardButtons = value;
+			}
+		}
+
 		[Null]
 		public ForkPlus.Git.Diff.Diff Diff { get; private set; }
 

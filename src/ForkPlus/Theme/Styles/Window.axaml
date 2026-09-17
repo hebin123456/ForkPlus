@@ -1,7 +1,13 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   
   <controls:ResizeModeToVisibilityConverter x:Key="ResizeModeToVisibilityConverter" />
-  <StreamGeometry x:Key="MinimizeGeometry">M0,0 L10,0 10,1.0 10,1.0 1,1.0 0,1.0 z</StreamGeometry>
+  <!-- 修复（2026-09-17，"最小化按钮的矩形位置靠上"）：WindowPathStyle 用 Stretch="Uniform"，
+       而 Avalonia 的 Uniform 拉伸会把几何 bounds 归一到原点后缩放（不居中）——条形画在
+       画布任何位置都会被贴到 10×10 框顶部，只改几何位置无效（实测与原版无区别）。
+       真正修复：条形放 10×10 画布底部（y=9..10，与 MaximizeGeometry 环形底边对齐），
+       且最小化 Path 用本地 Stretch="None"（本地值压过 theme 的 Uniform），按自然坐标渲染。
+       Windows 惯例：最小化条形与最大化方框底边对齐；同时去掉模板里两处 translate(0,3) 补偿。 -->
+  <StreamGeometry x:Key="MinimizeGeometry">M0,9 L10,9 10,10 0,10 z</StreamGeometry>
   <StreamGeometry x:Key="MaximizeGeometry">M1,1 L1,11 11,11 11,1 z M0,0 L12,0 12,12 0,12 z</StreamGeometry>
   <StreamGeometry x:Key="RestoreGeometry">M1,4.56 L1,14.56 11,14.56 11,4.56z M4.0,1 L4.0,3.56 12,3.56 12,11 14.0,11 14.0,1 z M3.0,0 L15.0,0 15.0,12 12,12 12,15.56 0,15.56 0,3.56 3.0,3.56 z</StreamGeometry>
   <StreamGeometry x:Key="CloseGeometry">M0.71,0 L4.6,3.8 8.5,0 9.2,0.71 5.3,4.6 9.2,8.48 8.48,9.2 4.6,5.3 0.71,9.2 0,8.48 3.89,4.6 4.77E-07,0.71 z</StreamGeometry>
@@ -174,7 +180,7 @@
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                       <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
-                        <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
+                        <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" Stretch="None" />
                       </Button>
                       <Button x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource RestoreGeometry}" Theme="{DynamicResource WindowPathStyle}" />
@@ -245,7 +251,7 @@
                   <DockPanel>
                     <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
                       <Button x:Name="PART_MinimizeButton" Theme="{DynamicResource WindowButton}">
-                        <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" />
+                        <Path Data="{StaticResource MinimizeGeometry}" Theme="{DynamicResource WindowPathStyle}" Stretch="None" />
                       </Button>
                       <Button x:Name="PART_RestoreButton" Theme="{DynamicResource WindowButton}">
                         <Path Data="{StaticResource RestoreGeometry}" Theme="{DynamicResource WindowPathStyle}" />

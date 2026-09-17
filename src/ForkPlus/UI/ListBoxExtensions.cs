@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using ForkPlus.UI.Helpers;
 
 namespace ForkPlus.UI
 {
@@ -93,14 +92,14 @@ namespace ForkPlus.UI
 
 		private static void ScrollRowIntoView(ListBox listBox, int row)
 		{
-			ScrollViewer scrollViewer = ScrollViewerHelper.FindScrollViewer(listBox);
-			if (scrollViewer != null)
+			// 修复（2026-09-17，Ctrl+F 提交搜索跳转滚不到匹配行）：WPF 版把行号直接当
+			// ScrollViewer 偏移（WPF 虚拟化 ListBox 为逻辑滚动，偏移单位即行号）；Avalonia
+			// ScrollViewer.Offset 恒为像素，行号当像素用只会滚到列表顶部附近，匹配行永远
+			// 不进视口。改用 ListBox.ScrollIntoView（实化容器并滚动到位），与
+			// NoUIAutomationListView.ScrollRowIntoView 的迁移做法一致。
+			if (row >= 0 && row < listBox.ItemCount)
 			{
-				int num = ((row >= 1) ? (row - 1) : row);
-				if (!((double)num > scrollViewer.Offset.Y) || !((double)num < scrollViewer.Offset.Y + scrollViewer.Viewport.Height))
-				{
-					scrollViewer.ScrollToVerticalOffsetCompat(num);
-				}
+				listBox.ScrollIntoView(listBox.Items[row]);
 			}
 		}
 	}

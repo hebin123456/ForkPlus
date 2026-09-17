@@ -15,7 +15,7 @@ namespace ForkPlus.UI.CustomCommands
 			string text = environment.ReplaceVariablesWithValues(action.Script);
 			text = text.Replace("\\", "\\\\").Replace("\"", "\\\"");
 			monitor.AppendOutputLine("$ " + action.Path + " -c \"" + text.Replace("$", "\\$") + "\"\n");
-			monitor.Update(monitor.TotalProgress, "Running...");
+			monitor.Update(monitor.TotalProgress, PreferencesLocalization.Current("Running..."));
 			StringBuilder fullStringOutput = new StringBuilder(1024);
 			GitRequestResult gitRequestResult;
 			try
@@ -52,7 +52,7 @@ namespace ForkPlus.UI.CustomCommands
 			}
 			if (gitRequestResult.Success)
 			{
-				monitor.Success("Finished");
+				monitor.Success(PreferencesLocalization.Current("Finished"));
 				return GitCommandResult<string>.Success(fullStringOutput.ToString());
 			}
 			monitor.Fail(PreferencesLocalization.Current("Error"));

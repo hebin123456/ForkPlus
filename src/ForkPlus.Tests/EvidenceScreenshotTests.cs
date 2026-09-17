@@ -509,15 +509,36 @@ namespace ForkPlus.Tests
 					window.Show();
 					Dispatcher.UIThread.RunJobs();
 
-					control.Content = diffResult;
-					// 二进制路径：JobQueue + Dispatcher.Post + SetContent 内部 Task.Run
-					Task.Delay(600).GetAwaiter().GetResult();
+				control.Content = diffResult;
+				// v3.7.2：默认简略卡片视图，点击 Hex 切换后懒装配 HexDiffUserControl
+				ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl cards = null;
+				for (int i = 0; i < 50; i++)
+				{
+					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					Task.Delay(200).GetAwaiter().GetResult();
+					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl b && b.HexRadioButton.IsVisible)
+					{
+						cards = b;
+						break;
+					}
+				}
+				Assert.NotNull(cards);
+				cards.HexRadioButton.IsChecked = true;
+				Dispatcher.UIThread.RunJobs();
+				for (int i = 0; i < 50; i++)
+				{
+					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
+					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+					var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+					if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
+					{
+						break;
+					}
+				}
 
-					subView[0] = control.CurrentSubView;
+				subView[0] = control.CurrentSubView;
 					using (var frame = HeadlessWindowExtensions.CaptureRenderedFrame(window))
 					{
 						SaveFrame(frame, "fix8-hexdiff.png");
@@ -529,8 +550,8 @@ namespace ForkPlus.Tests
 
 				string shotPath = Path.Combine(EvidenceDir(), "fix8-hexdiff.png");
 				Assert.True(File.Exists(shotPath) && new FileInfo(shotPath).Length > 1000, "fix8-hexdiff.png 应生成");
-				Assert.True(subView[0] is ForkPlus.UI.Controls.Editor.Hex.HexDiffUserControl,
-					"二进制 diff 应显示 HexDiff 视图，实际: " + (subView[0]?.GetType().Name ?? "<null>"));
+				Assert.True(subView[0] is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl,
+					"二进制 diff 应默认显示简略卡片视图，实际: " + (subView[0]?.GetType().Name ?? "<null>"));
 				Assert.True(pixels[0] > 2000,
 					"Hex Diff 渲染近乎全空白（非空白像素=" + pixels[0] + "）");
 			}

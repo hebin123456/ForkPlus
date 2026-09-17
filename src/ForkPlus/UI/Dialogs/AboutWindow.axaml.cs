@@ -28,6 +28,13 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = title;
 			VersionTextBlock.Text = string.Format(Translate("Version {0}"), App.Version);
 			CopyrightTextBlock.Text = string.Format(Translate("Copyright © {0} Hebin"), DateTime.Now.Year);
+			// 2026-09-17：双击 About 窗口的大 Fork 图标 → 当前版本"更新内容"弹窗
+			//（版本 + RELEASE_NOTE.md 当前版本章节，与弹窗左上角 Fork 图标同款入口；
+			//  本窗口 ShowLogo=false 无头部小图标，故在自有大图标上接线）。
+			IconImage.DoubleTapped += delegate
+			{
+				MainWindow.Commands.OpenReleaseNotes.Execute();
+			};
 		}
 
 		private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)

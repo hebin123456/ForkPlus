@@ -20,7 +20,7 @@ namespace ForkPlus.Git.Commands
 				List<ChangedFile> list = gitCommandResult.Result.ChangedFiles.Filter((ChangedFile x) => x.New && !x.Staged);
 				if (list.Count > 0)
 				{
-					monitor.Update(0.0, $"Staging {list.Count} files...");
+					monitor.Update(0.0, PreferencesLocalization.FormatCurrent("Staging {0} files...", list.Count));
 				}
 				GitCommandResult gitCommandResult2 = new StageFileGitCommand().Execute(gitModule, list.ToArray(), monitor);
 				if (!gitCommandResult2.Succeeded)

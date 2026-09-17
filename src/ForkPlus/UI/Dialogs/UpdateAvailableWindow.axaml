@@ -13,7 +13,12 @@
       <!-- 结果区（Release Notes + 跳过勾选）：进入自动更新后切换为下载进度面板 -->
       <StackPanel x:Name="ContentPanel">
         <TextBlock Text="Release Notes" FontWeight="Medium" FontSize="13" Margin="0,0,0,4" />
-        <TextBox Text="" x:Name="ReleaseNotesTextBox" IsReadOnly="True" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" MaxHeight="280" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" BorderBrush="{DynamicResource BorderBrush}" Padding="6" />
+        <!-- 2026-09-17：markdown 渲染替代只读 TextBox 源码显示（与 ReleaseNotesWindow / UpdateCheckWindow 同款） -->
+        <Border x:Name="ReleaseNotesBox" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="2" Padding="6" MaxHeight="280">
+          <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="ReleaseNotesPanel" Margin="2" />
+          </ScrollViewer>
+        </Border>
         <CheckBox x:Name="SkipVersionCheckBox" Content="Don't remind me for this version" Margin="0,8,0,0" FontSize="13" />
       </StackPanel>
       <fuu:UpdateDownloadPanel x:Name="DownloadPanel" IsVisible="False" />

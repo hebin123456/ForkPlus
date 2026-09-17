@@ -7,6 +7,27 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 {
 	public class CommitTextDiffControl : TextDiffControl
 	{
+		// 修复（2026-09-16，"AI 代码检视页面屏蔽 暂存/丢弃 浮窗"）：
+		// 本地存值：RefreshLayout 换子控件（Split ↔ SideBySide）后向新子控件重放，
+		// 避免布局切换后浮窗重新出现。
+		private bool _showStageDiscardButtons = true;
+
+		public bool ShowStageDiscardButtons
+		{
+			get
+			{
+				return _showStageDiscardButtons;
+			}
+			set
+			{
+				_showStageDiscardButtons = value;
+				if (_child is ICommitTextDiffControl commitChild)
+				{
+					commitChild.ShowStageDiscardButtons = value;
+				}
+			}
+		}
+
 		public bool IsStaged
 		{
 			get
@@ -60,6 +81,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_child.RefreshDiffShowHiddenSymbols(ForkPlusSettings.Default.DiffShowHiddenSymbols);
 			_child.RefreshDiffWordWrap(ForkPlusSettings.Default.DiffWordWrap);
 			_child.RefreshDiffFont(ForkPlusSettings.Default.CodeEditorFontSize);
+			(_child as ICommitTextDiffControl).ShowStageDiscardButtons = _showStageDiscardButtons;
 			if (child != null && child.Diff != null)
 			{
 				_child.PositionCache = child.PositionCache;

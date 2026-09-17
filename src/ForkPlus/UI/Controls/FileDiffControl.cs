@@ -350,33 +350,29 @@ namespace ForkPlus.UI.Controls
 					}
 					base.Dispatcher.Post(delegate
 					{
-						if (!monitor.IsCanceled)
+					if (!monitor.IsCanceled)
+					{
+						_activeRefreshJob = null;
+						if (!unknownBinaryDiffContentResult.Succeeded)
 						{
-							_activeRefreshJob = null;
-							if (!unknownBinaryDiffContentResult.Succeeded)
-							{
-								ShowErrorView(unknownBinaryDiffContentResult.Error);
-							}
-							else if (hexDiffContentResult != null && hexDiffContentResult.Succeeded)
-							{
-								// v3.1.0：Hex Diff 视图（side-by-side 字节比较）
-								HexDiffContent hexDiffContent = hexDiffContentResult.Result;
-								ShowSubView(() => new HexDiffUserControl(), delegate(HexDiffUserControl c, FileControlHeaderUserControl h)
-								{
-									c.SetContent(hexDiffContent);
-									ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Hex);
-								});
-							}
-							else
-							{
-								UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
-								ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
-								{
-									c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2);
-									ShowHeaderIfAllowed(h, changedFile);
-								});
-							}
+							ShowErrorView(unknownBinaryDiffContentResult.Error);
 						}
+						else
+						{
+							UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
+							// v3.7.2（"OTF 变更没有 hex 对比 + 缺 not LFS 徽章"）：二进制默认
+							// 卡片视图（旧/新 + LFS 徽章），后台预载的两侧字节传给
+							// BinaryDiffUserControl 供底部 Hex 切换（Side-by-Side + Hex 两个按钮，
+							// 图片场景另有 Swipe/Onion Skin）；>50MB 无字节时其 Hex 按钮自动隐藏。
+							// 对齐 3.13.2：徽章与 hex 对比入口并存。
+							HexDiffContent hexDiffContent2 = ((hexDiffContentResult != null && hexDiffContentResult.Succeeded) ? hexDiffContentResult.Result : null);
+							ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+							{
+								c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2, true, hexDiffContent2);
+								ShowHeaderIfAllowed(h, changedFile);
+							});
+						}
+					}
 					});
 				}, JobFlags.Hidden);
 				}
@@ -843,8 +839,11 @@ namespace ForkPlus.UI.Controls
 			return GitCommandResult<UnknownBinaryDiffContent>.Success(new UnknownBinaryDiffContent(changedFile, gitCommandResult.Result, gitCommandResult2.Result));
 	}
 
-	/// <summary>v3.1.0：Hex Diff 自动加载阈值。两侧 blob 大小均不超过此值时自动加载字节并启用 Hex Diff 视图。</summary>
-	private const long MaxHexDiffSize = 10 * 1024 * 1024;
+	/// <summary>v3.1.0：Hex Diff 自动加载阈值。两侧 blob 大小均不超过此值时自动加载字节并启用 Hex Diff 视图。
+	/// v3.7.2：10MB→50MB。OTF/字体等常见二进制资产普遍在 10–40MB（实测 13MB OTF 曾被
+	/// 误判回退 BinaryDiff 双栏卡片视图且无 Hex 入口）；HexDiffUserControl 为增量渲染（首屏 16KB、
+	/// 按需加载更多、MD5 后台计算），50MB 不会卡 UI，仅内存常驻两侧字节数组。</summary>
+	private const long MaxHexDiffSize = 50 * 1024 * 1024;
 
 	/// <summary>v3.1.0：判断 UnknownBinaryDiffContent 是否可以升级为 HexDiffContent（两侧大小均不超过阈值且非空）。</summary>
 	private static bool CanLoadHexDiff(UnknownBinaryDiffContent content)

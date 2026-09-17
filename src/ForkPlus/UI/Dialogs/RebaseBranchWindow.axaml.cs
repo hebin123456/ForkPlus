@@ -155,7 +155,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			if (stashAndReapply && workingDirectoryIsDirty)
 			{
-				monitor.Update(10.0, "Stashing...");
+				monitor.Update(10.0, PreferencesLocalization.Current("Stashing..."));
 				GitCommandResult<bool> stashResult = new SaveStashGitCommand().Execute(gitModule, $"Rebase autostash {DateTime.Now}", stageNewFiles: false, monitor);
 				if (!stashResult.Succeeded)
 				{
@@ -171,7 +171,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				base.Dispatcher.Post(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Checkout...");
+					SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Checkout..."));
 				});
 				GitCommandResult checkoutResult = new CheckoutBranchGitCommand().Execute(gitModule, source, monitor);
 				if (!checkoutResult.Succeeded)
@@ -185,7 +185,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 			base.Dispatcher.Post(delegate
 			{
-				SetStatus(ForkPlusDialogStatus.InProgress, "Rebasing...");
+				SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Rebasing..."));
 			});
 			GitCommandResult rebaseBranchResult = new RebaseBranchGitCommand().Execute(gitModule, destination.ObjectName, rebaseMerges: false, updateRefs, monitor);
 			if (!rebaseBranchResult.Succeeded)
@@ -194,7 +194,7 @@ namespace ForkPlus.UI.Dialogs
 				{
 					base.Dispatcher.Post(delegate
 					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
+						SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Updating submodules..."));
 					});
 					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
@@ -207,7 +207,7 @@ namespace ForkPlus.UI.Dialogs
 			GitCommandResult applyStashResult = GitCommandResult.Success();
 			if (stashAndReapply && workingDirectoryIsDirty)
 			{
-				monitor.Update(10.0, "Applying stash...");
+				monitor.Update(10.0, PreferencesLocalization.Current("Applying stash..."));
 				applyStashResult = new ApplyStashGitCommand().Execute(gitModule, "stash@{0}", deleteAfterApply: true, monitor);
 			}
 			GitCommandResult updateSubmodulesResult = GitCommandResult.Success();
@@ -215,7 +215,7 @@ namespace ForkPlus.UI.Dialogs
 			{
 				base.Dispatcher.Post(delegate
 				{
-					SetStatus(ForkPlusDialogStatus.InProgress, "Updating submodules...");
+					SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.Current("Updating submodules..."));
 				});
 				updateSubmodulesResult = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}

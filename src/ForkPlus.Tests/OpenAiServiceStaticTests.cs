@@ -302,9 +302,42 @@ namespace ForkPlus.Tests
 		[Fact]
 		public void MatchesCommitMessageRegex_MultiLineMessage_NormalizesCrlf()
 		{
-			// title + description，pattern 用 Singleline 模式应能跨行匹配
+			// title + description 规范化为 title\ndescription；Go RE2 默认 `.` 不跨行，
+			// 显式用 (?s) 才允许跨行（与 Go 服务端语义一致）。
 			string message = "feat: title\r\n\r\ndescription body";
-			bool ok = OpenAiService.MatchesCommitMessageRegex(message, "feat: title.*description", out string error);
+			bool ok = OpenAiService.MatchesCommitMessageRegex(message, "(?s)feat: title.*description", out string error);
+			Assert.True(ok);
+			Assert.Null(error);
+		}
+
+		[Fact]
+		public void MatchesCommitMessageRegex_DotDoesNotCrossNewline_GoParity()
+		{
+			// 修复回归（2026-09-16）：原先 RegexOptions.Singleline 让 `.` 匹配 `\n`，
+			// `^feat: .+$` 在带 description 时本地通过、Go 服务端拒绝。
+			// Go RE2 默认 `.` 不跨换行：title 行匹配失败即整体不匹配。
+			string message = "feat: title\r\n\r\ndescription body";
+			bool ok = OpenAiService.MatchesCommitMessageRegex(message, "^feat: .+$", out string error);
+			Assert.False(ok);
+			Assert.NotNull(error);
+		}
+
+		[Fact]
+		public void MatchesCommitMessageRegex_TitleOnly_AnchoredPatternStillMatches()
+		{
+			// 无 description 时只有 title，`^feat: .+$` 应匹配。
+			string message = "feat: add login";
+			bool ok = OpenAiService.MatchesCommitMessageRegex(message, "^feat: .+$", out string error);
+			Assert.True(ok);
+			Assert.Null(error);
+		}
+
+		[Fact]
+		public void MatchesCommitMessageRegex_DescriptionSeparatedBySingleLf_MatchesExplicitNewlinePattern()
+		{
+			// 规范化后 title 与 description 之间恰好一个 LF：显式 `\n` 的正则可匹配。
+			string message = "feat: title\r\n\r\ndescription body";
+			bool ok = OpenAiService.MatchesCommitMessageRegex(message, "^feat: .+\\n.+", out string error);
 			Assert.True(ok);
 			Assert.Null(error);
 		}

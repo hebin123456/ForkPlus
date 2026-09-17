@@ -803,6 +803,12 @@ namespace ForkPlus.UI.Dialogs
 				// 作为“底图”放在最底层：警告/错误叠加标记需要压在其上面显示。
 				ZIndex = 0
 			};
+			// 2026-09-17：双击 Fork 图标 → 当前版本"更新内容"弹窗（版本 + RELEASE_NOTE.md
+			// 当前版本章节，markdown 渲染）——"加个关于弹窗"入口。
+			_logoImage.DoubleTapped += delegate
+			{
+				MainWindow.Commands.OpenReleaseNotes.Execute();
+			};
 			_logoImage.SetValue(Grid.RowSpanProperty, 2);
 			obj.Children.Add(_logoImage);
 		}

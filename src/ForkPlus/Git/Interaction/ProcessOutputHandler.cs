@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Interaction
 {
@@ -52,7 +53,7 @@ namespace ForkPlus.Git.Interaction
 				}
 				if (line.Contains("bash: /dev/tty: No such device or address"))
 				{
-					_monitor.AppendOutputLine("Cancel...");
+					_monitor.AppendOutputLine(PreferencesLocalization.Current("Cancel..."));
 					Thread.Sleep(100);
 					_monitor.Cancel();
 				}

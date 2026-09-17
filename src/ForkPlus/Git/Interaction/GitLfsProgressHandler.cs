@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Interaction
 {
@@ -99,7 +100,7 @@ namespace ForkPlus.Git.Interaction
 				double progress = 100.0 * num;
 				string text = FileSizeFormatter.Format(result3);
 				string text2 = FileSizeFormatter.Format(result4);
-				monitor.Update(progress, value + " " + value2 + " (" + text + " of " + text2 + ")");
+				monitor.Update(progress, PreferencesLocalization.Current(value) + " " + value2 + " " + PreferencesLocalization.FormatCurrent("({0} of {1})", text, text2));
 			}
 			else
 			{

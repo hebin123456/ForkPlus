@@ -9,6 +9,8 @@
     <!-- 不生成 .xml 文档注释导出文件（测试工程不需要 API 文档）。-->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- 诊断探针需 fixed 指针改写 HarfBuzzSharp 只读 span（与 Avalonia.HarfBuzz 内部同款手法）。-->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <!-- .NET 10 支持：Microsoft.NET.Test.Sdk 17.13+ 起官方支持 .NET 10。-->

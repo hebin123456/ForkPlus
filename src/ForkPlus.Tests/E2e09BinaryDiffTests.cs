@@ -5,7 +5,8 @@
 //   OverlayImage.ClipX）、OnionSkin 透明度滑块（Slider.Value → ValueChanged → NewOpacity）、
 //   HighlightPixels 像素差异高亮（header 开关真实点击序 → 设置 + NotificationCenter 通知 →
 //   OverlayImage.HighlightImageDiff）、图片切 Hex 视图（懒创建 HexDiffUserControl + 双 HexEditor）、
-//   非图片二进制默认 Hex 视图（FileDiffControl 直发 HexDiffUserControl 路径）。
+//   非图片二进制默认简略卡片视图 + 底部 Hex 切换（v3.7.2：Side-by-Side + Hex 两个按钮，
+//   Swipe/Onion Skin 隐藏）。
 // 截图 → docs/evidence/e2e/09-binarydiff/。
 // 测试经验（模块7/8 遗产）：改 ForkPlusSettings 后 finally 恢复 + Save() 落盘防污染；
 //   ToggleButton 生产点击序 = 先设 IsChecked 再 raise Click（UiClick.Click 只发事件）。
@@ -192,7 +193,7 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void BinaryFile_CommitView_NonImageBinary_ShowsHexViewDirectly()
+		public void BinaryFile_CommitView_NonImageBinary_ShowsCardsWithHexToggle()
 		{
 			string repo = TestRepoFactory.CreateBinary();
 			try
@@ -213,11 +214,29 @@ namespace ForkPlus.Tests
 						stage.UnstagedFilesFileListUserControl.SelectFile("data.bin");
 						Dispatcher.UIThread.RunJobs();
 
-						// 非图片小二进制（256→512 字节 < 阈值）→ FileDiffControl 直发 HexDiffUserControl
+						// v3.7.2：非图片小二进制（256→512 字节）→ 默认简略卡片视图
+						//（BinaryDiffUserControl），底部 Side-by-Side + Hex 两个切换按钮
+						BinaryDiffUserControl cards = null;
 						Assert.True(UiClick.WaitFor(delegate
 						{
-							return UiClick.FindAll<HexDiffUserControl>(window).Count == 1;
-						}), "非图片二进制应直发 HexDiffUserControl（CanLoadHexDiff 小文件路径）");
+							cards = UiClick.FindAll<BinaryDiffUserControl>(window).FirstOrDefault();
+							return cards != null;
+						}), "非图片二进制应默认显示简略卡片视图（BinaryDiffUserControl）");
+						// Swipe/Onion Skin 仅图片场景显示，此处应隐藏（只留并排 + 十六进制两个按钮）
+						Assert.True(!cards.SwipeRadioButton.IsVisible && !cards.OnionSkinRadioButton.IsVisible,
+							"非图片二进制应隐藏 Swipe/Onion Skin，只留 Side-by-Side + Hex");
+						Assert.True(cards.HexRadioButton.IsVisible,
+							"≤50MB 二进制预载字节后 Hex 按钮应可见");
+						Assert.True(UiClick.FindAll<HexDiffUserControl>(window).Count == 0,
+							"未点 Hex 前不应装配 HexDiffUserControl（懒加载）");
+
+						// 点击 Hex → 懒装配 HexDiffUserControl + 双 HexEditor
+						cards.HexRadioButton.IsChecked = true;
+						Dispatcher.UIThread.RunJobs();
+						Assert.True(UiClick.WaitFor(delegate
+						{
+							return cards.HexDiffViewContainer.IsVisible;
+						}), "Hex 单选后 HexDiffViewContainer 应显示");
 						Assert.True(UiClick.WaitFor(delegate
 						{
 							return UiClick.FindAll<HexEditor>(window).Count >= 2;
@@ -227,9 +246,6 @@ namespace ForkPlus.Tests
 							&& hexEditors[0].Text.Length > 0 && hexEditors[1].Text.Length > 0,
 							"两侧 HexEditor 应装配字节文本");
 						Assert.True(hexEditors[0].Text != hexEditors[1].Text, "256 字节 vs 512 字节两侧应不同");
-						// 无 BinaryDiffUserControl（图片视图控件不应出现）
-						Assert.True(UiClick.FindAll<BinaryDiffUserControl>(window).Count == 0,
-							"非图片二进制不应出现 BinaryDiffUserControl");
 						ScreenshotHelper.Snap(window, "08-binary-hex-view", "09-binarydiff");
 					}
 					finally

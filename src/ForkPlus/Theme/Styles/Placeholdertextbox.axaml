@@ -184,9 +184,23 @@
         <Setter Property="IsVisible" Value="True" />
     </Style>
     <!-- Migration note（2026-09-07 v3.14 修复）：原 WPF Trigger Icon=Null → iconElement Collapsed
-         曾被注释丢弃。:noicon 伪类由控件类维护，此处折叠（部件名本主题为小写 iconElement）。 -->
+          曾被注释丢弃。:noicon 伪类由控件类维护，此处折叠（部件名本主题为小写 iconElement）。 -->
     <Style Selector="^:noicon /template/ Image#iconElement">
         <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- 修复（2026-09-16，"提交框聚焦后边框变主题色，3.13.2 不变色"）：WPF 原版
+         CommitPlaceholderTextBox 的 ControlTemplate.Triggers 只有 Text=""/Icon=Null 两条——
+         基础样式里的 IsKeyboardFocused→SystemAccentBrush 触发器属于基础模板，被本模板整体
+         替换后失效，所以 3.13.2 提交框聚焦时边框保持 TextBox.Static.Border、禁用时也不降
+         不透明度。Avalonia 的 ControlTheme BasedOn 会把基础主题的嵌套样式（^:focus /
+         ^:disabled，按部件名匹配本模板的 Border#Border）一并继承进来照样生效 → 提交视图
+         打开即 Focus() 主题框（CommitUserControl.axaml.cs），边框常年显示主题色。此处用
+         同选择器的嵌套样式覆盖回 WPF 原版观感（后激活的同优先级样式覆盖先激活的）。 -->
+    <Style Selector="^:focus /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="1" />
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:CommitDescriptionTextBox}" TargetType="controls:CommitDescriptionTextBox" BasedOn="{StaticResource {x:Type controls:PlaceholderTextBox}}">
     <Setter Property="FontFamily" Value="Consolas" />
@@ -217,6 +231,15 @@
     </Style>
     <Style Selector="^:empty /template/ Border#PART_GuideLine">
         <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- 修复（2026-09-16，同上 CommitPlaceholderTextBox）：WPF 原版 CommitDescriptionTextBox
+         模板触发器只有 Text="" 三条，无聚焦/禁用触发 → 聚焦不变色、禁用不降透明度；
+         屏蔽基础主题继承来的 ^:focus/^:disabled 嵌套样式。 -->
+    <Style Selector="^:focus /template/ Border#Border">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextBox.Static.Border}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Border">
+        <Setter Property="Opacity" Value="1" />
     </Style></ControlTheme>
   <ControlTheme x:Key="{x:Type controls:ReferenceTextBox}" TargetType="controls:ReferenceTextBox" BasedOn="{StaticResource {x:Type controls:AutoCompleteTextBox}}" />
   <ControlTheme x:Key="{x:Type controls:SpellingPlaceholderTextBox}" TargetType="controls:SpellingPlaceholderTextBox" BasedOn="{StaticResource {x:Type controls:AutoCompleteTextBox}}" />

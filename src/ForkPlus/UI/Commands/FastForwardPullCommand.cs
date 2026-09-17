@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Commands
 			GitCommandResult gitCommandResult2 = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0)
 			{
-				monitor.Update(0.0, "Updating submodules...");
+				monitor.Update(0.0, PreferencesLocalization.Current("Updating submodules..."));
 				gitCommandResult2 = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
 			if (!gitCommandResult.Succeeded)
@@ -79,7 +79,7 @@ namespace ForkPlus.UI.Commands
 				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
 				return gitCommandResult2;
 			}
-			monitor.Success("Everything is up to date");
+			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
 			return gitCommandResult;
 		}
 	}

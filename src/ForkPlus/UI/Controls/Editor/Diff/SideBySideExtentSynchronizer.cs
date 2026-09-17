@@ -71,6 +71,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			[Null]
 			public EventHandler OurHandler;
 
+			[Null]
+			public EventHandler<AvaloniaPropertyChangedEventArgs> ViewportChangedHandler;
+
 			public bool Intercepted;
 
 			// 2026-09-15：该侧内容区宽（presenter.Viewport.Width），用于宽视口侧 extent
@@ -137,6 +140,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 					// 还原 presenter 的原生订阅：此后 SetScrollData 的 raise 重新由
 					// presenter 自行处理（extent 回落真实值，行为恢复原生）。
 					side.ScrollableChild.ScrollInvalidated += side.PresenterHandler;
+					if (side.Presenter != null && side.ViewportChangedHandler != null)
+					{
+						side.Presenter.PropertyChanged -= side.ViewportChangedHandler;
+					}
 					side.Intercepted = false;
 				}
 				if (side.BootstrapHandler != null)
@@ -175,6 +182,29 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			};
 			scrollable.ScrollInvalidated -= presenterHandler;
 			scrollable.ScrollInvalidated += ourHandler;
+			// 修复（2026-09-16，"行距统一后两侧水平滚动条 Maximum 差 13px 失步"）：
+			// 视口差补偿（RefreshViewportWidths）读的是 presenter.Viewport——该值只在
+			// presenter 的 Arrange 阶段更新（竖滚动条出现/消失占走 13px 布局宽）。
+			// 此前补偿依赖"行高同步器抬高 LineHeightFactor → 再来一轮 measure →
+			// SetScrollData 再 raise"这条 incidental 链路把 Handle 推迟到视口落定之后；
+			// 行槽统一为自然行高后（CJK 字体度量收紧）该额外轮次消失，最后一次
+			// Handle 发生在 vbar 占位 arrange 之前 → 用陈旧视口算出补偿 0，
+			// ScrollBarMaximum 两侧恒差 13px（拖到末端即错位，症状同修复前）。
+			// 根治：presenter.Viewport 变化时重发 ScrollInvalidated——复用同一管线
+			// （Handle → 刷新视口宽 → 补偿 patch → 转发 presenter/ScrollViewer/滚动条），
+			// 补偿时机不再依赖任何 incidental 的额外 measure 轮次。_updating 期间
+			// （Handle 转发自身写 presenter.Viewport）跳过防递归。
+			side.ViewportChangedHandler = delegate(object s, AvaloniaPropertyChangedEventArgs e)
+			{
+				if (e.Property == ScrollContentPresenter.ViewportProperty && !_updating && !_disposed)
+				{
+					// presenter 视口宽在转发之外变化（如后续窗口/滚动条布局变化且未触发
+					// 本侧 SetScrollData raise）——重发 ScrollInvalidated 走同一补偿管线。
+					// _updating 期间跳过防递归；转发引发的视口收敛由 Handle 的收敛循环处理。
+					((ILogicalScrollable)side.TextView).RaiseScrollInvalidated(EventArgs.Empty);
+				}
+			};
+			presenter.PropertyChanged += side.ViewportChangedHandler;
 			side.Presenter = presenter;
 			side.ScrollableChild = scrollable;
 			side.PresenterHandler = presenterHandler;
@@ -220,11 +250,43 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 						PatchAndForward(other);
 					}
 				}
+				// 收敛循环（2026-09-16，"两侧水平滚动条 Maximum 恒差 13px"根治）：
+				// PatchAndForward 的转发（UpdateFromScrollable）会把 presenter.Viewport
+				// 对齐到 TextView 本轮 measure 的视口——竖滚动条占走 13px 布局宽后的
+				// 真实视口（如 417→404）恰在此刻才落进 presenter，而本轮开头的
+				// RefreshViewportWidths 读到的还是 arrange 前的陈旧值 → 视口差补偿
+				// 算成 0，ScrollBarMaximum 两侧恒差 13px（拖到末端即错位）。此前该
+				// 时序缺陷被"行高同步器抬 LineHeightFactor → 额外一轮 measure →
+				// 再 raise"的 incidental 链路掩盖（行槽统一为自然行高后链路消失）。
+				// 现在转发后复查 presenter 视口宽，变化即用新值再补偿一轮（最多 3
+				// 轮，视口宽单调收敛不会震荡）。
+				for (int pass = 0; pass < 3 && PresenterViewportWidthsMoved(); pass++)
+				{
+					RefreshViewportWidths();
+					foreach (Side anySide in _sides)
+					{
+						PatchAndForward(anySide);
+					}
+				}
 			}
 			finally
 			{
 				_updating = false;
 			}
+		}
+
+		/// <summary>转发后 presenter 视口宽是否偏离 RefreshViewportWidths 刚快照的值
+		///（补偿基准过期 → 需要再收敛一轮）。</summary>
+		private bool PresenterViewportWidthsMoved()
+		{
+			foreach (Side side in _sides)
+			{
+				if (side.Presenter != null && Math.Abs(side.Presenter.Viewport.Width - side.ViewportWidth) > 0.5)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		// 修复（2026-09-15，"两水平滚动条拖到末端即失步"）：左编辑器竖滚动条 Hidden、

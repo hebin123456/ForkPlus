@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using ForkPlus.Jobs;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Commands
 {
@@ -43,7 +44,7 @@ namespace ForkPlus.Git.Commands
 					{
 						int num = _totalFiles - _files.Count;
 						double progress = 100.0 * (double)num / (double)_totalFiles;
-						_monitor.Update(progress, $"Staging {num}/{_totalFiles}...");
+						_monitor.Update(progress, PreferencesLocalization.FormatCurrent("Staging {0}/{1}...", num, _totalFiles));
 					}
 				}
 				lock (_fullOutput)

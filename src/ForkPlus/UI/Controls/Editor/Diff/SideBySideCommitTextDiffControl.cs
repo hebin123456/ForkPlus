@@ -88,6 +88,19 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
+		public bool ShowStageDiscardButtons
+		{
+			get
+			{
+				return _rightDiffCodeEditor.ShowStageDiscardButtons;
+			}
+			set
+			{
+				_leftDiffCodeEditor.ShowStageDiscardButtons = value;
+				_rightDiffCodeEditor.ShowStageDiscardButtons = value;
+			}
+		}
+
 		public global::Avalonia.Controls.Primitives.ScrollBarVisibility VerticalScrollBarVisibility
 		{
 			get

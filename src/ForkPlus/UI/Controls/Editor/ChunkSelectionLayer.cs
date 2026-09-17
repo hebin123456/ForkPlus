@@ -260,8 +260,19 @@ namespace ForkPlus.UI.Controls.Editor
 			ShowChunkAdorner(topPosition);
 		}
 
+		/// <summary>
+		/// 是否允许弹出选区/hunk 旁的悬浮按钮（ButtonsAdorner）。
+		/// 修复（2026-09-16）：AI 代码检视页面需屏蔽 暂存/丢弃 浮窗——
+		/// 由 diff 选择层按宿主编辑器开关覆写；默认 true 保持原行为。
+		/// </summary>
+		protected virtual bool ShowChunkButtons => true;
+
 		protected void ShowChunkAdorner(double popupTopPosition)
 		{
+			if (!ShowChunkButtons)
+			{
+				return;
+			}
 			// 渲染期间（DrawChunk 调用链）不可同步操作 AdornerLayer/Measure，否则会
 			// 与布局循环竞争甚至替换窗口内容；此处只记录最新位置并 Post 到 Render
 			// 优先级执行（防抖：高频调用只渲染最后一次位置）。
@@ -572,6 +583,20 @@ namespace ForkPlus.UI.Controls.Editor
 			}
 			Point position = _lastPointerPosition.GetValueOrDefault();
 			if (VisualTreeHelper.HitTest(_textEditor, position) == null)
+			{
+				return null;
+			}
+			// 修复（2026-09-16，"hover 高亮区域偏移 / 鼠标不在块上仍显示浮窗"）：
+			// WPF 原版中 TextEditor.GetPositionFromPoint 对 TextView 之外的点返回 null，
+			// 而 AvaloniaEdit 12 会把区外坐标钳制到最近的行——鼠标悬停在编辑器左侧的
+			// 滚动条/变更映射条（TextView 左边界之外）时，Y 若与某 hunk 行对齐就会
+			// 激活该 hunk 并弹出 Stage/Discard 浮窗；映射条上色块是按全文档比例缩放
+			// 定位的，与实际文本行位置错位，于是高亮落在未变化的行上（issue #1）。
+			// 这里把编辑器相对坐标换算到 TextView 坐标系，越界（左/右滚动条、搜索栏、
+			// 水平滚动条区域）一律视为不在任何块上。
+			TextView textView = _textEditor.TextArea.TextView;
+			Point? textAreaPosition = _textEditor.TranslatePoint(position, textView);
+			if (!textAreaPosition.HasValue || !textView.Bounds.Contains(textAreaPosition.Value))
 			{
 				return null;
 			}

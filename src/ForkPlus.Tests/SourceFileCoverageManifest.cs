@@ -930,6 +930,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Controls/ITreemapDelegate.cs",
 				"src/ForkPlus/UI/Controls/KeyGestureTextConverter.cs",
 				"src/ForkPlus/UI/Controls/LevelToIndentationConverter.cs",
+				"src/ForkPlus/UI/Controls/MarkdownNotesRenderer.cs",
 				"src/ForkPlus/UI/Controls/ModernTabControl.cs",
 				"src/ForkPlus/UI/Controls/MultiselectionTreeView.cs",
 				"src/ForkPlus/UI/Controls/MenuHeaderTextConverter.cs",

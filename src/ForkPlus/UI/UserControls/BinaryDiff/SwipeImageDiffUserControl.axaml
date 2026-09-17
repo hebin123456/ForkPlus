@@ -36,15 +36,16 @@
     <DockPanel LastChildFill="False">
       <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" HorizontalAlignment="Left">
         <Grid HorizontalAlignment="Left">
-          <TextBlock Margin="0,10,0,6" x:Name="OldLfsLabel" Theme="{DynamicResource LfsLabel}" />
-          <TextBlock Margin="0,10,0,6" x:Name="OldNotLfsLabel" Theme="{DynamicResource NotLfsLabel}" />
+          <!-- 修复（2026-09-16）：文本在用点本地值给出（Theme 的 Text setter 不生效），见 BinaryContentUserControl 注释。 -->
+          <TextBlock Margin="0,10,0,6" x:Name="OldLfsLabel" Text="LFS" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Margin="0,10,0,6" x:Name="OldNotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
         </Grid>
         <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="old" HorizontalAlignment="Right" Foreground="{DynamicResource Diff.Removed.Foreground}" x:Name="OldTextBlock" />
       </StackPanel>
       <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right">
         <Grid HorizontalAlignment="Right">
-          <TextBlock Margin="0,10,0,6" x:Name="NewLfsLabel" Theme="{DynamicResource LfsLabel}" />
-          <TextBlock Margin="0,10,0,6" x:Name="NewNotLfsLabel" Theme="{DynamicResource NotLfsLabel}" />
+          <TextBlock Margin="0,10,0,6" x:Name="NewLfsLabel" Text="LFS" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Margin="0,10,0,6" x:Name="NewNotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
         </Grid>
         <TextBlock Margin="4,10,0,6" FontSize="13" FontWeight="Medium" Text="new" HorizontalAlignment="Right" Foreground="{DynamicResource Diff.Added.Foreground}" x:Name="NewTextBlock" />
       </StackPanel>

@@ -9,6 +9,7 @@ using ForkPlus.Biturbo;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.Settings;
+using ForkPlus.UI.UserControls.Preferences;
 
 namespace ForkPlus.Git.Interaction
 {
@@ -114,7 +115,7 @@ namespace ForkPlus.Git.Interaction
 				num++;
 				if (num > 1)
 				{
-					monitor.AppendOutputLine("\nRepository is locked. Retrying...\n");
+					monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Repository is locked. Retrying...") + "\n");
 					Thread.Sleep(num * 500);
 				}
 				bool isLocked = false;
@@ -578,7 +579,7 @@ namespace ForkPlus.Git.Interaction
 				num++;
 				if (num > 1)
 				{
-					monitor.AppendOutputLine("\nRepository is locked. Retrying...\n");
+					monitor.AppendOutputLine("\n" + PreferencesLocalization.Current("Repository is locked. Retrying...") + "\n");
 					Thread.Sleep(num * 500);
 					monitor.Append(_path, _command);
 				}

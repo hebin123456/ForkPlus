@@ -88,7 +88,7 @@ namespace ForkPlus.UI.Commands
 		{
 			if (stashAndReapply && workingDirectoryIsDirty)
 			{
-				monitor.Update(10.0, "Stashing...");
+				monitor.Update(10.0, PreferencesLocalization.Current("Stashing..."));
 				GitCommandResult<bool> gitCommandResult = new SaveStashGitCommand().Execute(gitModule, $"Pull autostash {DateTime.Now}", stageNewFiles: false, monitor);
 				if (!gitCommandResult.Succeeded)
 				{
@@ -100,7 +100,7 @@ namespace ForkPlus.UI.Commands
 			{
 				if (submodulesToUpdate.Length > 0)
 				{
-					monitor.Update(0.0, "Updating submodules...");
+					monitor.Update(0.0, PreferencesLocalization.Current("Updating submodules..."));
 					new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 				}
 				monitor.Fail(PreferencesLocalization.Current("Pull failed"));
@@ -109,13 +109,13 @@ namespace ForkPlus.UI.Commands
 			GitCommandResult gitCommandResult3 = GitCommandResult.Success();
 			if (stashAndReapply && workingDirectoryIsDirty)
 			{
-				monitor.Update(10.0, "Applying stash...");
+				monitor.Update(10.0, PreferencesLocalization.Current("Applying stash..."));
 				gitCommandResult3 = new ApplyStashGitCommand().Execute(gitModule, "stash@{0}", deleteAfterApply: true, monitor);
 			}
 			GitCommandResult gitCommandResult4 = GitCommandResult.Success();
 			if (submodulesToUpdate.Length > 0)
 			{
-				monitor.Update(0.0, "Updating submodules...");
+				monitor.Update(0.0, PreferencesLocalization.Current("Updating submodules..."));
 				gitCommandResult4 = new UpdateSubmodulesGitCommand().Execute(gitModule, submodulesToUpdate, monitor);
 			}
 			if (!gitCommandResult3.Succeeded)
@@ -128,7 +128,7 @@ namespace ForkPlus.UI.Commands
 				monitor.Fail(PreferencesLocalization.Current("Update submodules failed"));
 				return gitCommandResult4;
 			}
-			monitor.Success("Everything is up to date");
+			monitor.Success(PreferencesLocalization.Current("Everything is up to date"));
 			return gitCommandResult2;
 		}
 	}

@@ -93,7 +93,12 @@
       <ToggleButton Margin="0" Padding="4,0" Height="22" ToolTip.Tip="Switch orientation" IsCheckedChanged="LayoutOrientationToggleButton_Changed" x:Name="LayoutOrientationToggleButton">
         <Image Source="{DynamicResource HorizontalMergerIcon}" Width="16" Height="16" VerticalAlignment="Center" x:Name="LayoutOrientationToggleButtonImage" />
       </ToggleButton>
-      <controls:AiActionButton ActionVerb="Resolve" Margin="6,0,0,0" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts" x:Name="AiResolveButton" />
+      <Border Margin="8,0,0,0" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource Button.Static.Background}" Padding="10,4,10,4" x:Name="AiResolveContainer">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="Use AI to resolve all conflicts" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" VerticalAlignment="Center" />
+          <controls:AiActionButton ActionVerb="Resolve" Margin="0" Padding="10,0,10,0" Height="24" FontSize="13" BorderThickness="1,1,1,1" Theme="{DynamicResource CommitButtonHiddenDropdownStyle}" Click="AiResolveButton_Click" ToolTip.Tip="Use AI to resolve all conflicts" x:Name="AiResolveButton" />
+        </StackPanel>
+      </Border>
     </DockPanel>
   </Grid>
 </local:ForkPlusDialogWindow>
