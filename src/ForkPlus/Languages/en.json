@@ -54,6 +54,7 @@
     "Hex": "Hex",
     "Before Modification": "Before Modification",
     "After Modification": "After Modification",
+    "Allow empty commit": "Allow empty commit",
     "Reflog": "Reflog",
     "Reflog History": "Reflog History",
     "View Reflog...": "View Reflog...",

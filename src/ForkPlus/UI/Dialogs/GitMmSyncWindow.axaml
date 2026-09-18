@@ -1,42 +1,38 @@
 <dialogs:ForkPlusDialogWindow Width="560" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.GitMmSyncWindow" xmlns="https://github.com/avaloniaui">
   <Grid>
     <Grid.Resources>
+      <ControlTheme x:Key="GitMmAdvancedOptionsHeaderToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="ToggleButton">
+              <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
+                <DockPanel Margin="{TemplateBinding Padding}">
+                  <TextBlock Text="&gt;" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
+                  <ContentPresenter Content="{TemplateBinding Content}" Margin="4,0,0,0" VerticalAlignment="Center" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </DockPanel>
+              </Border>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Style Selector="^:checked /template/ TextBlock#ArrowText">
+          <Setter Property="Text" Value="v" />
+        </Style>
+      </ControlTheme>
       <ControlTheme x:Key="GitMmAdvancedOptionsExpanderStyle" TargetType="Expander">
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Expander">
               <DockPanel>
-                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left">
-                  <ToggleButton.Template>
-                    <ControlTemplate TargetType="ToggleButton">
-                      <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="0">
-                        <DockPanel Margin="{TemplateBinding Padding}">
-                          <TextBlock Text="&gt;" Width="12" VerticalAlignment="Center" x:Name="ArrowText" />
-                          <ContentPresenter Content="{TemplateBinding Content}" Margin="4,0,0,0" VerticalAlignment="Center"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                        </DockPanel>
-                      </Border>
-                      <!--
-      WPF migration note: ControlTemplate.Triggers（裸模板资源）：Avalonia 无等价，条件样式须移至 ControlTheme 嵌套样式。
-      原始片段：
-      <ControlTemplate.Triggers xmlns="https://github.com/avaloniaui">
-                              <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ArrowText" Property="Text" Value="v" />
-                              </Trigger>
-                            </ControlTemplate.Triggers>
-    -->
-                    </ControlTemplate>
-                  </ToggleButton.Template>
-                </ToggleButton>
-                <ContentPresenter Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False"  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Header}" Padding="6,3" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource BackgroundBrush}" HorizontalContentAlignment="Left" Theme="{StaticResource GitMmAdvancedOptionsHeaderToggleStyle}" />
+                <ContentPresenter Content="{TemplateBinding Content}" DockPanel.Dock="Bottom" x:Name="ExpandSite" IsVisible="False" ContentTemplate="{TemplateBinding ContentTemplate}"/>
               </DockPanel>
-              
             </ControlTemplate>
           </Setter.Value>
         </Setter>
-      
-    <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
-        <Setter Property="IsVisible" Value="True" />
-    </Style></ControlTheme>
+        <Style Selector="^:expanded /template/ ContentPresenter#ExpandSite">
+          <Setter Property="IsVisible" Value="True" />
+        </Style>
+      </ControlTheme>
     </Grid.Resources>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />

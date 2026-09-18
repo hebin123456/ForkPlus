@@ -1236,6 +1236,7 @@
     "No remotes configured. Please add an upstream remote first.": "未設定遠端倉庫。請先新增 upstream 遠端。",
     "No tracking": "不追蹤",
     "No update manifest": "不更新清單",
+    "Allow empty commit": "允許空提交",
     "Non-default branch": "非預設分支",
     "Non-default: {0}": "非預設：{0}",
     "Not available": "不可用",

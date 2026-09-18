@@ -1237,6 +1237,7 @@
     "No remotes configured. Please add an upstream remote first.": "リモートが設定されていません。先にupstreamリモートを追加してください。",
     "No tracking": "追跡なし",
     "No update manifest": "マニフェストを更新しない",
+    "Allow empty commit": "空コミットを許可",
     "Non-default branch": "非デフォルトブランチ",
     "Non-default: {0}": "非デフォルト: {0}",
     "Not available": "利用不可",

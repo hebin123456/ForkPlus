@@ -1237,6 +1237,7 @@
     "No remotes configured. Please add an upstream remote first.": "원격 저장소가 구성되지 않았습니다. 먼저 upstream 원격을 추가하세요.",
     "No tracking": "추적 안 함",
     "No update manifest": "매니페스트 업데이트 안 함",
+    "Allow empty commit": "빈 커밋 허용",
     "Non-default branch": "비기본 브랜치",
     "Non-default: {0}": "비기본: {0}",
     "Not available": "사용할 수 없음",

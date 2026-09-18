@@ -1237,6 +1237,7 @@
     "No remotes configured. Please add an upstream remote first.": "Aucun distant configuré. Veuillez d'abord ajouter un distant upstream.",
     "No tracking": "Pas de suivi",
     "No update manifest": "Pas de mise à jour du manifeste",
+    "Allow empty commit": "Autoriser un commit vide",
     "Non-default branch": "Branche non par défaut",
     "Non-default: {0}": "Non par défaut : {0}",
     "Not available": "Non disponible",

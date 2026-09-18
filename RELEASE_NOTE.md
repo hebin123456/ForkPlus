@@ -2,6 +2,27 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.1.5
+
+> Git Mm 上传 / 开始 / 同步三个弹窗的"高级选项"展开箭头迁移后固定为 ">" 不翻转，本版补回 Avalonia 的 `:checked` 样式（展开后箭头转为 "v"）并保持三处一致；上传弹窗新增"允许空提交"选项（`--honor-no-changes`，含记住上次勾选与命令预览联动，补齐 8 语言翻译）；应用版本号升至 4.1.5。
+
+### 新增
+
+- **上传弹窗"允许空提交"选项（`--honor-no-changes`，8 语言国际化）**：Git Mm 上传弹窗高级选项区新增"允许空提交 / Allow empty commit"复选框，勾选后 `git mm upload` 命令追加 `--honor-no-changes`；选项状态走既有 DialogOptions 持久化（`upload.honorNoChanges`），并与右侧命令预览实时联动；English / 简体中文 / 繁體中文 / Deutsch / Español / Français / 日本語 / 한국어 8 种语言均已补充翻译词条。
+
+### 修复
+
+- **"高级选项"展开箭头状态不变（上传 / 开始 / 同步三弹窗）**：三个 Git Mm 弹窗各自内联了一份 `GitMmAdvancedOptionsExpanderStyle`（Expander 主题），其中内层 ToggleButton 模板里的箭头 `TextBlock#ArrowText`（初始 ">"）展开时切换为 "v" 的 WPF `ControlTemplate.Triggers` 在 Avalonia 迁移时被丢弃（代码注释已声明），导致高级选项展开后左侧箭头仍显示 ">"。修复：把内层 ToggleButton 拆为独立命名主题 `GitMmAdvancedOptionsHeaderToggleStyle`，并在其内部补回 `:checked` 样式（勾选时箭头文本由 ">" 转为 "v"），三处弹窗统一应用，行为与共享 Expander 主题一致。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.1.5-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.1.5-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.1.5-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.1.5-macos-arm64.zip` |
+
 ## v4.1.4
 
 > FileDiff 行间距收紧 + 行密度对齐 WPF 3.13.2（36 行 → 43 行）+ FileDiff 大区域拖选界面失控弹跳/首次拖选冻结 + AI 窗口 WebView2 用户数据目录重定向 + Commit 消息组件样式对齐 + 可搜索远端分组子菜单（"检查远端同步状态"/"跟踪"）系列修复：v4.1.2 修"左右视图行不对齐"时，因全局 CJK 回退字体 Noto Sans CJK SC 垂直度量偏宽（1.448em，Windows DWrite 下实测 1.619em），含中文文件的行自然高超出默认行槽，行高同步器被迫把全部行槽抬到 CJK 自然行高，行间距明显变宽。本版从根因治理（两步）：内嵌 CJK 字体度量收紧到 1.16em + CodeEditor/HexEditor 显式 LineHeightFactor=1.0，行间距恢复且行密度（同视口可见行数）与 WPF 3.13.2 完全一致；左右行对齐、行号基线对齐全部保持不变。另修复 FileDiff 大区域从下往上拖选（准备暂存）时视口逐事件"居中跳变"最终弹跳到文档顶部、以及悬浮按钮首次构建时拖选选区冻结在两行的问题，修复 Windows 上打开 AI 辅助开发 / AI 解释窗口在程序目录释放 WebView2 用户数据目录的问题，并将 Commit 消息组件样式与 WPF 3.13.2 对齐；同时修复"检查远端同步状态"/"跟踪"右键二级菜单点搜索框整个菜单直接消失、子菜单滚动条拉不动且一点列表框就消失、展示所有分支的弹框宽度偏宽、子菜单搜索框无法获得焦点无法输入的问题。

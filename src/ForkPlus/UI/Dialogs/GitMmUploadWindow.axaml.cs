@@ -63,6 +63,7 @@ namespace ForkPlus.UI.Dialogs
 			AddFlag(args, ReadyCheckBox, "--ready");
 			AddFlag(args, WipCheckBox, "--wip");
 			AddFlag(args, NoUpdateManifestCheckBox, "-N");
+			AddFlag(args, HonorNoChangesCheckBox, "--honor-no-changes");
 			return args.ToArray();
 		}
 
@@ -98,6 +99,7 @@ namespace ForkPlus.UI.Dialogs
 			ReadyCheckBox.IsChecked = IsDialogOptionChecked(settings, "upload.ready");
 			WipCheckBox.IsChecked = IsDialogOptionChecked(settings, "upload.wip");
 			NoUpdateManifestCheckBox.IsChecked = IsDialogOptionChecked(settings, "upload.noUpdateManifest");
+			HonorNoChangesCheckBox.IsChecked = IsDialogOptionChecked(settings, "upload.honorNoChanges");
 		}
 
 		private static bool IsDialogOptionChecked(ForkPlusSettings.GitMmSettings settings, string key, bool defaultValue = false)
@@ -119,10 +121,11 @@ namespace ForkPlus.UI.Dialogs
 				HeadCheckBox,
 				ReadyCheckBox,
 				WipCheckBox,
-				NoUpdateManifestCheckBox
+				NoUpdateManifestCheckBox,
+				HonorNoChangesCheckBox
 			})
 			{
-				checkBox.IsCheckedChanged+=delegate { RefreshCommandPreview(); };
+				checkBox.IsCheckedChanged += delegate { RefreshCommandPreview(); };
 			}
 		}
 
@@ -162,6 +165,7 @@ namespace ForkPlus.UI.Dialogs
 			SaveCheckBox(dialogOptions, "upload.ready", ReadyCheckBox);
 			SaveCheckBox(dialogOptions, "upload.wip", WipCheckBox);
 			SaveCheckBox(dialogOptions, "upload.noUpdateManifest", NoUpdateManifestCheckBox);
+			SaveCheckBox(dialogOptions, "upload.honorNoChanges", HonorNoChangesCheckBox);
 			ForkPlusSettings.Default.GitMm = new ForkPlusSettings.GitMmSettings(
 				settings.Workspaces,
 				settings.ActiveWorkspace,
