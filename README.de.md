@@ -12,7 +12,7 @@ Ein plattformübergreifender Git-Client: Die UI-Schicht ist auf .NET 10 + Avalon
 
 ## Hauptfunktionen
 
-- **Plattformübergreifend**: Auf Avalonia 12 basierende UI-Schicht; die CI erzeugt parallel Builds für Windows x64 / Linux x64 / macOS arm64, veröffentlicht als eigenständige (self-contained) Builds (keine Installation der .NET-Runtime nötig)
+- **Plattformübergreifend**: Auf Avalonia 12 basierende UI-Schicht; die CI erzeugt parallel Builds für Windows x64 / Linux x64 / Linux ARM64 / macOS arm64, veröffentlicht als eigenständige (self-contained) Builds (keine Installation der .NET-Runtime nötig)
 - **Mehrsprachigkeit**: 8 integrierte Sprachen (Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Spanisch), per JSON-Dateien erweiterbar
 - **Mehrere Themes**: 12 eingebaute Skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Lila/Grün hell & dunkel) sowie benutzerdefinierte Farbüberschreibungen, die sofort angewendet werden
 - **git mm-Workflow**: Mitgelieferter `git mm`-Unterbefehl für Lean-Branching-Workflows zur einheitlichen Verwaltung und Synchronisierung von Änderungen über mehrere Sub-Repositories
@@ -80,11 +80,12 @@ Das native biturbo-Add-on (Rust) bietet Treemap-Layout, Commit-Graph-Caching, Re
 |------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so` (das Artefakt `libbiturbo-arm64.so` aus dem Biturbo-Release herunterladen und umbenennen) |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 Mechanismen (siehe [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)):
 
-- `RestoreBiturbo`-Target (`BeforeTargets=Build`): lädt die fehlende native Bibliothek der aktuellen Plattform automatisch herunter (PowerShell unter Windows, bash + curl unter Linux/macOS mit Auswahl von `.so` / `.dylib` per `uname -s`, jeweils mit Wiederholungen)
+- `RestoreBiturbo`-Target (`BeforeTargets=Build`): lädt die fehlende native Bibliothek der aktuellen Plattform automatisch herunter (PowerShell unter Windows, bash + curl unter Linux/macOS mit Auswahl von `.so` / `.dylib` per `uname -s`, unter Linux zusätzlich aarch64-Verzweigung per `uname -m`, jeweils mit Wiederholungen)
 - `CopyHelperExecutables` / `PublishHelperExecutables`-Targets (`AfterTargets=Build` / `Publish`): kopieren die native Bibliothek und die AskPass/RI-Hilfsprogrammausgaben in die Build-/Publish-Verzeichnisse
 - `.gitignore` schließt diese Dateien unter `third_party/` bereits aus
 
@@ -95,8 +96,8 @@ Daher benötigt der erste Build Netzwerkzugriff auf GitHub; in der CI lädt der 
 [tokei](https://github.com/XAMPPRocky/tokei) (MIT-lizenziert) treibt das Panel „Codezeilen“ an. Zur Build-Zeit wird das **vorkompilierte Binärprogramm** aus dem neuesten Release des Repositorys [hebin123456/tokei](https://github.com/hebin123456/tokei) bezogen — keine lokale Rust-Toolchain nötig:
 
 - Windows x64 → reine exe, gespeichert als `third_party/tokei.exe`
-- Linux x64 / macOS → tar.gz (enthält das reine `tokei`-Binärprogramm), entpackt nach `third_party/tokei`
-- Das macOS-Artefakt ist x86_64 und läuft auf Apple Silicon über Rosetta 2
+- Linux x64 / Linux arm64 / macOS → tar.gz (enthält das reine `tokei`-Binärprogramm), entpackt nach `third_party/tokei`
+- Linux arm64 verwendet das Artefakt `tokei-aarch64-unknown-linux-gnu.tar.gz`; das macOS-Artefakt ist x86_64 und läuft auf Apple Silicon über Rosetta 2
 
 Gleicher Mechanismus wie bei biturbo: das `RestoreTokei`-Target (`BeforeTargets=Build`) holt es automatisch, die CI lädt und prüft es explizit, und `.gitignore` schließt die Artefakte aus.
 
@@ -111,12 +112,13 @@ Die Diagrammbibliothek [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-ava
 
 ### Kontinuierliche Integration
 
-Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build.yml`](.github/workflows/build.yml)): Beim Push eines `v*`-Tags oder manuellem Start wird parallel auf drei Plattformen kompiliert, die Artefakte hochgeladen und die vollständige Unit- + E2E-Testsuite auf einem Linux-Runner ausgeführt; nachdem alles bestanden ist, wird automatisch ein Release veröffentlicht (Drei-Plattform-Zip-Anhänge):
+Das Projekt ist mit GitHub Actions konfiguriert ([`.github/workflows/build.yml`](.github/workflows/build.yml)): Beim Push eines `v*`-Tags oder manuellem Start wird parallel auf vier Plattformen kompiliert, die Artefakte hochgeladen und die vollständige Unit- + E2E-Testsuite auf einem Linux-Runner ausgeführt; nachdem alles bestanden ist, wird automatisch ein Release veröffentlicht (Vier-Plattform-Zip-Anhänge):
 
 | Matrix | Runner | RID |
 |--------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm (nativer ARM64-Runner, für öffentliche Repositories kostenlos) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 Die Artefakte sind **eigenständige (self-contained) Publishes** (die .NET-10-Runtime ist gebündelt; auf dem Zielrechner muss nichts installiert werden) und enthalten die Haupt-App, die AskPass/RI-Hilfsprogramme (ebenfalls eigenständig, damit die Git-Credential- und Interactive-Rebase-Abläufe auch ohne Runtime funktionieren), die biturbo-Nativbibliothek der Plattform, tokei und die Sprachdateien (linux-x64 ca. 125 MB). Die Zip-Anhänge der Releases finden Sie auf der [Releases-Seite](https://github.com/hebin123456/ForkPlus/releases); Artefakte manueller (ungetaggter) Builds können über den entsprechenden Lauf auf der [Actions](https://github.com/hebin123456/ForkPlus/actions)-Seite heruntergeladen werden (Artifacts, 14 Tage aufbewahrt).
@@ -124,7 +126,7 @@ Die Artefakte sind **eigenständige (self-contained) Publishes** (die .NET-10-Ru
 ## Tests
 
 - Einheitentests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (inkl. plattformübergreifender Avalonia.Headless-UI-Rauch- und End-to-End-Tests, zusammen mit den Einheitentests)
-- Insgesamt 4400+ Fälle; jeder wichtige Fix hat eine Regressionssicherung (schlägt sie fehl, werden die Tests rot)
+- Insgesamt 4200+ Fälle; jeder wichtige Fix hat eine Regressionssicherung (schlägt sie fehl, werden die Tests rot)
 - Die CI führt bei Tag-Builds und manuellem Start auf einem Ubuntu-Runner die vollständige Suite (inkl. der Tests der AskPass-/RI-Hilfsprogramme) aus; sie hängt von gitflow-avh und git-lfs ab (siehe die Workflow-Kommentare)
 
 ## Mehrsprachigkeitsunterstützung
@@ -171,8 +173,17 @@ Die Codebasis verwendet die folgenden APIs für die Internationalisierung:
 ## Download
 
 - CI-Build-Artefakte (manuelle, ungetaggte Läufe): [Actions](https://github.com/hebin123456/ForkPlus/actions)-Seite → der entsprechende Build-Lauf → Artifacts (eigenständig, .NET-10-Runtime gebündelt, nichts zu installieren)
-- Offizielle Releases: [Releases-Seite](https://github.com/hebin123456/ForkPlus/releases) (eigenständig, .NET-10-Runtime gebündelt, nichts zu installieren, Drei-Plattform-Zips)
+- Offizielle Releases: [Releases-Seite](https://github.com/hebin123456/ForkPlus/releases) (eigenständig, .NET-10-Runtime gebündelt, nichts zu installieren, Vier-Plattform-Zips)
 - Die Änderungen der einzelnen Versionen finden Sie in den [Release Notes](RELEASE_NOTE.md) (inkl. der Geschichte der WPF-Edition)
+
+## Git-/Git-AI-Clients
+
+Die Repository-Operationen von ForkPlus hängen vom `git` der Systemumgebung ab, die KI-Funktionen von `git-ai`. Wir empfehlen die in folgenden Repositories veröffentlichten Clients:
+
+- **Git**: [hebin123456/git-release](https://github.com/hebin123456/git-release/releases) (empfohlener Git-Client; Builds für Windows / Linux / macOS)
+- **Git-AI**: [hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases) (empfohlener Git-AI-Client; Builds für alle Plattformen und Architekturen)
+
+Legen Sie die heruntergeladenen `git`- und `git-ai`-Programme in den System-PATH oder geben Sie den Pfad über die Git-Instanzauswahl der ForkPlus-Einstellungen an. Unter Git 2.40 erscheint beim Start eine Warnung, und einige Funktionen können fehlerhaft sein (in der App integriertes Git: 2.50.1; Rückfall auf das System-Git, wenn es fehlt).
 
 ## Entwicklungskonventionen
 

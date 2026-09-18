@@ -12,7 +12,7 @@
 
 ## 주요 기능
 
-- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Linux x64 / macOS arm64 3개 플랫폼 빌드를 병렬 생성하고, 자체 포함(self-contained) 방식으로 게시(.NET 런타임 설치 불필요)
+- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 4개 플랫폼 빌드를 병렬 생성하고, 자체 포함(self-contained) 방식으로 게시(.NET 런타임 설치 불필요)
 - **다국어 지원**: 영어, 간체 중국어, 번체 중국어, 일본어, 한국어, 프랑스어, 독일어, 스페인어 8개 언어 내장, JSON 파일로 추가 언어 확장 지원
 - **다중 테마 스킨**: 12개 내장 스킨(Light/Dark, Solarized, GitHub, Dracula, Monokai, 보라/초록 라이트&다크)과 사용자 정의 색상 덮어쓰기를 즉시 적용
 - **git mm 워크플로우**: `git mm` 하위 명령을 내장하여 린 브랜칭(Lean Branching) 워크플로우로 여러 서브 저장소의 변경과 동기를 통합 관리
@@ -79,11 +79,12 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 |------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so`(Biturbo release의 `libbiturbo-arm64.so` 에셋을 다운로드한 뒤 이름 변경) |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 구체적인 메커니즘([ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj) 참조):
 
-- `RestoreBiturbo` 타깃(`BeforeTargets=Build`): 현재 플랫폼의 네이티브 라이브러리가 없으면 자동 다운로드(Windows는 PowerShell, Linux/macOS는 bash + curl로 `uname -s`에 따라 `.so` / `.dylib` 선택, 모두 재시도 포함)
+- `RestoreBiturbo` 타깃(`BeforeTargets=Build`): 현재 플랫폼의 네이티브 라이브러리가 없으면 자동 다운로드(Windows는 PowerShell, Linux/macOS는 bash + curl로 `uname -s`에 따라 `.so` / `.dylib` 선택, Linux는 다시 `uname -m`으로 aarch64 분기, 모두 재시도 포함)
 - `CopyHelperExecutables` / `PublishHelperExecutables` 타깃(`AfterTargets=Build` / `Publish`): 네이티브 라이브러리와 AskPass/RI 하위 프로세스 산출물을 Build / Publish 출력 디렉터리로 복사
 - `.gitignore`가 `third_party/`의 이 파일들을 이미 제외함
 
@@ -94,8 +95,8 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 [tokei](https://github.com/XAMPPRocky/tokei)(MIT 라이선스)는 통계 패널의 "코드 라인 수" 기능에 사용됩니다. 빌드 시 [hebin123456/tokei](https://github.com/hebin123456/tokei) 저장소의 최신 Release에서 **사전 컴파일된 바이너리**를 가져오므로 로컬 Rust 툴체인이 필요 없습니다:
 
 - Windows x64 → 단일 exe, `third_party/tokei.exe`로 저장
-- Linux x64 / macOS → tar.gz(단일 `tokei` 바이너리 포함), 압축 해제 후 `third_party/tokei`로 저장
-- macOS 에셋은 x86_64이며 Apple Silicon에서는 Rosetta 2를 통해 실행
+- Linux x64 / Linux arm64 / macOS → tar.gz(단일 `tokei` 바이너리 포함), 압축 해제 후 `third_party/tokei`로 저장
+- Linux arm64는 `tokei-aarch64-unknown-linux-gnu.tar.gz` 에셋 사용. macOS 에셋은 x86_64이며 Apple Silicon에서는 Rosetta 2를 통해 실행
 
 메커니즘은 biturbo와 동일: `RestoreTokei` 타깃(`BeforeTargets=Build`)이 자동으로 가져오고, CI가 명시적으로 다운로드·검증하며, `.gitignore`가 산출물을 제외합니다.
 
@@ -110,12 +111,13 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 
 ### 지속적 통합
 
-프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `v*` 태그를 push하거나 수동 트리거하면 3개 플랫폼에서 병렬 빌드 후 산출물을 업로드하고, Linux 러너에서 단위 + E2E 테스트 스위트 전체를 실행하며, 모두 통과하면 Release(3개 플랫폼 zip 첨부)를 자동 게시합니다:
+프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `v*` 태그를 push하거나 수동 트리거하면 4개 플랫폼에서 병렬 빌드 후 산출물을 업로드하고, Linux 러너에서 단위 + E2E 테스트 스위트 전체를 실행하며, 모두 통과하면 Release(4개 플랫폼 zip 첨부)를 자동 게시합니다:
 
 | 매트릭스 | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm(네이티브 ARM64 러너, 공개 저장소 무료) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 산출물은 **자체 포함(self-contained) 게시**(.NET 10 런타임 동봉, 대상 머신에는 아무것도 설치할 필요 없음)로, 메인 앱, AskPass/RI 도우미(역시 자체 포함이라 런타임 없는 환경에서도 git 자격 증명 입력과 인터랙티브 rebase 흐름이 동작합니다), 해당 플랫폼의 biturbo native 라이브러리, tokei, 언어 파일을 포함합니다(linux-x64 기준 약 125MB). 릴리스 버전의 zip 첨부는 [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)에서, 태그 없는 수동 빌드 산출물은 저장소의 [Actions](https://github.com/hebin123456/ForkPlus/actions) 페이지에서 해당 실행의 Artifacts(14일 보관)로 다운로드할 수 있습니다.
@@ -123,7 +125,7 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 ## 테스트
 
 - 단위 테스트: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`(크로스 플랫폼 Avalonia.Headless UI 스모크·E2E 테스트 포함, 단위 테스트와 함께 실행)
-- 전체 4400+ 케이스. 주요 수정에는 모두 회귀 방어 테스트가 있습니다(실패하면 테스트가 빨간불이 됩니다)
+- 전체 4200+ 케이스. 주요 수정에는 모두 회귀 방어 테스트가 있습니다(실패하면 테스트가 빨간불이 됩니다)
 - CI는 태그 빌드와 수동 트리거 시 ubuntu 러너에서 전체 스위트(AskPass / RI 도우미 테스트 포함)를 실행합니다. gitflow-avh와 git-lfs에 의존합니다(workflow 주석 참조)
 
 ## 다국어 지원
@@ -170,8 +172,17 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 ## 다운로드
 
 - CI 빌드 산출물(태그 없는 수동 실행): [Actions](https://github.com/hebin123456/ForkPlus/actions) 페이지 → 해당 build 실행 → Artifacts(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요)
-- 정식 릴리스: [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요, 3개 플랫폼 zip)
+- 정식 릴리스: [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요, 4개 플랫폼 zip)
 - 각 버전의 변경 사항은 [Release Notes](RELEASE_NOTE.md)를 참조하세요(원본 WPF 버전의 역사 포함)
+
+## Git / Git-AI 클라이언트
+
+ForkPlus의 저장소 작업은 시스템 환경의 `git`에, AI 관련 기능은 `git-ai`에 의존합니다. 다음 저장소에서 공개되는 클라이언트 사용을 권장합니다:
+
+- **Git**: [hebin123456/git-release](https://github.com/hebin123456/git-release/releases)(권장 Git 클라이언트. Windows / Linux / macOS 각 플랫폼용 빌드 제공)
+- **Git-AI**: [hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases)(권장 Git-AI 클라이언트. 전체 플랫폼·전체 아키텍처용 빌드 제공)
+
+다운로드한 `git`·`git-ai`를 System PATH에 배치하거나, ForkPlus 설정의 Git 인스턴스 선택 기능으로 경로를 직접 지정하세요. Git이 2.40 미만이면 시작 시 경고가 표시되고 일부 기능이 비정상 동작할 수 있습니다(앱 내장 git은 2.50.1, 없을 때 시스템 git으로 대체).
 
 ## 개발 규칙
 

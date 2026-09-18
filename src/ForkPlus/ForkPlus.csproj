@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!-- .NET 10 LTS。UI 已迁移 Avalonia（跨平台），TFM 用 net10.0（不带 -windows 后缀）；
-         CI 三平台（win/linux/macos）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
+         CI 四平台（win/linux/linux-arm64/macos）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>

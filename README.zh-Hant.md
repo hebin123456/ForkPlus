@@ -12,7 +12,7 @@
 
 ## 主要特性
 
-- **跨平台**：基於 Avalonia 12 的跨平台 UI 層，CI 同時產出 Windows x64 / Linux x64 / macOS arm64 三平台建置，產物為自包含（self-contained）發布，無需安裝 .NET 執行時
+- **跨平台**：基於 Avalonia 12 的跨平台 UI 層，CI 同時產出 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 四平台建置，產物為自包含（self-contained）發布，無需安裝 .NET 執行時
 - **多語言支援**：內建英語、簡體中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 種語言，並支援透過 JSON 檔案擴充更多語言
 - **多主題皮膚**：內建 12 套預設皮膚（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/綠色淺色深色），並支援使用者自訂顏色覆蓋，即時生效
 - **git mm 工作流**：內建 `git mm` 子命令，提供精益分支（Lean Branching）工作流，統一管理多子倉的變更與同步
@@ -78,11 +78,12 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 |------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so`（下載 Biturbo release 的 `libbiturbo-arm64.so` 資產後重命名） |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 具體機制（見 [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)）：
 
-- `RestoreBiturbo` target（`BeforeTargets=Build`）：偵測到當前平台的 native 庫缺失時自動下載（Windows 走 PowerShell，Linux/macOS 走 bash + curl 並按 `uname -s` 選擇 `.so` / `.dylib`，均帶重試）
+- `RestoreBiturbo` target（`BeforeTargets=Build`）：偵測到當前平台的 native 庫缺失時自動下載（Windows 走 PowerShell，Linux/macOS 走 bash + curl 並按 `uname -s` 選擇 `.so` / `.dylib`、Linux 再按 `uname -m` 分流 aarch64，均帶重試）
 - `CopyHelperExecutables` / `PublishHelperExecutables` target（`AfterTargets=Build` / `Publish`）：將 native 庫與 AskPass/RI 子程序產物拷貝到 Build / Publish 輸出目錄
 - `.gitignore` 已忽略 `third_party/` 下這些檔案
 
@@ -93,8 +94,8 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 [tokei](https://github.com/XAMPPRocky/tokei)（MIT 授權）用於統計面板的「代碼行數」功能。建置期從 [hebin123456/tokei](https://github.com/hebin123456/tokei) 倉庫的最新 Release 拉取**預編譯二進位**，不再需要本地 Rust 工具鏈：
 
 - Windows x64 → 裸 exe，存為 `third_party/tokei.exe`
-- Linux x64 / macOS → tar.gz（內含裸 `tokei` 二進位），解壓存為 `third_party/tokei`
-- macOS 資產為 x86_64，Apple Silicon 經 Rosetta 2 執行
+- Linux x64 / Linux arm64 / macOS → tar.gz（內含裸 `tokei` 二進位），解壓存為 `third_party/tokei`
+- Linux arm64 使用 `tokei-aarch64-unknown-linux-gnu.tar.gz` 資產；macOS 資產為 x86_64，Apple Silicon 經 Rosetta 2 執行
 
 機制與 biturbo 相同：`RestoreTokei` target（`BeforeTargets=Build`）自動拉取，CI 明確下載並校驗，`.gitignore` 忽略產物。
 
@@ -109,12 +110,13 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 
 ### 持續整合
 
-專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 標籤或手動觸發時，在三平台並行建置並上傳產物，同時在 Linux runner 上執行全量單元與 E2E 測試，全部通過後自動發布 Release（三平台 zip 附件）：
+專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 標籤或手動觸發時，在四平台並行建置並上傳產物，同時在 Linux runner 上執行全量單元與 E2E 測試，全部通過後自動發布 Release（四平台 zip 附件）：
 
 | 矩陣 | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm（原生 ARM64 runner，公開倉庫免費） | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 產物為 **self-contained publish**（自帶 .NET 10 執行時，目標機無需安裝任何框架），包含主程式、AskPass/RI 子程序（同樣自包含，git 憑證輸入與互動式變基鏈路在無執行時環境可用）、對應平台的 biturbo native 庫、tokei 與語言檔案（linux-x64 約 125MB）。發布版本的 zip 附件見 [Releases 頁面](https://github.com/hebin123456/ForkPlus/releases)；未打標籤的手動建置產物可在倉庫 [Actions](https://github.com/hebin123456/ForkPlus/actions) 頁面的對應執行中下載（Artifacts，保留 14 天）。
@@ -122,7 +124,7 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 ## 測試
 
 - 單元測試：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒煙與端到端測試，跨平台，隨單測一起執行）
-- 全量 4400+ 用例；關鍵修復均配有回歸防線（失敗即測試紅燈）
+- 全量 4200+ 用例；關鍵修復均配有回歸防線（失敗即測試紅燈）
 - CI 在標籤建置與手動觸發時於 ubuntu runner 上執行全量測試（含 AskPass / RI 輔助程式測試），環境依賴 gitflow-avh 與 git-lfs（見 workflow 註釋）
 
 ## 多語言支援
@@ -169,8 +171,17 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 ## 下載
 
 - CI 建置產物（未打標籤的手動執行）：[Actions](https://github.com/hebin123456/ForkPlus/actions) 頁面 → 對應 build 執行 → Artifacts（自包含式，自帶 .NET 10 執行時，無需安裝任何框架）
-- 正式發布版本：[Releases 頁面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自帶 .NET 10 執行時，無需安裝任何框架，三平台 zip）
+- 正式發布版本：[Releases 頁面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自帶 .NET 10 執行時，無需安裝任何框架，四平台 zip）
 - 各版本變更詳情請查閱 [Release Notes](RELEASE_NOTE.md)（含原 WPF 版歷史）
+
+## Git / Git-AI 用戶端
+
+ForkPlus 的儲存庫操作依賴系統環境中的 `git`，AI 相關功能依賴 `git-ai`。推薦使用以下兩個倉庫發布的用戶端版本：
+
+- **Git**：[hebin123456/git-release](https://github.com/hebin123456/git-release/releases)（推薦的 Git 用戶端，含 Windows / Linux / macOS 各平台產物）
+- **Git-AI**：[hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases)（推薦的 Git-AI 用戶端，含各平台與架構產物）
+
+請將下載後的 `git`、`git-ai` 放入 System PATH，或使用 ForkPlus 設定中的 Git 實例選擇功能手動指定其路徑。Git 版本低於 2.40 時啟動會警告，部分功能可能異常（應用內建 git 實例版本為 2.50.1，缺失時回退系統 git）。
 
 ## 開發約定
 

@@ -268,26 +268,42 @@ namespace ForkPlus.Settings
 			return null;
 		}
 
-		internal static WindowLocationState DecodeWindowLocationState([Null] JObject json)
+	internal static WindowLocationState DecodeWindowLocationState([Null] JObject json)
+	{
+		if (json == null)
 		{
-			if (json == null)
-			{
-				return null;
-			}
-			try
-			{
-				double left = json["Left"].Value<double>();
-				double top = json["Top"].Value<double>();
-				double width = json["Width"].Value<double>();
-				double height = json["Height"].Value<double>();
-				global::Avalonia.Controls.WindowState windowState = (global::Avalonia.Controls.WindowState)json["WindowState"].Value<int>();
-				return new WindowLocationState(left, top, width, height, windowState);
-			}
-			catch
-			{
-				return null;
-			}
+			return null;
 		}
+		try
+		{
+			double left = json["Left"].Value<double>();
+			double top = json["Top"].Value<double>();
+			double width = json["Width"].Value<double>();
+			double height = json["Height"].Value<double>();
+			// 修复（2026-09-17，"启动即极小窗口"）：拒绝宽/高为 0/NaN/负的退化几何。
+			// 历史上关闭链路会把全零状态写进 settings.json（见 WindowLocationStateExtensions
+			// 的 GetPlacement 修复），若照常解码，下次启动会把 0×0 应用到窗口上。
+			// 这里返回 null 让调用方回退各自默认尺寸（主窗口 1000×600），
+			// 已被污染的配置文件在启动时即自愈。Left/Top=0 合法（贴屏幕左上角），不拦。
+			if (!IsValidDimension(width) || !IsValidDimension(height))
+			{
+				return null;
+			}
+			global::Avalonia.Controls.WindowState windowState = (global::Avalonia.Controls.WindowState)json["WindowState"].Value<int>();
+			return new WindowLocationState(left, top, width, height, windowState);
+		}
+		catch
+		{
+			return null;
+		}
+	}
+
+	// 与 UI.Helpers.WindowLocationStateExtensions.IsValidDimension 同口径；
+	// Settings 层不依赖 UI 层，此处独立实现（internal，供测试直测）。
+	internal static bool IsValidDimension(double value)
+	{
+		return !double.IsNaN(value) && !double.IsInfinity(value) && value > 0.0;
+	}
 
 		internal static JObject Encode(WindowLocationState target)
 		{

@@ -33,7 +33,7 @@
             </ControlTemplate>
           </Button.Template>
           <Grid Width="12" Height="12" IsHitTestVisible="False">
-            <!-- Migration note（2026-09-15 v4.1.3，"清除按钮 X 与 WPF 样式有差异"）：
+            <!-- Migration note（2026-09-15 v4.1.4，"清除按钮 X 与 WPF 样式有差异"）：
                  WPF 原版两条 Line 带 StrokeStartLineCap/StrokeEndLineCap=Round（圆头线帽，
                  12x12 内 3→9 的斜线末端是半圆，X 笔画柔和）；迁移时漏掉线帽，Avalonia 用
                  单一 StrokeLineCap（SHAPE 两端同时生效，等价于 WPF 两端 Round），补齐。 -->

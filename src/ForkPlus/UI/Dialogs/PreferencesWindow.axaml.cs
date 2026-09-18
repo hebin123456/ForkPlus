@@ -28,6 +28,10 @@ namespace ForkPlus.UI.Dialogs
 			// 直接关掉 Header 生成（与 RepositoryStatisticsWindow 等 5 处同模式）。
 			base.ShowHeader = false;
 			InitializeComponent();
+			// 优化（2026-09-18，"偏好设置打开有点慢"）：后台并行预热 git/git-mm/git-ai 版本探测，
+			// 下面 Initialize 里 GitUserControl 的同步读取与预热共享同一批 Task（详见
+			// GitUserControl.WarmVersionProbes），首开阻塞 ≈ 最慢单次探测而非 ~10 次串行子进程之和。
+			global::ForkPlus.UI.UserControls.Preferences.GitUserControl.WarmVersionProbes();
 			base.ShowCancelButton = false;
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Close");
 			base.SizeToContent = global::Avalonia.Controls.SizeToContent.WidthAndHeight;

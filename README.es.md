@@ -12,7 +12,7 @@ Un cliente Git multiplataforma: la capa de UI está construida en .NET 10 + Aval
 
 ## Características principales
 
-- **Multiplataforma**: capa de UI multiplataforma basada en Avalonia 12; la CI produce en paralelo builds para Windows x64 / Linux x64 / macOS arm64, publicados como autónomos (self-contained, sin necesidad de instalar el runtime de .NET)
+- **Multiplataforma**: capa de UI multiplataforma basada en Avalonia 12; la CI produce en paralelo builds para Windows x64 / Linux x64 / Linux ARM64 / macOS arm64, publicados como autónomos (self-contained, sin necesidad de instalar el runtime de .NET)
 - **Soporte multilingüe**: 8 idiomas integrados (inglés, chino simplificado, chino tradicional, japonés, coreano, francés, alemán, español), ampliables con más idiomas mediante archivos JSON
 - **Múltiples temas**: 12 pieles integradas (Light/Dark, Solarized, GitHub, Dracula, Monokai, Púrpura/Verde claro y oscuro) más anulaciones de color personalizadas aplicadas al instante
 - **Flujo de trabajo git mm**: subcomando `git mm` integrado que proporciona el flujo de trabajo Lean Branching para gestionar y sincronizar cambios de varios subrepositorios
@@ -80,11 +80,12 @@ El componente nativo biturbo (Rust) proporciona el diseño del treemap del repos
 |------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so` (descargar el recurso `libbiturbo-arm64.so` de la release de Biturbo y renombrarlo) |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 Mecanismo concreto (véase [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)):
 
-- Target `RestoreBiturbo` (`BeforeTargets=Build`): descarga automáticamente la biblioteca nativa que falte para la plataforma actual (PowerShell en Windows, bash + curl en Linux/macOS eligiendo `.so` / `.dylib` según `uname -s`, con reintentos)
+- Target `RestoreBiturbo` (`BeforeTargets=Build`): descarga automáticamente la biblioteca nativa que falte para la plataforma actual (PowerShell en Windows, bash + curl en Linux/macOS eligiendo `.so` / `.dylib` según `uname -s`, con derivación aarch64 en Linux según `uname -m`, con reintentos)
 - Targets `CopyHelperExecutables` / `PublishHelperExecutables` (`AfterTargets=Build` / `Publish`): copian la biblioteca nativa y los productos de los subprocesos AskPass/RI a los directorios Build / Publish
 - `.gitignore` ya ignora estos archivos bajo `third_party/`
 
@@ -95,8 +96,8 @@ Por eso la primera compilación necesita acceso de red a GitHub; en la CI, el wo
 [tokei](https://github.com/XAMPPRocky/tokei) (licencia MIT) alimenta el panel de «líneas de código». En tiempo de compilación se obtiene el **binario precompilado** de la última versión del repositorio [hebin123456/tokei](https://github.com/hebin123456/tokei), sin necesidad de una cadena de herramientas Rust local:
 
 - Windows x64 → exe único, guardado como `third_party/tokei.exe`
-- Linux x64 / macOS → tar.gz (contiene el binario `tokei` único), extraído a `third_party/tokei`
-- El recurso de macOS es x86_64 y se ejecuta en Apple Silicon mediante Rosetta 2
+- Linux x64 / Linux arm64 / macOS → tar.gz (contiene el binario `tokei` único), extraído a `third_party/tokei`
+- Linux arm64 usa el recurso `tokei-aarch64-unknown-linux-gnu.tar.gz`; el recurso de macOS es x86_64 y se ejecuta en Apple Silicon mediante Rosetta 2
 
 Mecanismo idéntico a biturbo: el target `RestoreTokei` (`BeforeTargets=Build`) lo obtiene automáticamente, la CI lo descarga y verifica explícitamente, y `.gitignore` ignora los productos.
 
@@ -111,12 +112,13 @@ La biblioteca de gráficos [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot
 
 ### Integración continua
 
-El proyecto está configurado con GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): al hacer push de un tag `v*`, o al activarlo manualmente, compila en paralelo en tres plataformas, sube los productos y ejecuta la suite completa de pruebas unitarias + E2E en un runner Linux; cuando todo pasa, publica automáticamente un Release (adjuntos zip de las tres plataformas):
+El proyecto está configurado con GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): al hacer push de un tag `v*`, o al activarlo manualmente, compila en paralelo en cuatro plataformas, sube los productos y ejecuta la suite completa de pruebas unitarias + E2E en un runner Linux; cuando todo pasa, publica automáticamente un Release (adjuntos zip de las cuatro plataformas):
 
 | Matriz | Runner | RID |
 |--------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm (runner ARM64 nativo, gratis para repositorios públicos) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 Los productos son **publicaciones autónomas (self-contained)** (incluyen el runtime de .NET 10; no hay que instalar nada en la máquina destino) e incluyen la aplicación principal, los auxiliares AskPass/RI (también autónomos, de modo que los flujos de credenciales de git y de rebase interactivo funcionan sin runtime), la biblioteca nativa biturbo de la plataforma, tokei y los archivos de idioma (~125 MB para linux-x64). Los adjuntos zip de las versiones publicadas están en la [página de Releases](https://github.com/hebin123456/ForkPlus/releases); los productos de builds manuales (sin tag) se pueden descargar desde la ejecución correspondiente en la página de [Actions](https://github.com/hebin123456/ForkPlus/actions) (Artifacts, se conservan 14 días).
@@ -124,7 +126,7 @@ Los productos son **publicaciones autónomas (self-contained)** (incluyen el run
 ## Pruebas
 
 - Pruebas unitarias: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incluye pruebas de humo y de extremo a extremo de UI con Avalonia.Headless, multiplataforma, se ejecutan junto con las unitarias)
-- Más de 4400 casos en total; cada corrección clave cuenta con una barrera de regresión (si falla, las pruebas se ponen en rojo)
+- Más de 4200 casos en total; cada corrección clave cuenta con una barrera de regresión (si falla, las pruebas se ponen en rojo)
 - La CI ejecuta la suite completa (incluidas las pruebas de los auxiliares AskPass/RI) en un runner Ubuntu en los builds de tag y activaciones manuales; depende de gitflow-avh y git-lfs (véanse los comentarios del workflow)
 
 ## Soporte multilingüe
@@ -171,8 +173,17 @@ La internacionalización se implementa en el código mediante las siguientes API
 ## Descarga
 
 - Productos de build de la CI (ejecuciones manuales sin tag): página de [Actions](https://github.com/hebin123456/ForkPlus/actions) → la ejecución de build correspondiente → Artifacts (autónomos, incluyen el runtime de .NET 10, nada que instalar)
-- Versiones oficiales: [página de Releases](https://github.com/hebin123456/ForkPlus/releases) (autónomos, incluyen el runtime de .NET 10, nada que instalar, zip de las tres plataformas)
+- Versiones oficiales: [página de Releases](https://github.com/hebin123456/ForkPlus/releases) (autónomos, incluyen el runtime de .NET 10, nada que instalar, zip de las cuatro plataformas)
 - Para los cambios de cada versión, consulte las [Release Notes](RELEASE_NOTE.md) (incluye el historial de la edición WPF)
+
+## Clientes Git / Git-AI
+
+Las operaciones de repositorio de ForkPlus dependen del `git` del entorno del sistema, y las funciones de IA dependen de `git-ai`. Se recomiendan los clientes publicados en los siguientes repositorios:
+
+- **Git**: [hebin123456/git-release](https://github.com/hebin123456/git-release/releases) (cliente Git recomendado; builds para Windows / Linux / macOS)
+- **Git-AI**: [hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases) (cliente Git-AI recomendado; builds para todas las plataformas y arquitecturas)
+
+Coloque los `git` y `git-ai` descargados en el PATH del sistema, o indique su ruta mediante la selección de instancia de Git de los ajustes de ForkPlus. Con Git inferior a 2.40 se muestra una advertencia al iniciar y algunas funciones pueden fallar (el git integrado en la aplicación es 2.50.1; en su ausencia recurre al git del sistema).
 
 ## Convenciones de desarrollo
 

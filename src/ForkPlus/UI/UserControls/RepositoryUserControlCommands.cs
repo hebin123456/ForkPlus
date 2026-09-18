@@ -182,6 +182,8 @@ namespace ForkPlus.UI.UserControls
 
 		private RunExternalDiffToolCommand _runExternalDiffTool;
 
+		private RunExternalTreeDiffToolCommand _runExternalTreeDiffTool;
+
 		private RunExternalMergeToolCommand _runExternalMergeTool;
 
 		private ApplyPatchCommand _applyPatch;
@@ -367,6 +369,8 @@ namespace ForkPlus.UI.UserControls
 		public CopyWorktreePathsCommand CopyWorktreePaths => CommandContainer.Lazy(ref _copyWorktreePaths);
 
 		public RunExternalDiffToolCommand RunExternalDiffTool => CommandContainer.Lazy(ref _runExternalDiffTool);
+
+		public RunExternalTreeDiffToolCommand RunExternalTreeDiffTool => CommandContainer.Lazy(ref _runExternalTreeDiffTool);
 
 		public RunExternalMergeToolCommand RunExternalMergeTool => CommandContainer.Lazy(ref _runExternalMergeTool);
 

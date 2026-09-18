@@ -45,6 +45,17 @@ namespace ForkPlus.UI
 
 		private bool _startUpFinished;
 
+		// 修复（2026-09-17，"每次启动主窗口缩成极小窗，settings.json Width/Height=0.0"）：
+		// Closing 一次性守卫。Avalonia 关闭链路上 Window_Closing 会被二次触发——
+		// Close() → Closing(第一次，句柄有效，保存正确几何) → PlatformImpl.Dispose() →
+		// Closed 事件 → 本类构造函数挂的 lifetime.Shutdown() → DoShutdown 遍历
+		// _windows（主窗口此刻尚未被 WindowClosedEvent 移除）→ 再次 CloseCore →
+		// Closing(第二次)。第二次时 PlatformImpl 已销毁、Win32 句柄为 0，
+		// GetWindowPlacement 静默失败，产出全零 WindowLocationState 并落盘——
+		// 这就是用户 settings.json 里 Left/Top/Width/Height 恒为 0.0 的根因。
+		// 保存动作只允许执行一次；二次触发直接跳过。
+		private bool _closingStateSaved;
+
 		private Menu _templatePartMainMenu;
 
 		private ToggleButton _templatePartNotificationManagerToggleButton;
@@ -120,11 +131,15 @@ namespace ForkPlus.UI
 			//（平台层时序问题），窗口仍停在构造期设的 Width/Height（小窗口）。改为在 Show 前
 			//（构造期）直接设 WindowState=Maximized——Avalonia 在 Show 时按该属性值打开窗口，
 			// 窗口直接以最大化出现，不再依赖 OnOpened 的后置恢复。Width/Height 仍作为还原矩形。
-			WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
-			if (windowLocationState.WindowState != global::Avalonia.Controls.WindowState.Minimized)
-			{
-				base.Width = windowLocationState.Width;
-				base.Height = windowLocationState.Height;
+		WindowLocationState windowLocationState = ForkPlusSettings.Default.MainWindowLocationState;
+		if (windowLocationState.WindowState != global::Avalonia.Controls.WindowState.Minimized)
+		{
+			// 修复（2026-09-17）：恢复端零值兜底——历史上关闭链路可能把 0×0 写进
+			// settings.json（见 _closingStateSaved 注释），构造期直接应用 0 会把窗口
+			// 初始化为极小窗。无效尺寸回退默认 1000×600（与 SetWindowLocationState
+			// 及 Decode 拒绝三重防线同口径）。
+			base.Width = (WindowLocationStateExtensions.IsValidDimension(windowLocationState.Width) ? windowLocationState.Width : 1000.0);
+			base.Height = (WindowLocationStateExtensions.IsValidDimension(windowLocationState.Height) ? windowLocationState.Height : 600.0);
 				// 修复（2026-09-10，"最大化启动时矩形挡界面"）：不在构造期设 WindowState=Maximized——
 				// 此时窗口未 Show，Win32 未真正最大化，Avalonia 属性=Maximized 与 Win32 实际
 				// (Normal)不一致会引发布局/渲染竞态（矩形挡界面 + 误存小窗口）。
@@ -562,14 +577,21 @@ namespace ForkPlus.UI
 			}));
 		}
 
-		// Migration note：WPF Closing 事件是 CancelEventHandler(CancelEventArgs)，
-		// Avalonia Window.Closing 是 EventHandler<WindowClosingEventArgs>。
-		private void Window_Closing(object sender, global::Avalonia.Controls.WindowClosingEventArgs e)
+	// Migration note：WPF Closing 事件是 CancelEventHandler(CancelEventArgs)，
+	// Avalonia Window.Closing 是 EventHandler<WindowClosingEventArgs>。
+	private void Window_Closing(object sender, global::Avalonia.Controls.WindowClosingEventArgs e)
+	{
+		// 修复（2026-09-17）：见 _closingStateSaved——关闭链路上 Closing 可能被二次触发
+		//（平台层已销毁），仅首次执行保存，防止全零状态覆盖正确几何。
+		if (_closingStateSaved)
 		{
-			ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationStateX();
-			TabManager.SaveSession();
-			ForkPlusSettings.Default.Save();
+			return;
 		}
+		_closingStateSaved = true;
+		ForkPlusSettings.Default.MainWindowLocationState = this.GetWindowLocationStateX();
+		TabManager.SaveSession();
+		ForkPlusSettings.Default.Save();
+	}
 
 		private void Window_Activated(object sender, EventArgs e)
 		{

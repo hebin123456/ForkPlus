@@ -901,6 +901,12 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (selectedRevisions.Length == 2)
 			{
+				Control treeCompareMenuItem = CreateTreeCompareContextMenuItems(repositoryUserControl, selectedRevisions);
+				if (treeCompareMenuItem != null)
+				{
+					yield return treeCompareMenuItem;
+					yield return new Separator();
+				}
 				yield return RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.CreateMenuItem("Save Commit Range as Patch…", delegate
 				{
 					RepositoryUserControl.Commands.ShowSaveRevisionsAsPatchWindow.Execute(repositoryUserControl, gitModule, selectedRevisions.Map((DecoratedRevision x) => x.ToRevision()));
@@ -944,6 +950,46 @@ namespace ForkPlus.UI.UserControls
 			{
 				RepositoryUserControl.Commands.CopyRevisionInfo.Execute(SortRevisionsByRows(selectedRevisions).Map((DecoratedRevision x) => x.ToRevision()));
 			});
+		}
+
+		/// <summary>
+		/// 双选提交时的"用 {工具} 比较完整文件树"菜单项：
+		/// 无已配置（且本机可探测到）的比对工具时返回 null，不显示该入口。
+		/// 单个工具直接出菜单项；多个工具收纳进子菜单（对齐 CommitUserControl 的
+		/// CreateDiffToolContextMenuItems 形态）。
+		/// </summary>
+		[Null]
+		private Control CreateTreeCompareContextMenuItems(RepositoryUserControl repositoryUserControl, DecoratedRevision[] selectedRevisions)
+		{
+			List<ExternalTool> diffTools = ExternalToolManager.RevealAvailableDiffTools().Filter((ExternalTool x) => x.IsVisible);
+			if (diffTools.Count == 0)
+			{
+				return null;
+			}
+			DecoratedRevision[] sortedRevisions = SortRevisionsByRows(selectedRevisions);
+			Sha localSha = sortedRevisions[0].Sha;
+			Sha remoteSha = sortedRevisions[1].Sha;
+			if (diffTools.Count == 1)
+			{
+				ExternalTool singleTool = diffTools[0];
+				return RepositoryUserControl.Commands.RunExternalTreeDiffTool.CreateMenuItemFormat("Compare File Trees in {0}", new object[1] { singleTool.Name }, delegate
+				{
+					RepositoryUserControl.Commands.RunExternalTreeDiffTool.Execute(repositoryUserControl, remoteSha, localSha, singleTool);
+				});
+			}
+			MenuItem menuItem = new MenuItem
+			{
+				Header = PreferencesLocalization.MenuHeader("Compare File Trees")
+			};
+			foreach (ExternalTool diffTool in diffTools)
+			{
+				MenuItem newItem = RepositoryUserControl.Commands.RunExternalTreeDiffTool.CreateMenuItemFormat("Compare File Trees in {0}", new object[1] { diffTool.Name }, delegate
+				{
+					RepositoryUserControl.Commands.RunExternalTreeDiffTool.Execute(repositoryUserControl, remoteSha, localSha, diffTool);
+				});
+				menuItem.Items.Add(newItem);
+			}
+			return menuItem;
 		}
 
 		private IEnumerable<Control> CreateRevisionContextMenuItems(RepositoryUserControl repositoryUserControl, GitModule gitModule, RepositoryData repositoryData, DecoratedRevision selectedRevision, CommitGraphCache commitGraphCache)

@@ -8,7 +8,7 @@ namespace ForkPlus.UI.Dialogs
 	{
 		/// <summary>
 		/// WebView2 用户数据目录（ForkData 之下），所有 WebView 宿主统一使用。
-		/// v4.1.3 起不只是传给兼容层空环境的历史参数：WebView2Stub 的原生路径
+		/// v4.1.4 起不只是传给兼容层空环境的历史参数：WebView2Stub 的原生路径
 		/// （NativeWebView，Windows=WebView2 引擎）经 EnvironmentRequested 把它写入
 		/// WindowsWebView2EnvironmentRequestedEventArgs.UserDataFolder——不配置时
 		/// WebView2 运行时对未打包 Win32 应用回落到 exe 同级 "&lt;exe名&gt;.WebView2"

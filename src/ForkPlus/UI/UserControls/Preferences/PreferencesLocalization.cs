@@ -519,6 +519,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 			result = ReplacePattern(result, @"^You must checkout and sync '(.+)' first$", "You must checkout and sync '{0}' first", dictionary);
 			result = ReplacePattern(result, @"^You must sync '(.+)' with '(.+)' first$", "You must sync '{0}' with '{1}' first", dictionary);
 			result = ReplacePattern(result, @"^Finishing (.+)\.\.\.$", "Finishing {0}...", dictionary);
+			// 修复（2026-09-17，i18n）：ResetBranchWindow/GitFlowStart* 弹窗的进度文案
+			// "Resetting 'xxx'..." / "Starting 'xxx'..." 由代码拼接，词典按模板 key 存储，
+			// 此前无对应正则兜底导致非英语界面原样显示英文。
+			result = ReplacePattern(result, @"^Resetting '(.+)'\.\.\.$", "Resetting '{0}'...", dictionary);
+			result = ReplacePattern(result, @"^Starting '(.+)'\.\.\.$", "Starting '{0}'...", dictionary);
 			result = ReplacePattern(result, @"^Finish '(.+)'$", "Finish '{0}'", dictionary);
 			result = ReplacePattern(result, @"^Fast-forward '(.+)' to '(.+)'$", "Fast-forward '{0}' to '{1}'", dictionary);
 			result = ReplacePattern(result, @"^Merging into '(.+)'\.\.\.$", "Merging into '{0}'...", dictionary);

@@ -167,12 +167,38 @@ namespace ForkPlus.UI.Helpers
 		// 最大化/最小化时取缓存（等价 Win32 placement.normalPosition 还原矩形）。
 		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, WindowLocationState> LastNormalBounds = new System.Runtime.CompilerServices.ConditionalWeakTable<Window, WindowLocationState>();
 
-		public static void SetWindowLocationState(this Window window, WindowLocationState state)
+	// 修复（2026-09-17，"每次启动主窗口缩成极小窗，settings.json 里 Width/Height=0.0"）：
+	// 尺寸有效性判定。0/NaN/∞ 一律视为无效，读取端兜底回退、写入端（Set）替换为默认值，
+	// 保证 WindowLocationState 永远不会携带 0×0 几何进出持久化链路。
+	internal static bool IsValidDimension(double value)
+	{
+		return !double.IsNaN(value) && !double.IsInfinity(value) && value > 0.0;
+	}
+
+	// 修复（2026-09-17）：几何消毒——宽/高无效时回退默认 1000×600（与各窗口的
+	// 默认 WindowLocationState 一致），Left/Top 不动（贴屏幕左上角 (0,0) 合法）。
+	private static WindowLocationState SanitizeGeometry(WindowLocationState state)
+	{
+		if (IsValidDimension(state.Width) && IsValidDimension(state.Height))
 		{
-			if (DesignTimeHelper.IsInDesignMode() || window == null || state == null)
-			{
-				return;
-			}
+			return state;
+		}
+		return new WindowLocationState(state.Left, state.Top,
+			IsValidDimension(state.Width) ? state.Width : 1000.0,
+			IsValidDimension(state.Height) ? state.Height : 600.0,
+			state.WindowState);
+	}
+
+	public static void SetWindowLocationState(this Window window, WindowLocationState state)
+	{
+		if (DesignTimeHelper.IsInDesignMode() || window == null || state == null)
+		{
+			return;
+		}
+		// 修复（2026-09-17）：恢复端兜底——被污染的 0×0 配置（含历史已落盘的
+		// Width/Height=0.0）不得直接应用到窗口，否则窗口被初始化为 0×0 极小窗；
+		// 无效尺寸回退默认 1000×600，下次正常关闭即可写回正确尺寸，自愈闭环。
+		state = SanitizeGeometry(state);
 			// 修复（2026-09-10，"重启后窗口位置/大小/最大化状态没完全恢复"）：
 			// 原先 Windows 走 Win32 SetWindowPlacement（ShowCmd=SW_SHOWMAXIMIZED 切最大化），
 			// 但 Avalonia 的 WindowState 属性不随 Win32 状态变化而更新——仍认为 Normal，
@@ -203,17 +229,24 @@ namespace ForkPlus.UI.Helpers
 			{
 				return GetWindowLocationStateAvalonia(window);
 			}
-			// 始终用 Win32 placement.normalPosition（还原矩形），即使最小化也如此。
-			// 之前最小化时走特殊分支用 WPF 的 window.Left/Top/Width/Height，而这些值在最小化时是
-			// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
-			WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-			TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
-		TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
-		// 修复（2026-09-10，"最大化没保存/下次启动不最大化"）：状态用 Avalonia 的 window.WindowState
-		// （用户实际看到的状态），不用 Win32 ShowCmd——SystemDecorations.None 自绘 chrome 下
-		// Avalonia WindowState 与 Win32 实际状态偶发不一致（Win32 仍是 Normal），用 Win32
-		// ShowCmd 会误存成 Normal，下次启动不最大化。normal rect 仍取 Win32 placement（还原矩形正确）。
-		return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState);
+		// 始终用 Win32 placement.normalPosition（还原矩形），即使最小化也如此。
+		// 之前最小化时走特殊分支用 WPF 的 window.Left/Top/Width/Height，而这些值在最小化时是
+		// 系统幽灵值（如 -32000），会导致保存错误的位置，下次恢复窗口跑到屏幕外。
+		// 修复（2026-09-17）：placement 读取可能失败（句柄无效/窗口已销毁）——见 GetPlacement，
+		// 失败时回退 Avalonia 属性读取（Bounds/Position），再经 SanitizeGeometry 兜底，
+		// 绝不返回 0×0 状态。
+		WindowPlacement? placement = GetPlacement(new WindowInteropHelper(window).Handle);
+		if (placement == null)
+		{
+			return SanitizeGeometry(GetWindowLocationStateAvalonia(window));
+		}
+		TransformFromPixels(window, placement.Value.normalPosition.Left, placement.Value.normalPosition.Top, out var unitX, out var unitY);
+	TransformFromPixels(window, placement.Value.normalPosition.Right, placement.Value.normalPosition.Bottom, out var unitX2, out var unitY2);
+	// 修复（2026-09-10，"最大化没保存/下次启动不最大化"）：状态用 Avalonia 的 window.WindowState
+	// （用户实际看到的状态），不用 Win32 ShowCmd——SystemDecorations.None 自绘 chrome 下
+	// Avalonia WindowState 与 Win32 实际状态偶发不一致（Win32 仍是 Normal），用 Win32
+	// ShowCmd 会误存成 Normal，下次启动不最大化。normal rect 仍取 Win32 placement（还原矩形正确）。
+	return SanitizeGeometry(new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState));
 	}
 
 	public static WindowLocationState GetWindowLocationStateX(this Window window)
@@ -226,11 +259,21 @@ namespace ForkPlus.UI.Helpers
 		{
 			return GetWindowLocationStateAvalonia(window);
 		}
-		WindowPlacement placement = GetPlacement(new WindowInteropHelper(window).Handle);
-		TransformFromPixels(window, placement.normalPosition.Left, placement.normalPosition.Top, out var unitX, out var unitY);
-		TransformFromPixels(window, placement.normalPosition.Right, placement.normalPosition.Bottom, out var unitX2, out var unitY2);
+		// 修复（2026-09-17）：同 GetWindowLocationState——placement 读取失败（句柄无效/
+		// 窗口已销毁）时回退 Avalonia 属性读取并消毒，绝不返回 0×0。
+		// 本方法正是 MainWindow.Window_Closing 的保存路径：Avalonia 关闭链路上 Closing
+		// 可能被二次触发（lifetime.Shutdown → CloseCore 无已关闭守卫），二次触发时
+		// PlatformImpl 已销毁、句柄为 0，旧代码直接产出全零状态并落盘——
+		// 这就是"每次启动都是极小窗口、Width/Height 恒为 0.0"的直接来源。
+		WindowPlacement? placement = GetPlacement(new WindowInteropHelper(window).Handle);
+		if (placement == null)
+		{
+			return SanitizeGeometry(GetWindowLocationStateAvalonia(window));
+		}
+		TransformFromPixels(window, placement.Value.normalPosition.Left, placement.Value.normalPosition.Top, out var unitX, out var unitY);
+		TransformFromPixels(window, placement.Value.normalPosition.Right, placement.Value.normalPosition.Bottom, out var unitX2, out var unitY2);
 		// 修复（2026-09-10）：同上，状态用 Avalonia window.WindowState，不用 Win32 ShowCmd。
-		return new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState);
+		return SanitizeGeometry(new WindowLocationState(unitX, unitY, unitX2 - unitX, unitY2 - unitY, window.WindowState));
 	}
 
 		/// <summary>
@@ -253,18 +296,21 @@ namespace ForkPlus.UI.Helpers
 			{
 				width = window.Width;
 			}
-			if (height <= 0.0 || double.IsNaN(height))
-			{
-				height = window.Height;
-			}
-			WindowLocationState windowLocationState = new WindowLocationState((double)position.X / num, (double)position.Y / num, width, height, windowState);
-			if (windowState == global::Avalonia.Controls.WindowState.Normal)
-			{
-				LastNormalBounds.Remove(window);
-				LastNormalBounds.Add(window, windowLocationState);
-			}
-			return windowLocationState;
+		if (height <= 0.0 || double.IsNaN(height))
+		{
+			height = window.Height;
 		}
+		WindowLocationState windowLocationState = new WindowLocationState((double)position.X / num, (double)position.Y / num, width, height, windowState);
+		// 修复（2026-09-17）：兜底消毒——窗口已销毁时 Bounds/Width/Height 也可能归零，
+		// 保证缓存与返回值都不携带 0×0 几何。
+		windowLocationState = SanitizeGeometry(windowLocationState);
+		if (windowState == global::Avalonia.Controls.WindowState.Normal)
+		{
+			LastNormalBounds.Remove(window);
+			LastNormalBounds.Add(window, windowLocationState);
+		}
+		return windowLocationState;
+	}
 
 		public static void GetMinMaxInfo(IntPtr hwnd, IntPtr lParam)
 		{
@@ -457,13 +503,25 @@ namespace ForkPlus.UI.Helpers
 			return windowRect;
 		}
 
-		private static WindowPlacement GetPlacement(IntPtr windowHandle)
+	// 修复（2026-09-17）：返回值改为可空并检查 Win32 调用结果——
+	// 旧代码忽略 GetWindowPlacement 的 BOOL 返回值：句柄无效（IntPtr.Zero，窗口已销毁）或
+	// 调用失败时，result 保持 default(WindowPlacement)（normalPosition 全 0），调用方直接
+	// 产出 Left=0/Top=0/Width=0/Height=0 的全零状态并落盘。失败时返回 null，
+	// 由调用方回退 Avalonia 属性读取 + SanitizeGeometry 兜底。
+	private static WindowPlacement? GetPlacement(IntPtr windowHandle)
+	{
+		if (windowHandle == IntPtr.Zero)
 		{
-			WindowPlacement result = default(WindowPlacement);
-			result.Length = Marshal.SizeOf(typeof(WindowPlacement));
-			GetWindowPlacement(windowHandle, ref result);
-			return result;
+			return null;
 		}
+		WindowPlacement result = default(WindowPlacement);
+		result.Length = Marshal.SizeOf(typeof(WindowPlacement));
+		if (!GetWindowPlacement(windowHandle, ref result))
+		{
+			return null;
+		}
+		return result;
+	}
 
 		private static DisplayScale GetDisplayScale(IntPtr hwnd)
 		{

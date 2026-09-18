@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using ForkPlus.UI.Controls.Commands;
 using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.UI.UserControls;
@@ -33,6 +34,12 @@ namespace ForkPlus.UI.Controls.Editor
 		private CodeEditorSearchPanelUserControl _templatePartSearchPanel;
 
 		private bool _pointerSelecting;
+
+	/// <summary>当前拖选按下的指针（用于捕获被夺走后取回）。</summary>
+	private global::Avalonia.Input.IPointer _dragPointer;
+
+	/// <summary>挂起的"重挂可视树后取回捕获"回调（AdornerLayer 重建窗口内容树场景）。</summary>
+	private EventHandler<VisualTreeAttachmentEventArgs> _recaptureOnAttach;
 
 		public bool IsSearchBarFocused => _templatePartSearchPanel?.IsTextBoxFocused ?? false;
 
@@ -94,31 +101,53 @@ namespace ForkPlus.UI.Controls.Editor
 			}, global::Avalonia.Threading.DispatcherPriority.Background);
 		}
 
-		/// <summary>
-		/// 摘除 AvaloniaEdit TextArea 内部的坏 caret 跟随滚动（行号当像素），替换为
-		/// 正确的 TextEditor.ScrollTo；反射成员缺失时保持原生行为（不抛异常）。
-		/// </summary>
-		private void ReplaceBrokenCaretFollowScroll()
+	/// <summary>
+	/// 摘除 AvaloniaEdit TextArea 内部的坏 caret 跟随滚动（行号当像素），替换为
+	/// 正确的 TextEditor.ScrollTo；反射成员缺失时保持原生行为（不抛异常）。
+	/// </summary>
+	private void ReplaceBrokenCaretFollowScroll()
+	{
+		if (TextAreaCaretPositionChangedMethod == null)
 		{
-			if (TextAreaCaretPositionChangedMethod == null)
-			{
-				return;
-			}
-			try
-			{
-				EventHandler brokenHandler = (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), TextArea, TextAreaCaretPositionChangedMethod);
-				TextArea.Caret.PositionChanged -= brokenHandler;
-			}
-			catch
-			{
-				// 摘除失败（包内部结构变更）：不替换，保持原生行为
-				return;
-			}
-			TextArea.Caret.PositionChanged += CaretFollowScrollHandler;
-			TextArea.PointerPressed += TextArea_PointerPressed;
-			TextArea.PointerReleased += TextArea_PointerReleased;
-			TextArea.PointerCaptureLost += TextArea_PointerCaptureLost;
+			return;
 		}
+		try
+		{
+			EventHandler brokenHandler = (EventHandler)Delegate.CreateDelegate(typeof(EventHandler), TextArea, TextAreaCaretPositionChangedMethod);
+			TextArea.Caret.PositionChanged -= brokenHandler;
+		}
+		catch
+		{
+			// 摘除失败（包内部结构变更）：不替换，保持原生行为
+			return;
+		}
+		TextArea.Caret.PositionChanged += CaretFollowScrollHandler;
+		// 修复（2026-09-17，"大区域从下往上拖选暂存内容，界面弹上去"）：
+		// 原先用普通事件订阅（TextArea.PointerPressed += ...），但 AvaloniaEdit 的
+		// SelectionMouseHandler（构造期先订阅、同一元素）在 PointerPressed 处理末尾把
+		// e.Handled 置 true——后订阅且未带 handledEventsToo 的处理器全部被跳过，
+		// _pointerSelecting 在真实鼠标按下时从未置位。拖选期间 caret 跟随未被抑制，
+		// 每次指针移动 caret 变更都触发 ScrollTo(line, column)（30% 视口阈值 + 把 caret
+		// 行滚到视口中央的语义）——从下往上拖选时视口逐事件"居中跳变"上百像素，
+		// 指针越过视口上缘后更是一路弹跳到文档顶部。
+		// 改用 AddHandler + handledEventsToo 挂接：按下走 Tunnel（先于包内处理器收到，
+		// 抢在其 SetCaretOffsetToMousePosition 移动 caret 之前完成置位）；抬起走
+		// Bubble（订阅晚于包内处理器 → 后执行，包内 ExtendSelectionOnMouseUp 的
+		// caret 移动仍处于抑制中，抬起本身不再触发居中跳变）。
+		TextArea.AddHandler(InputElement.PointerPressedEvent, TextArea_PointerPressed,
+			global::Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+		TextArea.AddHandler(InputElement.PointerReleasedEvent, TextArea_PointerReleased,
+			global::Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+		// PointerCaptureLost 是 Direct 路由事件（Avalonia 12 注册为 Direct），必须以
+		// Direct 策略挂接才能收到——Bubble 策略的处理器对 Direct 事件不触发。
+		TextArea.AddHandler(InputElement.PointerCaptureLostEvent, TextArea_PointerCaptureLost,
+			global::Avalonia.Interactivity.RoutingStrategies.Direct, handledEventsToo: true);
+		// 拖选中途捕获被外部挪走又恢复（如 AdornerLayer 首建重建窗口内容树）时，
+		// 按下处理器错过的后续拖动 move 事件在此重新置位（Tunnel 先于包内扩展选区
+		// 的 Bubble 处理器，保证抑制先于 caret 移动生效）。
+		TextArea.AddHandler(InputElement.PointerMovedEvent, TextArea_PointerMoved,
+			global::Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+	}
 
 		/// <summary>正确的 caret 跟随滚动：真实像素定位（视口比例滚动）；鼠标按住选取与程序化文档替换期间不滚动。</summary>
 		private void CaretFollowScrollHandler(object sender, EventArgs e)
@@ -130,22 +159,77 @@ namespace ForkPlus.UI.Controls.Editor
 			ScrollTo(TextArea.Caret.Line, TextArea.Caret.Column);
 		}
 
-		private void TextArea_PointerPressed(object sender, PointerPressedEventArgs e)
-		{
-			// 按住期间（点击/拖动选取）暂停 caret 跟随：拖动选取时 caret 随指针高频移动，
-			// 逐次滚动会造成视口跳动；点击落点本身就在可视区内，无需滚动。
-			_pointerSelecting = true;
-		}
+private void TextArea_PointerPressed(object sender, PointerPressedEventArgs e)
+{
+	// 按住期间（点击/拖动选取）暂停 caret 跟随：拖动选取时 caret 随指针高频移动，
+	// 逐次滚动会造成视口跳动；点击落点本身就在可视区内，无需滚动。
+	// 仅左键（AvaloniaEdit 只用左键拖选/定位 caret），右键菜单按压不抑制。
+	if (e.GetCurrentPoint(TextArea).Properties.IsLeftButtonPressed)
+	{
+		_pointerSelecting = true;
+		_dragPointer = e.Pointer;
+	}
+}
 
-		private void TextArea_PointerReleased(object sender, PointerReleasedEventArgs e)
-		{
-			_pointerSelecting = false;
-		}
+private void TextArea_PointerReleased(object sender, PointerReleasedEventArgs e)
+{
+	_pointerSelecting = false;
+	_dragPointer = null;
+	CancelPendingRecapture();
+}
 
-		private void TextArea_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
+private void TextArea_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
+{
+	// 修复（2026-09-17，"首次拖选暂存内容时选区冻结在两行"）：差异视图悬浮
+	// Stage/Discard 按钮首次构建时，WpfCompat AdornerLayer 会把窗口内容树整棵
+	// 摘下重挂（cc.Content = null → grid 重包）。摘除瞬间 Avalonia 把指针捕获
+	// 挪到最近仍在树的祖先（Pointer.OnCaptureDetached → GetNextCapture），拖选
+	// 的 move/Release 从此不再路由进 TextArea——选区冻结，且 Release 收不到、
+	// 抑制标志悬挂。重挂完成（AttachedToVisualTree，与摘除同一次同步调用内）
+	// 立即取回捕获：捕获仍空或停在祖先上（被"停车"）才取，被无关元素（弹窗
+	// 等）正当持有时不抢。
+	if (_pointerSelecting && _dragPointer != null)
+	{
+		var ptr = _dragPointer;
+		var ta = TextArea;
+		CancelPendingRecapture();
+		_recaptureOnAttach = delegate
 		{
-			_pointerSelecting = false;
-		}
+			_recaptureOnAttach = null;
+			var captured = ptr.Captured;
+			if (ReferenceEquals(ptr.Captured, ta)) return;
+			if (captured == null || (captured is Visual v && v.IsVisualAncestorOf(ta)))
+			{
+				ptr.Capture(ta);
+				// 取回后拖选继续：重新武装抑制（后续 move 的 Tunnel 处理器亦会兜底置位）。
+				_pointerSelecting = true;
+			}
+		};
+		ta.AttachedToVisualTree += _recaptureOnAttach;
+	}
+	_pointerSelecting = false;
+	_dragPointer = null;
+}
+
+private void CancelPendingRecapture()
+{
+	if (_recaptureOnAttach != null)
+	{
+		TextArea.AttachedToVisualTree -= _recaptureOnAttach;
+		_recaptureOnAttach = null;
+	}
+}
+
+private void TextArea_PointerMoved(object sender, PointerEventArgs e)
+{
+	// 兜底重新置位：捕获中途丢失又被恢复的拖拽（按下事件未再触发）期间，
+	// 只要仍按着左键就保持抑制，防 caret 跟随的居中跳变混入拖选。
+	if (e.GetCurrentPoint(TextArea).Properties.IsLeftButtonPressed)
+	{
+		_pointerSelecting = true;
+		_dragPointer = e.Pointer;
+	}
+}
 
 		protected override void OnApplyTemplate(global::Avalonia.Controls.Primitives.TemplateAppliedEventArgs e)
 		{

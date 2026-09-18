@@ -434,7 +434,7 @@ jobs:
           if-no-files-found: ignore
 
   # ── 发布（仅 tag 触发；手动 workflow_dispatch 只跑 build+test 不发 Release）──
-  # build + test 全绿后：下载三平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
+  # build + test 全绿后：下载四平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
   # 内层无嵌套）→ 从 RELEASE_NOTE.md 提取当前版本章节作为正文 → 发布 Release。
   # generate_release_notes 会自动追加 PR 变更清单与 "Full Changelog" 对比链接。
   release:

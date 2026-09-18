@@ -12,7 +12,7 @@ A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and
 
 ## Key Features
 
-- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / macOS arm64 builds in parallel, published self-contained (no .NET runtime installation needed)
+- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 builds in parallel, published self-contained (no .NET runtime installation needed)
 - **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, extensible with more languages via JSON files
 - **Multiple themes**: 12 built-in skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Purple/Green light & dark) plus user-customizable color overrides applied instantly
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows that manage changes and sync across multiple sub-repositories
@@ -79,11 +79,12 @@ The biturbo native add-on (Rust) provides repository treemap layout, commit-grap
 |----------|------|
 | Windows x64 | `third_party/biturbo.dll` |
 | Linux x64 | `third_party/libbiturbo.so` |
+| Linux arm64 | `third_party/libbiturbo.so` (download the `libbiturbo-arm64.so` asset from the Biturbo release and rename it) |
 | macOS arm64 | `third_party/libbiturbo.dylib` |
 
 Mechanics (see [ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)):
 
-- `RestoreBiturbo` target (`BeforeTargets=Build`): automatically downloads the native library for the current platform when missing (PowerShell on Windows, bash + curl on Linux/macOS selecting `.so` / `.dylib` via `uname -s`, with retries)
+- `RestoreBiturbo` target (`BeforeTargets=Build`): automatically downloads the native library for the current platform when missing (PowerShell on Windows, bash + curl on Linux/macOS selecting `.so` / `.dylib` via `uname -s` and branching to aarch64 on Linux via `uname -m`, with retries)
 - `CopyHelperExecutables` / `PublishHelperExecutables` targets (`AfterTargets=Build` / `Publish`): copy the native library and the AskPass/RI helper outputs to the Build / Publish directories
 - `.gitignore` already excludes these files under `third_party/`
 
@@ -94,8 +95,8 @@ Therefore the first build requires network access to GitHub; on CI the workflow 
 [tokei](https://github.com/XAMPPRocky/tokei) (MIT licensed) powers the "lines of code" panel. At build time the **prebuilt binary** is fetched from the latest release of the [hebin123456/tokei](https://github.com/hebin123456/tokei) repository, so no local Rust toolchain is needed:
 
 - Windows x64 → bare exe, saved as `third_party/tokei.exe`
-- Linux x64 / macOS → tar.gz (containing a bare `tokei` binary), extracted to `third_party/tokei`
-- The macOS asset is x86_64 and runs on Apple Silicon via Rosetta 2
+- Linux x64 / Linux arm64 / macOS → tar.gz (containing a bare `tokei` binary), extracted to `third_party/tokei`
+- Linux arm64 uses the `tokei-aarch64-unknown-linux-gnu.tar.gz` asset; the macOS asset is x86_64 and runs on Apple Silicon via Rosetta 2
 
 Same mechanism as biturbo: the `RestoreTokei` target (`BeforeTargets=Build`) fetches it automatically, CI downloads and verifies it explicitly, and `.gitignore` excludes the artifacts.
 
@@ -110,12 +111,13 @@ The charting library [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalo
 
 ### Continuous Integration
 
-The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on pushing a `v*` tag or manual dispatch, it builds in parallel on three platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner; once everything passes, it automatically publishes a Release (three-platform zip attachments):
+The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on pushing a `v*` tag or manual dispatch, it builds in parallel on four platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner; once everything passes, it automatically publishes a Release (four-platform zip attachments):
 
 | Matrix | Runner | RID |
 |--------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
+| linux-arm64 | ubuntu-22.04-arm (native ARM64 runner, free for public repos) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
 
 The artifacts are **self-contained publishes** (bundling the .NET 10 runtime; nothing needs to be installed on the target machine), containing the main app, the AskPass/RI helpers (also self-contained, so the git credential and interactive-rebase flows work without a runtime), the platform's biturbo native library, tokei, and language files (~125MB for linux-x64). The zip attachments of released versions are on the [Releases page](https://github.com/hebin123456/ForkPlus/releases); artifacts of manual (untagged) builds can be downloaded from the corresponding run on the [Actions](https://github.com/hebin123456/ForkPlus/actions) page (Artifacts, retained for 14 days).
@@ -123,7 +125,7 @@ The artifacts are **self-contained publishes** (bundling the .NET 10 runtime; no
 ## Tests
 
 - Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incl. Avalonia.Headless UI smoke and end-to-end tests, cross-platform, run together with unit tests)
-- 4400+ cases in total; every key fix has a regression guard (a failing guard turns the tests red)
+- 4200+ cases in total; every key fix has a regression guard (a failing guard turns the tests red)
 - CI runs the full suite (incl. AskPass / RI helper tests) on an ubuntu runner on tag builds and manual dispatch; it depends on gitflow-avh and git-lfs (see the workflow comments)
 
 ## Multi-language Support
@@ -170,8 +172,17 @@ The codebase uses the following APIs for internationalization:
 ## Download
 
 - CI build artifacts (manual, untagged runs): [Actions](https://github.com/hebin123456/ForkPlus/actions) page → the corresponding build run → Artifacts (self-contained, bundling the .NET 10 runtime; nothing to install)
-- Official releases: [Releases page](https://github.com/hebin123456/ForkPlus/releases) (self-contained, bundling the .NET 10 runtime; nothing to install, three-platform zips)
+- Official releases: [Releases page](https://github.com/hebin123456/ForkPlus/releases) (self-contained, bundling the .NET 10 runtime; nothing to install, four-platform zips)
 - For changes in each version, see the [Release Notes](RELEASE_NOTE.md) (including the WPF edition history)
+
+## Git / Git-AI Clients
+
+ForkPlus relies on the system `git` for repository operations and on `git-ai` for AI features. The clients published by the following repositories are recommended:
+
+- **Git**: [hebin123456/git-release](https://github.com/hebin123456/git-release/releases) (recommended Git client, with builds for Windows / Linux / macOS)
+- **Git-AI**: [hebin123456/git-ai-release](https://github.com/hebin123456/git-ai-release/releases) (recommended Git-AI client, with builds for all platforms and architectures)
+
+Put the downloaded `git` and `git-ai` on your System PATH, or point to them manually via the Git instance picker in ForkPlus settings. A Git version below 2.40 triggers a warning at startup and some features may misbehave (the app ships a built-in git 2.50.1 and falls back to the system git when it is missing).
 
 ## Development Conventions
 

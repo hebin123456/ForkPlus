@@ -1414,9 +1414,45 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			return text.Replace("_", "__");
 		}
 
+		// 性能阈值：单远端分组分支数 ≤ 该值时维持旧"全量构建 + IsVisible 过滤"行为；
+		// 超过则走延迟构建路径（右键时只建搜索框 + 状态行，分支项子菜单打开/搜索时按需生成）。
+		private const int SearchableRemoteGroupEagerThreshold = 200;
+
+		// 大分组单次最多实化的分支菜单项数（打开子菜单与搜索过滤均按此截断，状态行提示总数/匹配数）。
+		private const int SearchableRemoteGroupMaxVisibleItems = 100;
+
+		/// <summary>可搜索远端分组子菜单的上下文：承载分支数据与两种模式（小分组全量 / 大分组延迟）所需状态。</summary>
+		private sealed class SearchableRemoteGroupMenuContext
+		{
+			public MenuItem GroupItem;
+
+			public PlaceholderTextBox SearchBox;
+
+			/// <summary>大分组模式：置顶的禁用状态行（显示总数/匹配数/截断提示）。小分组为 null。</summary>
+			public MenuItem StatusItem;
+
+			public RemoteBranch[] SortedBranches;
+
+			public Action<RemoteBranch> OnBranchSelected;
+
+			public Func<RemoteBranch, bool> IsCheckedPredicate;
+
+			/// <summary>小分组模式：右键时已全量构建的分支项（搜索时仅切换 IsVisible）。大分组为 null。</summary>
+			public List<MenuItem> EagerItems;
+
+			/// <summary>大分组模式：当前已实化的过滤串（相同过滤串跳过重建，保证幂等且不重复做功）。</summary>
+			public string LastPopulatedFilter;
+		}
+
 		/// <summary>
 		/// 创建一个可搜索的远端分组子菜单：Popup 顶部置顶搜索框（不随列表滚动），下方是该远端的分支列表。
 		/// 用于"跟踪"和"检查远端同步状态"二级菜单的远端分组项。
+		/// 性能（2026-09-17，"分支多的场景右键分支界面卡死 ~5s 后恢复"）：旧实现右键即在 UI 线程同步
+		/// 创建 2×N 个 MenuItem（跟踪 + 检查远端同步各一份，N=远端分支总数），再经 SetItems 递归挂接
+		/// Click 处理器；展开分组子菜单时又为全部分支生成容器并布局——数千分支时 UI 线程阻塞数秒，
+		/// 弹出菜单上下拉伸超出屏幕。现改为：小分组（≤阈值）保持旧行为；大分组右键时只创建
+		/// 搜索框与状态行，分支项延迟到子菜单打开/搜索时生成，且单次最多实化
+		/// SearchableRemoteGroupMaxVisibleItems 条，右键与展开均为 O(上限) 而非 O(分支总数)。
 		/// </summary>
 		/// <param name="remoteName">远端名（作为分组 Header）。</param>
 		/// <param name="remoteBranches">该远端下的远端分支集合。</param>
@@ -1434,7 +1470,14 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				// 第一个 "_" 会被吞掉（其后字符作 Alt 快捷键）。远端名含 "_" 也会丢失，故转义为 "__"。
 				Header = EscapeMenuHeader(remoteName)
 			};
-			List<MenuItem> branchItems = new List<MenuItem>();
+			RemoteBranch[] sortedBranches = remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal).ToArray();
+			SearchableRemoteGroupMenuContext context = new SearchableRemoteGroupMenuContext
+			{
+				GroupItem = groupItem,
+				SortedBranches = sortedBranches,
+				OnBranchSelected = onBranchSelected,
+				IsCheckedPredicate = isCheckedPredicate
+			};
 			PlaceholderTextBox searchBox = new PlaceholderTextBox
 			{
 				Placeholder = Preferences.PreferencesLocalization.Current("Search"),
@@ -1442,40 +1485,49 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 				MinWidth = 220,
 				Margin = new Thickness(4, 3, 4, 3),
 				Padding = new Thickness(4, 2, 4, 2),
-				Tag = branchItems
+				Tag = context
 			};
 			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(searchBox, Application.Current?.TryFindResource("SearchPanelPlaceholderTextBox"));
 			searchBox.TextChanged += SearchRemoteBranchesBox_TextChanged;
+			context.SearchBox = searchBox;
 			groupItem.Items.Add(new MenuItem
 			{
 				Header = searchBox,
 				StaysOpenOnClick = true
 			});
-			foreach (RemoteBranch rb in remoteBranches.OrderBy((RemoteBranch b) => b.Name, StringComparer.Ordinal))
+			if (sortedBranches.Length <= SearchableRemoteGroupEagerThreshold)
 			{
-				RemoteBranch currentRemoteBranch = rb;
-				MenuItem branchItem = new MenuItem
-			{
-				// v3.7.2：转义 "_" — 分支名含多个 "_" 时，第一个 "_" 会被 WPF 当作助记符吞掉，显示丢失。
-				Header = EscapeMenuHeader(currentRemoteBranch.ShortName),
-				// v3.7.2：搜索过滤用原始名（未转义），避免转义后的 "__" 干扰用户输入的 "_" 匹配。
-				Tag = currentRemoteBranch.ShortName
-			};
-				if (isCheckedPredicate != null && isCheckedPredicate(currentRemoteBranch))
+				// 小分组：右键时全量构建（旧行为），搜索时仅切换 IsVisible。
+				List<MenuItem> branchItems = new List<MenuItem>();
+				context.EagerItems = branchItems;
+				foreach (RemoteBranch rb in sortedBranches)
 				{
-					branchItem.IsChecked = true;
+					MenuItem branchItem = CreateRemoteBranchMenuItem(rb, context);
+					branchItems.Add(branchItem);
+					groupItem.Items.Add(branchItem);
 				}
-				branchItem.Click += delegate
+			}
+			else
+			{
+				// 大分组：右键时只放禁用状态占位行，分支项延迟到子菜单打开时生成（见下方 SubmenuOpened）。
+				MenuItem statusItem = new MenuItem
 				{
-					onBranchSelected?.Invoke(currentRemoteBranch);
+					Header = EscapeMenuHeader(PreferencesLocalization.FormatCurrent("{0} branches — type to search", sortedBranches.Length.ToString())),
+					IsEnabled = false,
+					StaysOpenOnClick = true
 				};
-				branchItems.Add(branchItem);
-				groupItem.Items.Add(branchItem);
+				context.StatusItem = statusItem;
+				groupItem.Items.Add(statusItem);
 			}
 			groupItem.SubmenuOpened += delegate
 			{
 				groupItem.Dispatcher.Post(delegate
 				{
+					if (context.EagerItems == null)
+					{
+						// 大分组首次/再次打开：实化前 SearchableRemoteGroupMaxVisibleItems 条（幂等）。
+						PopulateLazyRemoteBranchMenuItems(context, string.Empty);
+					}
 					searchBox.Text = string.Empty;
 					searchBox.Focus();
 				}, DispatcherPriority.Background);
@@ -1483,18 +1535,95 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			return groupItem;
 		}
 
+		/// <summary>构建单个远端分支菜单项（转义 Header、Tag 存原始名供搜索、挂 Click 回调与勾选态）。</summary>
+		private static MenuItem CreateRemoteBranchMenuItem(RemoteBranch remoteBranch, SearchableRemoteGroupMenuContext context)
+		{
+			MenuItem branchItem = new MenuItem
+			{
+				// v3.7.2：转义 "_" — 分支名含多个 "_" 时，第一个 "_" 会被 WPF 当作助记符吞掉，显示丢失。
+				Header = EscapeMenuHeader(remoteBranch.ShortName),
+				// v3.7.2：搜索过滤用原始名（未转义），避免转义后的 "__" 干扰用户输入的 "_" 匹配。
+				Tag = remoteBranch.ShortName
+			};
+			if (context.IsCheckedPredicate != null && context.IsCheckedPredicate(remoteBranch))
+			{
+				branchItem.IsChecked = true;
+			}
+			branchItem.Click += delegate
+			{
+				context.OnBranchSelected?.Invoke(remoteBranch);
+			};
+			return branchItem;
+		}
+
+		/// <summary>大分组模式：按过滤串重建分支菜单项（最多实化 SearchableRemoteGroupMaxVisibleItems 条），
+		/// 并更新状态行提示（总数 / 匹配数 / 截断）。布局约定：[0]=搜索框项，[1]=状态行，[2..]=分支项。</summary>
+		private static void PopulateLazyRemoteBranchMenuItems(SearchableRemoteGroupMenuContext context, string filter)
+		{
+			if (context.StatusItem == null || context.LastPopulatedFilter == filter)
+			{
+				return;
+			}
+			context.LastPopulatedFilter = filter;
+			MenuItem groupItem = context.GroupItem;
+			for (int i = groupItem.Items.Count - 1; i >= 2; i--)
+			{
+				groupItem.Items.RemoveAt(i);
+			}
+			int visibleCount = 0;
+			int matchCount = 0;
+			bool truncated = false;
+			foreach (RemoteBranch rb in context.SortedBranches)
+			{
+				string name = rb.ShortName;
+				if (filter.Length != 0 && (name == null || name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0))
+				{
+					continue;
+				}
+				matchCount++;
+				if (visibleCount >= SearchableRemoteGroupMaxVisibleItems)
+				{
+					truncated = true;
+					break;
+				}
+				groupItem.Items.Add(CreateRemoteBranchMenuItem(rb, context));
+				visibleCount++;
+			}
+			string status;
+			if (filter.Length == 0)
+			{
+				status = (truncated
+					? PreferencesLocalization.FormatCurrent("Showing first {0} of {1} branches — type to search", visibleCount.ToString(), context.SortedBranches.Length.ToString())
+					: PreferencesLocalization.FormatCurrent("{0} branches", context.SortedBranches.Length.ToString()));
+			}
+			else
+			{
+				status = (truncated
+					? PreferencesLocalization.FormatCurrent("More than {0} matches — keep typing to narrow down", visibleCount.ToString())
+					: PreferencesLocalization.FormatCurrent("{0} matches", matchCount.ToString()));
+			}
+			context.StatusItem.Header = EscapeMenuHeader(status);
+		}
+
 		private static void SearchRemoteBranchesBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (sender is not PlaceholderTextBox searchBox || searchBox.Tag is not List<MenuItem> branchItems)
+			if (sender is not PlaceholderTextBox searchBox || searchBox.Tag is not SearchableRemoteGroupMenuContext context)
 			{
 				return;
 			}
 			string filter = (searchBox.Text ?? string.Empty).Trim();
-			foreach (MenuItem branchItem in branchItems)
+			if (context.EagerItems != null)
 			{
-				string name = branchItem.Tag as string;
-				branchItem.IsVisible = string.IsNullOrEmpty(filter) || (name != null && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+				// 小分组：全量项已建，仅切换可见性（旧行为）。
+				foreach (MenuItem branchItem in context.EagerItems)
+				{
+					string name = branchItem.Tag as string;
+					branchItem.IsVisible = string.IsNullOrEmpty(filter) || (name != null && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0);
+				}
+				return;
 			}
+			// 大分组：按过滤串按需重建（上限截断），避免对数千项逐个切换 IsVisible。
+			PopulateLazyRemoteBranchMenuItems(context, filter);
 		}
 
 		/// <summary>搜索框文本变化：隐藏不匹配的分支项（MenuItem.Tag 存原始分支名，含搜索文本即匹配，不区分大小写）。</summary>

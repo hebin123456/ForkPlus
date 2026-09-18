@@ -1,5 +1,6 @@
 using System;
 using ForkPlus.UI.WpfCompat;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -105,15 +106,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 				GitInstanceType = itemType;
 			}
 
-			private static string GitVersion(string path)
-			{
-				GitCommandResult<string> gitCommandResult = new GetGitVersionGitCommand().Execute(path);
-				if (gitCommandResult.Succeeded)
-				{
-					return gitCommandResult.Result;
-				}
-				return null;
-			}
+		private static string GitVersion(string path)
+		{
+			return GitUserControl.GetOrProbeVersionText("git", path);
+		}
 
 			private static string TryFindExistingInstance(string[] possiblePaths)
 			{
@@ -206,6 +202,223 @@ namespace ForkPlus.UI.UserControls.Preferences
 		// SelectionChanged → WarnIfGitVersionUnsupported，导致每次打开偏好设置都弹一次
 		// 版本警告（启动时 GitVersionChecker 已弹过，重复噪音）。刷新期间抑制。
 		private bool _suppressVersionWarning;
+
+		// 优化（2026-09-18，"偏好设置打开有点慢"）：三个实例下拉的版本探测（git/git-mm/
+		// git-ai --version）各是一次子进程 spawn，打开偏好设置时最多 ~10 次串行执行
+		// （Windows 单次 50-300ms）全部在 UI 线程构造器里跑，窗口要 1-3s 才出现且每次
+		// 打开都重来。改为按 工具|路径 缓存探测 Task（进程生命周期内每个可执行文件只探
+		// 一次），并新增 WarmVersionProbes 在窗口构造时后台并行预热——Initialize 里的同步
+		// 读取与预热经 GetOrAdd 共享同一 in-flight Task，首开阻塞 ≈ 最慢单次探测而非串行
+		// 总和，重开命中缓存零子进程。探测本体（GitRequest/ShellRequest.Execute）是纯
+		// 进程 I/O 无 UI 依赖，可安全在线程池执行。
+		private static readonly ConcurrentDictionary<string, Task<string>> _versionTextProbes = new ConcurrentDictionary<string, Task<string>>();
+
+		private static string ProbeVersionText(string toolKey, string path)
+		{
+			switch (toolKey)
+			{
+			case "git":
+			{
+				GitCommandResult<string> gitCommandResult = new GetGitVersionGitCommand().Execute(path);
+				return gitCommandResult.Succeeded ? gitCommandResult.Result : null;
+			}
+			case "gitmm":
+			{
+				GitCommandResult<string> result = new GetGitMmVersionShellCommand().Execute(path);
+				return result.Succeeded ? result.Result : null;
+			}
+			case "gitai":
+			{
+				GitAiVersionCheckResult check = GitAiVersionChecker.Check(path);
+				if (check.Status == GitAiVersionStatus.NotFound || check.Status == GitAiVersionStatus.Unknown || check.Version == null)
+				{
+					return null;
+				}
+				return check.Version.ToString(3);
+			}
+			default:
+				return null;
+			}
+		}
+
+		/// <summary>启动（或复用）指定 工具|路径 的后台探测 Task，不等待结果。</summary>
+		private static void BeginProbe(string toolKey, string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return;
+			}
+			_versionTextProbes.GetOrAdd(toolKey + "|" + path, delegate
+			{
+				return Task.Run(delegate
+				{
+					return ProbeVersionText(toolKey, path);
+				});
+			});
+		}
+
+		/// <summary>同步取版本文本：命中缓存（或等待预热中的同一 Task）后返回；失败返回 null。</summary>
+		private static string GetOrProbeVersionText(string toolKey, string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return null;
+			}
+			BeginProbe(toolKey, path);
+			try
+			{
+				return _versionTextProbes.TryGetValue(toolKey + "|" + path, out Task<string> task) ? task.Result : null;
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Version probe failed for '" + path + "'", ex);
+				return null;
+			}
+		}
+
+		// 优化（2026-09-18 续，"打开偏好设置仍卡很长时间"）：git-mm/git-ai 常为 Node CLI，
+		// --version 冷启动秒级，即使经 WarmVersionProbes 并行预热，Initialize 里同步等
+		// task.Result 仍会把首开卡在最慢单次探测上。版本文本只影响下拉项 label（项的存在
+		// 性由路径候选决定、选中按路径匹配，两者都不依赖版本结果），故改为：探测未完成先
+		// 显示占位符，探测完成后回 UI 线程异步刷新——打开路径上不再等待任何慢探测。
+		private const string PendingVersionText = "…";
+
+		/// <summary>非阻塞取探测结果：任务已完成返回 true（text 为结果，探测失败为 null）；未完成/未启动返回 false。</summary>
+		private static bool TryGetCompletedVersionText(string toolKey, string path, out string text)
+		{
+			text = null;
+			if (string.IsNullOrEmpty(path))
+			{
+				return true;
+			}
+			if (_versionTextProbes.TryGetValue(toolKey + "|" + path, out Task<string> task) && task.IsCompleted)
+			{
+				try
+				{
+					if (task.Status != TaskStatus.Faulted)
+					{
+						text = task.Result;
+					}
+				}
+				catch
+				{
+				}
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary>下拉项版本文本：探测已完成 → 真实文本（失败回退 unknown）；未完成 → 启动/复用探测、登记 pending 并显示占位符。</summary>
+		private static string VersionLabelText(string toolKey, string path, List<string> pendingPaths)
+		{
+			if (TryGetCompletedVersionText(toolKey, path, out string version))
+			{
+				return version ?? PreferencesLocalization.Current("unknown");
+			}
+			BeginProbe(toolKey, path);
+			pendingPaths.Add(path);
+			return PendingVersionText;
+		}
+
+		/// <summary>等待 pending 探测完成后回 UI 线程重跑 refresh（await 捕获 UI 线程上下文；
+		/// refresh 幂等——届时探测已全部完成，标签取真实值且不再登记 pending，循环终止）。</summary>
+		private static async void RefreshWhenProbesCompleteAsync(string toolKey, List<string> pendingPaths, Action refresh)
+		{
+			List<Task<string>> pending = new List<Task<string>>();
+			foreach (string path in pendingPaths)
+			{
+				if (_versionTextProbes.TryGetValue(toolKey + "|" + path, out Task<string> task))
+				{
+					pending.Add(task);
+				}
+			}
+			if (pending.Count == 0)
+			{
+				return;
+			}
+			try
+			{
+				await Task.WhenAll(pending);
+			}
+			catch
+			{
+			}
+			refresh();
+		}
+
+		/// <summary>
+		/// 后台并行预热 git/git-mm/git-ai 版本探测缓存（候选与三个 Refresh*InstanceComboBox
+		/// 同口径：git 的 ENV/内置/系统安装位/自定义 + git-mm/git-ai 的 PATH/git 同目录/
+		/// 系统位置/自定义）。偏好窗口构造时调用。
+		/// </summary>
+		public static void WarmVersionProbes()
+		{
+			Task.Run(delegate
+			{
+				try
+				{
+					// git 实例
+					BeginProbe("git", App.EnvironmentGitInstancePath);
+					BeginProbe("git", App.ForkGitInstancePath);
+					string[] array = new string[3] { "%programfiles(x86)%\\Git\\bin\\git.exe", "%programfiles%\\Git\\bin\\git.exe", "%ProgramW6432%\\Git\\bin\\git.exe" };
+					foreach (string text in array)
+					{
+						try
+						{
+							string expanded = Environment.ExpandEnvironmentVariables(text);
+							if (File.Exists(expanded))
+							{
+								BeginProbe("git", expanded);
+							}
+						}
+						catch
+						{
+						}
+					}
+					string savedGit = ForkPlusSettings.Default.GitInstancePath;
+					if (!string.IsNullOrWhiteSpace(savedGit) && File.Exists(savedGit))
+					{
+						BeginProbe("git", savedGit);
+					}
+					// git-mm 实例
+					BeginProbe("gitmm", App.GitMmPathFromPath);
+					BeginProbe("gitmm", GitSiblingPath(App.GitMmExecutableName));
+					BeginProbe("gitmm", App.GitMmPathFromSystemLocations);
+					string savedGitMm = ForkPlusSettings.Default.GitMmInstancePath;
+					if (!string.IsNullOrWhiteSpace(savedGitMm) && File.Exists(savedGitMm))
+					{
+						BeginProbe("gitmm", savedGitMm);
+					}
+					// git-ai 实例
+					BeginProbe("gitai", App.GitAiPathFromPath);
+					BeginProbe("gitai", GitSiblingPath(OperatingSystem.IsWindows() ? "git-ai.exe" : "git-ai"));
+					BeginProbe("gitai", App.GitAiPathFromSystemLocations);
+					string savedGitAi = ForkPlusSettings.Default.GitAiInstancePath;
+					if (!string.IsNullOrWhiteSpace(savedGitAi) && File.Exists(savedGitAi))
+					{
+						BeginProbe("gitai", savedGitAi);
+					}
+				}
+				catch (Exception ex)
+				{
+					Log.Error("WarmVersionProbes failed", ex);
+				}
+			});
+		}
+
+		/// <summary>git 可执行文件同目录下的指定工具路径（供预热，失败返回 null）。</summary>
+		private static string GitSiblingPath(string executableName)
+		{
+			try
+			{
+				string gitDir = Path.GetDirectoryName(App.GitPath);
+				return (gitDir == null) ? null : Path.Combine(gitDir, executableName);
+			}
+			catch
+			{
+				return null;
+			}
+		}
 
 		public GitUserControl()
 		{
@@ -448,13 +661,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 		_isRefreshingGitMm = true;
 		try
 		{
+			List<string> pending = new List<string>();
 			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
-			// 1. PATH 中查找的 git-mm（走缓存）
+			// 1. PATH 中查找的 git-mm（走缓存；版本文本经 VersionLabelText 非阻塞取值，未完成显示占位符）
 			string pathCandidate = App.GitMmPathFromPath;
 			if (!string.IsNullOrWhiteSpace(pathCandidate))
 			{
-				string version = GitMmVersionText(pathCandidate);
-				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + pathCandidate;
+				string label = VersionLabelText("gitmm", pathCandidate, pending) + " - " + pathCandidate;
 				list.Add(new GitInstanceItem(label, pathCandidate, GitInstanceType.System));
 			}
 			// 2. git 可执行文件同目录的 git-mm（跨平台命名，2026-09-07：原硬编码 git-mm.exe 在 Unix 上永远找不到）
@@ -466,8 +679,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					string sibling = Path.Combine(gitDir, App.GitMmExecutableName);
 					if (File.Exists(sibling) && (pathCandidate == null || !string.Equals(pathCandidate, sibling, StringComparison.OrdinalIgnoreCase)))
 					{
-						string version = GitMmVersionText(sibling);
-						string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + sibling;
+						string label = VersionLabelText("gitmm", sibling, pending) + " - " + sibling;
 						list.Add(new GitInstanceItem(label, sibling, GitInstanceType.Local));
 					}
 				}
@@ -481,8 +693,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			string systemCandidate = App.GitMmPathFromSystemLocations;
 			if (!string.IsNullOrWhiteSpace(systemCandidate) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, systemCandidate, StringComparison.OrdinalIgnoreCase)))
 			{
-				string version = GitMmVersionText(systemCandidate);
-				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + systemCandidate;
+				string label = VersionLabelText("gitmm", systemCandidate, pending) + " - " + systemCandidate;
 				list.Add(new GitInstanceItem(label, systemCandidate, GitInstanceType.System));
 			}
 			// 3. 用户已保存的自定义路径（若不在上述候选中）
@@ -491,8 +702,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				if (File.Exists(savedPath))
 				{
-					string version = GitMmVersionText(savedPath);
-					string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + savedPath;
+					string label = VersionLabelText("gitmm", savedPath, pending) + " - " + savedPath;
 					list.Add(new GitInstanceItem(label, savedPath, GitInstanceType.Custom));
 				}
 			}
@@ -503,6 +713,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 			string current = App.GitMmPath;
 			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
 			GitMmInstanceComboBox.SelectedItem = match;
+			// 版本探测仍在跑（占位标签）→ 完成后异步刷新为真实标签
+			if (pending.Count > 0)
+			{
+				RefreshWhenProbesCompleteAsync("gitmm", pending, RefreshGitMmInstanceComboBox);
+			}
 		}
 		finally
 		{
@@ -510,13 +725,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 		}
 	}
 
-		private static string GitMmVersionText(string path)
-		{
-			GitCommandResult<string> result = new GetGitMmVersionShellCommand().Execute(path);
-			return result.Succeeded ? result.Result : null;
-		}
-
-		private void GitMmInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	private void GitMmInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
 		// 刷新期间程序化设置 SelectedItem 会触发 SelectionChanged，跳过避免副作用（弹文件对话框/写磁盘）
 		if (_isRefreshingGitMm)
@@ -568,13 +777,13 @@ namespace ForkPlus.UI.UserControls.Preferences
 		_isRefreshingGitAi = true;
 		try
 		{
+			List<string> pending = new List<string>();
 			List<GitInstanceItem> list = new List<GitInstanceItem>(4);
-			// 1. PATH 中查找的 git-ai（走缓存）
+			// 1. PATH 中查找的 git-ai（走缓存；版本文本经 VersionLabelText 非阻塞取值，未完成显示占位符）
 			string pathCandidate = App.GitAiPathFromPath;
 			if (!string.IsNullOrWhiteSpace(pathCandidate))
 			{
-				string version = GitAiVersionText(pathCandidate);
-				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + pathCandidate;
+				string label = VersionLabelText("gitai", pathCandidate, pending) + " - " + pathCandidate;
 				list.Add(new GitInstanceItem(label, pathCandidate, GitInstanceType.System));
 			}
 			// 2. git 可执行文件同目录的 git-ai（跨平台可执行名）
@@ -586,8 +795,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 					string sibling = Path.Combine(gitDir, OperatingSystem.IsWindows() ? "git-ai.exe" : "git-ai");
 					if (File.Exists(sibling) && (pathCandidate == null || !string.Equals(pathCandidate, sibling, StringComparison.OrdinalIgnoreCase)))
 					{
-						string version = GitAiVersionText(sibling);
-						string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + sibling;
+						string label = VersionLabelText("gitai", sibling, pending) + " - " + sibling;
 						list.Add(new GitInstanceItem(label, sibling, GitInstanceType.Local));
 					}
 				}
@@ -602,8 +810,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			string systemCandidate = App.GitAiPathFromSystemLocations;
 			if (!string.IsNullOrWhiteSpace(systemCandidate) && !list.ContainsItem((GitInstanceItem x) => string.Equals(x.GitPath, systemCandidate, StringComparison.OrdinalIgnoreCase)))
 			{
-				string version = GitAiVersionText(systemCandidate);
-				string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + systemCandidate;
+				string label = VersionLabelText("gitai", systemCandidate, pending) + " - " + systemCandidate;
 				list.Add(new GitInstanceItem(label, systemCandidate, GitInstanceType.System));
 			}
 			// 3. 用户已保存的自定义路径（若不在上述候选中）
@@ -612,8 +819,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			{
 				if (File.Exists(savedPath))
 				{
-					string version = GitAiVersionText(savedPath);
-					string label = (version ?? PreferencesLocalization.Current("unknown")) + " - " + savedPath;
+					string label = VersionLabelText("gitai", savedPath, pending) + " - " + savedPath;
 					list.Add(new GitInstanceItem(label, savedPath, GitInstanceType.Custom));
 				}
 			}
@@ -625,22 +831,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 			string current = App.GitAiResolvedPath;
 			GitInstanceItem match = list.FirstOrDefault((GitInstanceItem x) => x.GitInstanceType != GitInstanceType.Separator && x.GitInstanceType != GitInstanceType.AddCustom && string.Equals(x.GitPath, current, StringComparison.OrdinalIgnoreCase));
 			GitAiInstanceComboBox.SelectedItem = match;
+			// 版本探测仍在跑（占位标签）→ 完成后异步刷新为真实标签
+			if (pending.Count > 0)
+			{
+				RefreshWhenProbesCompleteAsync("gitai", pending, RefreshGitAiInstanceComboBox);
+			}
 		}
 		finally
 		{
 			_isRefreshingGitAi = false;
 		}
-	}
-
-	/// <summary>取 git-ai 版本文本（形如 "1.7.0"），未安装/无法执行时返回 null。</summary>
-	private static string GitAiVersionText(string path)
-	{
-		GitAiVersionCheckResult check = GitAiVersionChecker.Check(path);
-		if (check.Status == GitAiVersionStatus.NotFound || check.Status == GitAiVersionStatus.Unknown || check.Version == null)
-		{
-			return null;
-		}
-		return check.Version.ToString(3);
 	}
 
 	private void GitAiInstanceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

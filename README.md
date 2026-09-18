@@ -124,7 +124,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 ## 测试
 
 - 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒烟与端到端测试，跨平台，随单测一起运行）
-- 全量 4400+ 用例；关键修复均配有回归防线（失败即测试红灯）
+- 全量 4200+ 用例；关键修复均配有回归防线（失败即测试红灯）
 - CI 在 tag 构建与手动触发时于 ubuntu runner 上运行全量测试（含 AskPass / RI 辅助程序测试），环境依赖 gitflow-avh 与 git-lfs（见 workflow 注释）
 
 ## 多语言支持
@@ -170,7 +170,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 
 ## 下载
 
-- 正式发布版本：[Releases 页面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自带 .NET 10 运行时，无需安装任何框架，三平台 zip）
+- 正式发布版本：[Releases 页面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自带 .NET 10 运行时，无需安装任何框架，四平台 zip）
 - 各版本变更详情请查阅 [Release Notes](RELEASE_NOTE.md)（含 WPF 版历史）
 
 ## Git / Git-AI 客户端
