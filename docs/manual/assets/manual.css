@@ -1,0 +1,227 @@
+/* ForkPlus 用户手册共享样式(2026-09-19)。所有章节页引用本文件。 */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #1f2328;
+  --muted: #6b7280;
+  --rule: #e5e7eb;
+  --accent: #2f6fed;
+  --accent-soft: #eaf1fe;
+  --success: #1a7f37;
+  --warning: #9a6700;
+  --danger: #cf222e;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Noto Sans CJK SC", "WenQuanYi Micro Hei", "PingFang SC",
+    "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ===== 页头 ===== */
+.manual-header {
+  background: linear-gradient(135deg, #2f6fed 0%, #5b8def 100%);
+  color: #fff;
+  padding: 40px 24px 32px;
+  text-align: center;
+}
+.manual-header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  font-weight: 700;
+}
+.manual-header p {
+  margin: 0 auto;
+  max-width: 760px;
+  opacity: 0.92;
+  font-size: 14px;
+}
+
+/* ===== 导航栏 ===== */
+.manual-nav {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--rule);
+  padding: 0 24px;
+  z-index: 10;
+}
+.manual-nav a {
+  display: inline-block;
+  padding: 12px 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+}
+.manual-nav a:hover { color: var(--accent); }
+.manual-nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ===== 内容 ===== */
+.manual-main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+.manual-main h2 {
+  font-size: 24px;
+  margin: 32px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--rule);
+}
+.manual-main h3 {
+  font-size: 19px;
+  margin: 24px 0 8px;
+}
+.manual-main p { margin: 8px 0; }
+.manual-main ul, .manual-main ol { padding-left: 22px; }
+.manual-main li { margin: 4px 0; }
+.manual-main code {
+  background: #f0f1f3;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+}
+.manual-main pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  overflow: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.manual-main pre code { background: none; color: inherit; padding: 0; }
+.manual-main blockquote {
+  margin: 12px 0;
+  padding: 10px 16px;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 8px 8px 0;
+}
+.manual-main blockquote p { margin: 0; }
+
+/* ===== 截图 ===== */
+figure {
+  margin: 18px 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+}
+figure.wide img { border: none; }
+figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+figure figcaption code { font-size: 12px; }
+
+/* ===== 表格 ===== */
+.manual-main table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  background: var(--surface);
+  font-size: 14px;
+}
+.manual-main th, .manual-main td {
+  border: 1px solid var(--rule);
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+.manual-main th {
+  background: #f0f2f5;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.manual-main tr:nth-child(even) td { background: #fafbfc; }
+
+/* ===== 提示框 ===== */
+.tip, .warn, .note {
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  font-size: 14px;
+}
+.tip { background: #e6f4ea; border: 1px solid #b7dfc2; }
+.warn { background: #fff4e5; border: 1px solid #ffd9a0; }
+.note { background: var(--accent-soft); border: 1px solid #c3d9fc; }
+.tip strong, .warn strong, .note strong { margin-right: 4px; }
+
+/* ===== 键盘按键 ===== */
+kbd {
+  background: #fff;
+  border: 1px solid #c8ccd2;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 1px 7px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+/* ===== 目录卡片(索引页) ===== */
+.chapter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.chapter-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.chapter-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+.chapter-card .num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.chapter-card h3 { margin: 6px 0 4px; font-size: 17px; }
+.chapter-card p { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* ===== 页脚 ===== */
+.manual-footer {
+  border-top: 1px solid var(--rule);
+  padding: 20px 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .manual-header h1 { font-size: 24px; }
+  .manual-nav { overflow-x: auto; white-space: nowrap; }
+  .manual-main { padding: 20px 14px 48px; }
+}
