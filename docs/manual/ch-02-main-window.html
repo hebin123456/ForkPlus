@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 章 · 主界面总览 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 2 章 · 主界面总览</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html" class="active">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+</nav>
+<main class="manual-main">
+  <h2>主窗口整体布局</h2>
+  <p>打开任意仓库后进入主界面。窗口自上而下、自左而右分为：工具栏、侧边栏、修订列表、修订详情与状态栏五个区域。</p>
+
+  <figure class="wide">
+    <img src="screenshots/02-main-window/01-main-window-overview.png" alt="主界面全貌" loading="lazy">
+    <figcaption>图 2-1　主界面全貌：工具栏 + 侧边栏 + 修订列表 + 修订详情</figcaption>
+  </figure>
+
+  <h3>工具栏</h3>
+  <ul>
+    <li><strong>菜单栏</strong>：文件、视图、仓库、窗口、帮助。</li>
+    <li><strong>快捷操作</strong>：获取、抓取、拉取、推送、贮藏、应用等常用 Git 操作按钮。</li>
+    <li><strong>仓库操作</strong>：打开方式、AI 编码开发、同步等入口。</li>
+  </ul>
+
+  <h3>侧边栏</h3>
+  <p>左侧树形导航按分组组织仓库内容，每个分组可独立展开/折叠：</p>
+  <ul>
+    <li><strong>当前仓库</strong>：仓库名与本地变更入口。</li>
+    <li><strong>分支</strong>：本地分支列表，当前分支带勾选标记。</li>
+    <li><strong>远端</strong>：远程仓库与远端分支。</li>
+    <li><strong>标签</strong>：版本标签列表。</li>
+    <li><strong>贮藏</strong>：工作区快照（Stash）列表。</li>
+    <li><strong>子模块</strong>：仓库引用的子模块。</li>
+  </ul>
+
+  <h3>修订列表</h3>
+  <p>中部主区域以图形化方式展示提交历史：左侧的分支图用不同颜色区分各分支的合并与分叉关系，每行显示分支/标签标记、提交说明、构建状态、提交哈希与时间。</p>
+
+  <h3>修订详情</h3>
+  <p>底部面板展示选中提交的详细信息，包含「提交」「变更」「文件树」三个标签页（详见第 3、4 章）。</p>
+
+  <h2>侧边栏分组展开</h2>
+  <p>点击任意分组标题即可展开或折叠该分组。例如展开「标签」后可以看到仓库中的所有版本标签，标签会同时出现在修订列表对应提交的行内。</p>
+
+  <figure>
+    <img src="screenshots/02-main-window/02-main-window-sidebar.png" alt="侧边栏展开标签分组" loading="lazy">
+    <figcaption>图 2-2　展开「标签」分组：v2.0 / v1.0 两个标签，对应提交行内同步显示标签标记</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>标签在修订列表中以橙色标记显示（如 <code>v2.0</code>），当前分支以勾选标记标识（<code>main ✓</code>）。</div>
+
+  <h2>多标签页切换</h2>
+  <p>在同一主窗口中可以打开多个仓库，每个仓库一个标签页。标签页标题显示仓库名与当前分支；非活动标签显示关闭按钮 <kbd>×</kbd>，点击任意标签即可切换。</p>
+
+  <figure>
+    <img src="screenshots/02-main-window/03-main-window-multi-tabs.png" alt="多标签页" loading="lazy">
+    <figcaption>图 2-3　同一主窗口打开两个仓库标签页：当前仓库 <code>fpe2e_basic_…</code>，另一仓库 <code>fpe2e_branches_…</code> 处于待切换状态</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>用 <kbd>Ctrl</kbd> + <kbd>Tab</kbd> 可在标签页间顺序切换；<kbd>Ctrl</kbd> + <kbd>W</kbd> 关闭当前标签页。切换后侧边栏、修订列表与详情面板会整体更新为对应仓库的内容。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 2 章 · 主界面总览
+</footer>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 章 · 欢迎页与仓库管理 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 1 章 · 欢迎页与仓库管理</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html" class="active">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+</nav>
+<main class="manual-main">
+  <h2>欢迎窗口：首次启动的用户信息设置</h2>
+  <p>首次运行 ForkPlus 时会打开欢迎窗口。左侧为设置表单的导航步骤，输入的用户名与邮箱将写入本地 Git 全局配置，并关联到你之后创建的所有提交。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/01-welcome-initial.png" alt="欢迎窗口初始表单" loading="lazy">
+    <figcaption>图 1-1　欢迎窗口初始表单：设置用户名（全名，可选）、邮箱与默认源代码文件夹</figcaption>
+  </figure>
+
+  <p>表单包含三个字段：</p>
+  <ul>
+    <li><strong>用户名</strong>：对应 Git 的 <code>user.name</code>，将出现在你创建的每条提交的作者信息中（全名可选）。</li>
+    <li><strong>邮箱</strong>：对应 Git 的 <code>user.email</code>，用于身份关联（邮箱格式可选校验）。</li>
+    <li><strong>默认源代码文件夹</strong>：克隆仓库时的默认落地目录，可点击右侧文件夹按钮选择。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/01-welcome/02-welcome-filled.png" alt="欢迎窗口填写表单" loading="lazy">
+    <figcaption>图 1-2　在欢迎窗口中填入用户名、邮箱与克隆目录</figcaption>
+  </figure>
+
+  <div class="note"><strong>提示：</strong>用户信息在文本变化时会即时写入全局 Git 配置；填写完成后点击右下角「完成」进入主界面。</div>
+
+  <h2>仓库管理器：最近仓库与仓库分组</h2>
+  <p>仓库管理器（Repository Manager）集中展示本机可用的仓库。它会把仓库按「最近」与「仓库库分组」两个维度组织起来，方便快速切换和打开。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/03-repomanager-with-repos.png" alt="仓库管理器列表" loading="lazy">
+    <figcaption>图 1-3　仓库管理器：按最近与分组列出候选仓库</figcaption>
+  </figure>
+
+  <h3>选中某个仓库</h3>
+  <p>在列表中单击某个仓库后，该项会高亮显示，作为打开前的确认（同时展示仓库路径等元信息）。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/04-repomanager-selected.png" alt="仓库管理器中选中仓库" loading="lazy">
+    <figcaption>图 1-4　在仓库管理器中选中一个仓库项</figcaption>
+  </figure>
+
+  <h3>空态回退视图</h3>
+  <p>当仓库列表为空时，仓库管理器会自动回退到引导视图，引导用户「克隆」「新建」或「添加」一个仓库。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/05-repomanager-empty-fallback.png" alt="仓库管理器空态" loading="lazy">
+    <figcaption>图 1-5　仓库管理器空态回退视图：克隆 / 新建 / 添加仓库入口</figcaption>
+  </figure>
+
+  <h2>多标签页</h2>
+  <p>ForkPlus 采用多标签页组织多个打开的仓库与视图。每个标签页顶部为可关闭的标签项，当前活动的标签高亮显示。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/06-tabs-three.png" alt="三个标签页" loading="lazy">
+    <figcaption>图 1-6　同时打开三个标签页，当前标签用右侧 X 关闭</figcaption>
+  </figure>
+
+  <p>点击任意标签即可切换活动仓库；切换到最后一个标签时，界面会随之更新为对应仓库的内容。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/07-tabs-third-selected.png" alt="选中第三个标签页" loading="lazy">
+    <figcaption>图 1-7　选中第三个标签页后的活动状态</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>你可以随时用工具栏或菜单打开、新建、克隆仓库，ForkPlus 会为每个仓库自动建立标签页；空闲标签可点右上角 <kbd>×</kbd> 关闭。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 1 章 · 欢迎页与仓库管理
+</footer>
+</body>
+</html>
