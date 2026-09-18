@@ -294,6 +294,21 @@
   <ControlTheme x:Key="SearchableSubmenuMenuItem" TargetType="MenuItem">
     <Setter Property="Template" Value="{DynamicResource SearchableSubmenuHeaderTemplateKey}" />
   </ControlTheme>
+  <!-- 可搜索子菜单·搜索行专用：叶子行模板的图标列 + 手势列 + 两个 20px 箭头/快捷键槽约 90px
+       会让包着搜索框的行反向把弹层撑宽（搜索框 MinWidth 直接决定弹层宽度）。此主题去掉全部
+       槽位，Header（搜索框）水平铺满整行 —— 搜索框宽度跟随弹层宽度（弹层宽度由最宽分支行
+       驱动），且弹层不再为搜索框行多付 ~90px 行铬。仅用于 searchBoxItem（实例级 Theme 覆盖）。 -->
+  <ControlTheme x:Key="SearchableSubmenuSearchRowMenuItem" TargetType="MenuItem">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="MenuItem">
+          <Border Background="#00FFFFFF" CornerRadius="4" Margin="1" x:Name="TemplateRoot">
+            <ContentPresenter Content="{TemplateBinding Header}" HorizontalAlignment="Stretch" VerticalAlignment="Center" x:Name="menuHeaderContainer" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </ControlTheme>
   <ControlTheme x:Key="{x:Type MenuItem}" TargetType="MenuItem">
     <Setter Property="Background" Value="#00FFFFFF" />
     <Setter Property="BorderBrush" Value="#00FFFFFF" />

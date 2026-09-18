@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
@@ -71,6 +71,12 @@ namespace ForkPlus.UI
 			}
 		}
 
+		// v4.1.4（2026-09-18，"检查远端同步状态/跟踪 子菜单点搜索框右键菜单直接消失"）：
+		// 搜索框行的 MenuItem 是"叶子"（Items.Count==0）且 StaysOpenOnClick=true——Avalonia 的
+		// DefaultMenuInteractionHandler.PointerReleased 会把 Header 里的 TextBox 点击当叶子项点击
+		// RaiseClick（WPF 里 TextBox 吞掉鼠标事件不会走到这），本兼容层的叶子关闭处理器此前不看
+		// StaysOpenOnClick，一律关整个 ContextMenu。三处关闭入口统一补上该判断：搜索框行/禁用
+		// 状态行等"点了不该关"的叶子保持菜单打开（对齐 Avalonia 原生 Click(item) 语义）。
 		private static void ContextMenu_PointerReleasedCloseLeafItem(object sender, PointerReleasedEventArgs e)
 		{
 			if (sender is not ContextMenu contextMenu)
@@ -90,7 +96,7 @@ namespace ForkPlus.UI
 				}
 				if (current is MenuItem menuItem)
 				{
-					if (menuItem.IsEnabled && menuItem.Items.Count == 0)
+					if (menuItem.IsEnabled && menuItem.Items.Count == 0 && !menuItem.StaysOpenOnClick)
 					{
 						Dispatcher.UIThread.Post(contextMenu.Close, DispatcherPriority.Background);
 					}
@@ -231,11 +237,65 @@ namespace ForkPlus.UI
 			}
 		}
 
+		/// <summary>子菜单滚动条拖拽守卫（v4.1.4，2026-09-18"子菜单滚动条拉不了，一点就消失"）：
+		/// 挂在分组 MenuItem（bubble 路径先于 ContextMenu 层的 DefaultMenuInteractionHandler），
+		/// 按住拖拽进行中（指针已被本子菜单内滚动条 Thumb 或搜索框 TextBox 捕获）时标记
+		/// PointerMoved 已处理。Avalonia DefaultMenuInteractionHandler.PointerMoved 内部有个
+		/// HACK——按住的指针不在菜单项边界内就 Capture(null) 强制松开捕获；子菜单弹层与父
+		/// 菜单行跨坐标系，滚动条拖拽的首个 Move 必被误判"越界"，捕获被掐断 → 滚动条拉不动
+		/// （headless 实测：按下 captured=Thumb，一次 Move 后 captured=空，滚动停在第一步），
+		/// 此后指针带键滑出弹层，子菜单还会因 PointerExited 自关——用户看到"一点就消失"。
+		/// Thumb / TextBox 自身的拖拽处理在事件源处先于本守卫执行，不受影响；未按下时无捕获，
+		/// 悬停高亮等常规菜单行为也不受影响。</summary>
+		public static void AttachSubmenuDragCaptureGuard(this MenuItem menuItem)
+		{
+			menuItem.AddHandler(InputElement.PointerMovedEvent, SubmenuDragCaptureGuard, RoutingStrategies.Bubble);
+		}
+
+		private static void SubmenuDragCaptureGuard(object sender, PointerEventArgs e)
+		{
+			if (e.Pointer.Captured is global::Avalonia.Visual captured &&
+				(captured.GetParent<ScrollBar>() != null || captured.GetParent<TextBox>() != null))
+			{
+				e.Handled = true;
+			}
+		}
+
+		/// <summary>搜索框行焦点防抢守卫（v4.1.4，2026-09-18"检查远端同步状态/跟踪 子菜单搜索框
+		/// 无法获得焦点/无法输入"）：真实 Windows 桌面实测（SendInput 完整复刻用户流：右键
+		/// → 悬停展开 → 键入 → 点击 → 再键入），键盘输入经主窗口原生焦点路由到共享 FocusManager 的逻辑焦点元素——TextBox 逻辑
+		/// 聚焦后键入即可达；但两个路径会把焦点抢到搜索框所在的行 MenuItem（叶子项）上：
+		/// ① 子菜单打开时 MenuBase 把焦点给第一个子项（= 搜索框行），SubmenuOpened 里
+		/// Dispatcher.Post(Background) 的 searchBox.Focus() 早于容器就绪被覆盖；② 点击搜索框
+		/// 时 DefaultMenuInteractionHandler.PointerPressed 又把焦点给被按的行 MenuItem。
+		/// 守卫：搜索框行自身获得焦点（GotFocus 冒泡到行）且 TextBox 未持焦时，投递
+		/// （Background，避开重入）把焦点还给 TextBox；投递回调再校验焦点仍在该行
+		/// （用户已把焦点移到分支行/其它元素时不抢回）。分支行等其它项的焦点不受影响。</summary>
+		public static void AttachSearchBoxFocusGuard(this MenuItem searchBoxItem, TextBox searchBox)
+		{
+			// handledEventsToo：MenuItem 的类处理器会把 GotFocus 标记 Handled（真实 Windows
+			// 实测：行 IsFocused=True 但普通订阅收不到 GotFocus，LostFocus 不受影响），
+			// 必须带 handledEventsToo 才能在"焦点被抢到行上"时收到通知。
+			searchBoxItem.AddHandler(InputElement.GotFocusEvent, (_, _) =>
+			{
+				if (!searchBox.IsFocused)
+				{
+					searchBoxItem.Dispatcher.Post(delegate
+					{
+						if (searchBoxItem.IsFocused && !searchBox.IsFocused)
+						{
+							searchBox.Focus();
+						}
+					}, DispatcherPriority.Background);
+				}
+			}, RoutingStrategies.Bubble, handledEventsToo: true);
+		}
+
 		private static void AttachCloseOnLeafClick(MenuItem menuItem, ContextMenu contextMenu)
 		{
 			menuItem.Click += (_, _) =>
 			{
-				if (menuItem.Items.Count == 0)
+				if (menuItem.Items.Count == 0 && !menuItem.StaysOpenOnClick)
 				{
 					Dispatcher.UIThread.Post(contextMenu.Close, DispatcherPriority.Background);
 				}
@@ -251,7 +311,7 @@ namespace ForkPlus.UI
 
 		private static void MenuItem_CloseOwningMenuOnClick(object sender, RoutedEventArgs e)
 		{
-			if (sender is not MenuItem menuItem || menuItem.Items.Count > 0)
+			if (sender is not MenuItem menuItem || menuItem.Items.Count > 0 || menuItem.StaysOpenOnClick)
 			{
 				return;
 			}

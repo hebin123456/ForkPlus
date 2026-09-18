@@ -123,11 +123,14 @@ namespace ForkPlus.Tests
 						Dispatcher.UIThread.RunJobs();
 						ForkPlusDialogFooter footer = FooterOf(dialog);
 
-						// 1) 空名 → 禁用（显式清空：ctor 可能预填 RecentNewBranchPrefix/UnfinishedBranchName）
-						dialog.BranchNameTextBox.Text = string.Empty;
-						Dispatcher.UIThread.RunJobs();
-						Assert.False(footer.SubmitButton.IsEnabled, "空分支名应禁用提交");
-						ScreenshotHelper.Snap(dialog, "01-create-branch-initial", ModuleDir);
+					// 1) 空名 → 禁用（显式清空：ctor 可能预填 RecentNewBranchPrefix/UnfinishedBranchName）
+					dialog.BranchNameTextBox.Text = string.Empty;
+					Dispatcher.UIThread.RunJobs();
+					Assert.False(footer.SubmitButton.IsEnabled, "空分支名应禁用提交");
+					// 空名也应有占位命令预览（2026-09-18 修复：此前空名返回 null 整个预览区隐藏，
+					// 用户看到"新建分支弹窗没有 git 命令预览"；其他弹窗打开即可见预览）
+					Assert.Contains("<branch-name>", CommandPreviewOf(dialog));
+					ScreenshotHelper.Snap(dialog, "01-create-branch-initial", ModuleDir);
 
 						// 2) 重复名 → 禁用 + 警告（全串拼接传入，但 Translate 有 TranslatePattern
 						//    格式键模式匹配回退（WPF 原仓 PreferencesLocalization.cs 同款机制），
@@ -171,6 +174,51 @@ namespace ForkPlus.Tests
 					}
 					finally
 					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally { TestRepoFactory.Cleanup(repo); }
+		}
+
+		// ============================ 1b) 新建标签：命令预览 ============================
+
+		[Fact]
+		public void CreateTag_CommandPreview_ShowsImmediatelyAndTracksInput()
+		{
+			string repo = TestRepoFactory.CreateBranches();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					// 修复编译：dialog 原声明在 try 内，finally 不可见 → 提前声明
+					CreateTagWindow dialog = null;
+					try
+					{
+						RepositoryReferences references = WaitForLoaded(repoControl, 3);
+						dialog = new CreateTagWindow(repoControl.GitModule, references,
+							repoControl.RepositoryData.Remotes.Items, references.ActiveBranch);
+						dialog.Show();
+						Dispatcher.UIThread.RunJobs();
+
+						// 空名也应有占位命令预览（2026-09-18 修复：此前空名返回 null 整个预览区隐藏，
+						// 用户看到"新建标签弹窗没有 git 命令预览"）
+						Assert.Contains("git tag -a <tag-name>", CommandPreviewOf(dialog));
+
+						// 输入名称 → 预览即时替换为真实命令（含起点分支名）
+						dialog.TagNameTextBox.Text = "v1.0";
+						Dispatcher.UIThread.RunJobs();
+						Assert.Contains("git tag -a v1.0 main", CommandPreviewOf(dialog));
+
+						// 带注释消息 → -m 进预览
+						dialog.TagMessageTextBox.Text = "release 1.0";
+						Dispatcher.UIThread.RunJobs();
+						Assert.Contains("-m \"release 1.0\"", CommandPreviewOf(dialog));
+					}
+					finally
+					{
+						dialog?.Close();
 						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
 					}
 				});

@@ -54,10 +54,13 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override string GetCommandPreview()
 		{
+			// 修复（2026-09-18，"新建标签弹窗没有 git 命令预览"）：名称未输入时此前返回 null，
+			// 预览区整体隐藏——其他弹窗（checkout/fetch 等）打开即可见命令预览。改为空名时用
+			// 占位符 <tag-name> 展示命令骨架，输入名称后即时替换为真实命令。
 			string tagName = TagNameTextBox.Text;
 			if (string.IsNullOrWhiteSpace(tagName))
 			{
-				return null;
+				tagName = "<tag-name>";
 			}
 			var parts = new System.Collections.Generic.List<string> { "git", "tag", "-a" };
 			string message = TagMessageTextBox.Text;

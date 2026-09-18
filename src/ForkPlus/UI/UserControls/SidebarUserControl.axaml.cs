@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using ForkPlus.UI.WpfCompat;
 using System.Collections;
 using System.Collections.Generic;
@@ -1482,7 +1482,11 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			{
 				Placeholder = Preferences.PreferencesLocalization.Current("Search"),
 				Icon = Application.Current?.TryFindResource("SearchOnIcon") as global::Avalonia.Media.IImage,
-				MinWidth = 220,
+				// v4.1.4：220 → 160 → 200——搜索框行改用 SearchableSubmenuSearchRowMenuItem 主题
+				// （无图标/手势/箭头槽位、Header 水平铺满整行）后，搜索框宽度跟随弹层宽度：
+				// 200 只是下限（分支名普遍较长时弹层更宽、搜索框铺满），弹层宽度由最宽分支行驱动，
+				// 不再被搜索框行 + ~90px 行铬反向撑宽。
+				MinWidth = 200,
 				Margin = new Thickness(4, 3, 4, 3),
 				Padding = new Thickness(4, 2, 4, 2),
 				Tag = context
@@ -1490,11 +1494,24 @@ global::ForkPlus.UI.Theme.LayoutScaleTransform;
 			global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(searchBox, Application.Current?.TryFindResource("SearchPanelPlaceholderTextBox"));
 			searchBox.TextChanged += SearchRemoteBranchesBox_TextChanged;
 			context.SearchBox = searchBox;
-			groupItem.Items.Add(new MenuItem
+			MenuItem searchBoxItem = new MenuItem
 			{
 				Header = searchBox,
 				StaysOpenOnClick = true
-			});
+			};
+			// v4.1.4（2026-09-18，"搜索框宽度和弹窗不和谐/行右侧大片留白"）：搜索行套专用主题——
+			// 默认叶子行模板的图标列 + 手势列 + 两个 20px 槽位 ≈90px，既让搜索框只按自身 MinWidth
+			// 渲染（不跟随弹层宽度），又让搜索框行把弹层撑到 MinWidth+90px（分支行右侧大片留白）。
+			// 专用主题去掉全部槽位并让 Header 铺满整行：搜索框宽度 ≈ 弹层宽度，弹层宽度由最宽
+			// 分支行驱动。实例级 Theme 覆盖隐式 MenuItem 主题，仅影响本行。
+			searchBoxItem.Theme = Application.Current?.TryFindResource("SearchableSubmenuSearchRowMenuItem") as global::Avalonia.Styling.ControlTheme;
+			// v4.1.4：搜索框行焦点防抢守卫（子菜单打开/点击时 MenuBase 会把焦点抢到行
+			// MenuItem 上，搜索框拿不到焦点无法输入），机制详见 MenuExtensions.AttachSearchBoxFocusGuard。
+			searchBoxItem.AttachSearchBoxFocusGuard(searchBox);
+			groupItem.Items.Add(searchBoxItem);
+			// v4.1.4（2026-09-18，"子菜单滚动条拉不了，一点就消失"）：挂滚动条拖拽捕获守卫，
+			// 根因与机制详见 MenuExtensions.AttachSubmenuDragCaptureGuard。
+			groupItem.AttachSubmenuDragCaptureGuard();
 			if (sortedBranches.Length <= SearchableRemoteGroupEagerThreshold)
 			{
 				// 小分组：右键时全量构建（旧行为），搜索时仅切换 IsVisible。

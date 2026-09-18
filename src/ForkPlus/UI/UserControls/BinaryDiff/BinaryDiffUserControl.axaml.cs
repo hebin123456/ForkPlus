@@ -557,8 +557,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			if (SideBySideRadioButton.IsChecked.GetValueOrDefault())
 			{
-				SrcFileContentUserControl.Show();
-				DstFileContentUserControl.Show();
+				// 修复（2026-09-18）：新增/删除文件只有单侧内容，UpdateContent 已把无内容的
+				// 一侧 Collapse；此前从 Hex/Swipe/Onion 切回并排时无条件 Show 两侧，会把
+				// 新增文件的左侧（删除文件的右侧）空内容面板重新露出来。改为按内容有无恢复。
+				SrcFileContentUserControl.Hide(_srcBinaryContent == null);
+				DstFileContentUserControl.Hide(_dstBinaryContent == null);
 				SwipeImageDiffView.Hide();
 				OnionSkinImageDiffView.Hide();
 				HexDiffViewContainer.Collapse();
