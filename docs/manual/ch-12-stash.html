@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 12 章 · Stash 贮藏 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 12 章 · Stash 贮藏</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html" class="active">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>保存 Stash</h2>
+  <p>「保存 Stash」对话框把当前未提交的改动（工作区 + 可选的新文件）暂存起来，清空工作区以便切换分支。输入描述消息、决定是否暂存未跟踪的新文件后，命令预览会给出对应的 <code>git stash</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/01-save-stash.png" alt="保存 Stash 对话框" loading="lazy">
+    <figcaption>图 12-1　保存 Stash：输入消息并选择是否纳入未跟踪文件</figcaption>
+  </figure>
+
+  <h2>部分保存</h2>
+  <p>当只需要把部分文件的改动存入 Stash 时，使用「部分暂存」：在文件列表中只勾选要暂存的条目，其余改动留在工作区。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/02-partial-stash.png" alt="部分保存 Stash" loading="lazy">
+    <figcaption>图 12-2　部分保存 Stash：仅勾选要贮藏的文件</figcaption>
+  </figure>
+
+  <h2>应用 Stash（保留条目）</h2>
+  <p>「应用 Stash」对话框把选中的 stash 改动重新应用到工作区。默认的 Apply 模式在应用后保留该 stash 条目，方便之后再次应用。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/03-apply-stash.png" alt="应用 Stash" loading="lazy">
+    <figcaption>图 12-3　应用 Stash：应用后保留该条目</figcaption>
+  </figure>
+
+  <h2>应用并删除（Pop）</h2>
+  <p>勾选「应用后删除该条目」，则应用成功后会自动删除对应的 stash（等价于 <code>git stash pop</code> 的语义），避免条目堆积。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/04-apply-pop.png" alt="应用 Stash 并删除" loading="lazy">
+    <figcaption>图 12-4　应用 Stash 并删除该条目（Pop）</figcaption>
+  </figure>
+
+  <h2>删除 Stash</h2>
+  <p>「删除 Stash」对话框列出当前的全部 stash 条目。可删除单个条目，也可多选批量删除，命令为 <code>git stash drop</code>。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/05-remove-stash.png" alt="删除单个 Stash" loading="lazy">
+    <figcaption>图 12-5　删除单个 Stash 条目</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/12-stash/06-remove-stashes-multi.png" alt="删除多个 Stash" loading="lazy">
+    <figcaption>图 12-6　多选批量删除 Stash 条目</figcaption>
+  </figure>
+
+  <h2>重命名 Stash</h2>
+  <p>「重命名 Stash」对话框为已有的 stash 条目重新命名（其描述消息），便于长期保存后仍能辨识内容。输入新名称后会预览对应的重命名命令。</p>
+
+  <figure>
+    <img src="screenshots/12-stash/07-rename-stash.png" alt="重命名 Stash" loading="lazy">
+    <figcaption>图 12-7　重命名 Stash：更新条目的描述消息</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>Stash 面板按 <code>stash@{n}</code> 编号排序，编号越小越新。若应用时发生冲突，可参考「合并冲突解决」章节处理。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 12 章 · Stash 贮藏
+</footer>
+</body>
+</html>

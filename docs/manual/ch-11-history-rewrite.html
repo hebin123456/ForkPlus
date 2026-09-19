@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 11 章 · 历史改写 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 11 章 · 历史改写</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html" class="active">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>合并分支（Merge）</h2>
+  <p>在「合并分支」对话框中，选择要将当前分支合并进来的来源分支。默认生成直接的合并命令，也可切换为 No Fast-Forward（<code>--no-ff</code>），以便在历史上保留一条合并提交。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/01-merge-branch.png" alt="合并分支对话框" loading="lazy">
+    <figcaption>图 11-1　合并分支：选择来源分支并预览 merge 命令</figcaption>
+  </figure>
+
+  <p>切换到「No Fast-Forward」后，命令变为带 <code>--no-ff</code> 的合并，即使来源可快进也会创建一条显式合并提交。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/02-merge-no-ff.png" alt="合并分支 No Fast-Forward 模式" loading="lazy">
+    <figcaption>图 11-2　合并分支：No Fast-Forward 模式预览</figcaption>
+  </figure>
+
+  <h2>拣选提交（Cherry-Pick）</h2>
+  <p>「拣选提交」对话框把指定的提交应用到当前分支。界面中列出了来源分支上的提交以及与当前 HEAD 的关联关系，选定后点击确定执行 <code>git cherry-pick</code>。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/03-cherry-pick.png" alt="拣选提交对话框" loading="lazy">
+    <figcaption>图 11-3　拣选提交：选择要应用到当前分支的提交</figcaption>
+  </figure>
+
+  <h2>还原提交（Revert）</h2>
+  <p>「还原提交」对话框通过一次新的反向提交来撤销过去某个提交的改动，从而保留历史。选定目标提交后，可预览对应的 <code>git revert</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/04-revert.png" alt="还原提交对话框" loading="lazy">
+    <figcaption>图 11-4　还原提交：选择要撤销的历史提交</figcaption>
+  </figure>
+
+  <h2>重置分支（Reset）</h2>
+  <p>「重置分支」对话框可将当前分支指针回退到某个提交，并选择重置模式。Soft / Mixed / Hard 三种模式影响工作区与暂存区的保留程度，命令预览会随选择即时变化。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/05-reset-hard.png" alt="重置分支 Hard 模式" loading="lazy">
+    <figcaption>图 11-5　重置分支：Hard 模式（强制丢弃改动）命令预览</figcaption>
+  </figure>
+
+  <div class="note"><strong>警告：</strong>Hard 重置会丢掉工作区与暂存区变更且不可恢复，执行前请确认或利用 Reflog 找回。</div>
+
+  <h2>Reflog 历史</h2>
+  <p>Reflog 记录了所有引用（分支、HEAD）的移动历史。即使分支被重置或删除，也能从 Reflog 中找回之前的提交状态，是误操作后的安全网。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/06-reflog-window.png" alt="Reflog 窗口" loading="lazy">
+    <figcaption>图 11-6　Reflog 窗口：列出 HEAD/分支每次移动的记录</figcaption>
+  </figure>
+
+  <h2>变基分支（Rebase）</h2>
+  <p>「变基分支」对话框把当前分支基于另一个分支的顶端重新排列其提交。相对于合并，变基会重写当前分支的提交使历史线性清晰。界面上会预览 <code>git rebase</code> 命令与目标基底。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/07-rebase-preview.png" alt="变基分支预览" loading="lazy">
+    <figcaption>图 11-7　变基分支：选择基底并预览 rebase 命令</figcaption>
+  </figure>
+
+  <h2>交互式变基</h2>
+  <p>「交互式变基」窗口列出将在变基中重玩的提交（todo 列表），每行展示该提交的摘要。你可以在此调整提交顺序或标记要操作的提交，ForkPlus 会通过底层进程驱动 <code>git rebase -i</code> 完成改写。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/08-interactive-rebase.png" alt="交互式变基窗口" loading="lazy">
+    <figcaption>图 11-8　交互式变基：todo 列表装配待重放的提交</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>历史改写会改变提交的哈希。若分支已被推送共享，改写后需要强制推送，注意通知协作者。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 11 章 · 历史改写
+</footer>
+</body>
+</html>
