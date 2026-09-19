@@ -1409,6 +1409,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.axaml.cs", "class", "RemoveLocalBranchItem", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.axaml.cs", "class", "RemoveLocalBranchWindow", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.axaml.cs", "class", "RemoveRemoteBranchWindow", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveRemoteWindow.axaml.cs", "class", "RemoveRemoteWindow", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveStashWindow.axaml.cs", "class", "RemoveStashWindow", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RemoveTagWindow.axaml.cs", "class", "RemoveTagWindow", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/UI/Dialogs/RenameLocalBranchWindow.axaml.cs", "class", "RenameLocalBranchWindow", "UNIT-SOURCE-COVERAGE-001"),

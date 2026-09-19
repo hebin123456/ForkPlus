@@ -1121,6 +1121,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Dialogs/ReflogWindow.axaml.cs",
 				"src/ForkPlus/UI/Dialogs/RemoveLocalBranchWindow.axaml.cs",
 				"src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.axaml.cs",
+				"src/ForkPlus/UI/Dialogs/RemoveRemoteWindow.axaml.cs",
 				"src/ForkPlus/UI/Dialogs/RemoveStashWindow.axaml.cs",
 				"src/ForkPlus/UI/Dialogs/RemoveTagWindow.axaml.cs",
 				"src/ForkPlus/UI/Dialogs/RenameLocalBranchWindow.axaml.cs",
