@@ -88,6 +88,25 @@
     <figcaption>图 11-8　交互式变基：todo 列表装配待重放的提交</figcaption>
   </figure>
 
+  <h2>二分查找（Bisect）</h2>
+  <p>当某个回归（bug）出现后，你可以用<strong>二分查找（Bisect）</strong>在提交历史中快速定位引入问题的那一次提交。ForkPlus 把 <code>git bisect</code> 封装进主界面顶部的<strong>通知条</strong>：在「仓库」菜单（或修订列表右键、快速启动的「二分查找」命令）中启动二分查找后，通知条即展开为一条可交互的横幅。</p>
+
+  <figure>
+    <img src="screenshots/11-history-rewrite/01-bisect-notification-bar.png" alt="二分查找通知条" loading="lazy">
+    <figcaption>图 11-9　二分查找通知条：将当前提交标记为好/坏，并支持跳过与中止</figcaption>
+  </figure>
+
+  <p>通知条按当前检出的提交引导你作出判断：</p>
+  <ul>
+    <li><strong>好（Good）</strong>：当前提交未引入问题，二分查找将排除该侧并自动检出下一个候选提交。</li>
+    <li><strong>坏（Bad）</strong>：当前提交已出现问题，二分查找将向更早的历史继续收敛。</li>
+    <li><strong>跳过（Skip）</strong>：当前提交无法参与测试（例如无法编译），将其排除在候选之外。</li>
+    <li><strong>中止（Abort）</strong>：调用 <code>git bisect reset</code>，结束本次查找并恢复原先的检出状态。</li>
+  </ul>
+  <p>反复标记「好 / 坏」后，二分查找以对数次数把范围收敛到引入问题的那一条提交上，从而精确定位回归源头。</p>
+
+  <div class="note"><strong>说明：</strong>二分查找需要你先确定一个「坏」的起点（开始时的当前提交）与一个「好」的基准提交；查找期间每次通知条都会自动检出新的候选提交，点击「中止」即可随时退出并还原工作区。</div>
+
   <div class="tip"><strong>小贴士：</strong>历史改写会改变提交的哈希。若分支已被推送共享，改写后需要强制推送，注意通知协作者。</div>
 </main>
 <footer class="manual-footer">

@@ -61,6 +61,19 @@
 
   <div class="note"><strong>说明：</strong>文件树反映的是提交时刻的仓库全貌（非仅改动文件），遇到含子目录的提交可点击文件夹节点逐层展开。通过「导出完整文件树」可将该版本的目录结构导出。</div>
 
+  <h3>导出文件树与跨版本比对</h3>
+  <p>文件树还支持<strong>导出</strong>与<strong>跨版本比对</strong>：</p>
+  <ul>
+    <li><strong>导出完整文件树</strong>：将当前版本的目录结构导出到临时目录，便于脚本归档或与外部工具比对。</li>
+    <li><strong>用外部工具比较文件树</strong>：在修订列表中同时<strong>选中两个修订</strong>后右键，选择「在 {工具} 中比较完整文件树」（Compare File Trees in {工具}），即可调用配置的外部比对工具（如 DiffX）对照这两份完整文件树。</li>
+  </ul>
+  <p>前者适合把某版本结构落盘留存，后者适合直观地观察两次提交之间目录与文件的增减差异，尤其适用于评审大范围重构或多文件增删的场景。</p>
+
+  <figure>
+    <img src="screenshots/04-revision-details/05-filetree-compare-context-menu.png" alt="双选修订比较文件树" loading="lazy">
+    <figcaption>图 4-5　双选两个修订后右键：可用外部工具比较两份完整文件树</figcaption>
+  </figure>
+
   <h2>Reflog 显示模式</h2>
   <p>开启「Reflog 模式」后，修订列表不再只展示提交历史，而是展示 <strong>HEAD 与各引用的移动记录（reflog）</strong>。进入该模式后，顶部出现「Reflog 模式已启用」横幅并提供「退出」按钮，列表会按引用更新时间顺序列出条目，并内联标注每个条目所处的分支 / 标签引用。</p>
   <p>Reflog 特别适合恢复「看起来丢失」的提交——即使提交已从分支移除，只要它曾在 HEAD 上停留过，就会出现在 reflog 中，可据此找回其 SHA 或重新检回分支。</p>

@@ -46,6 +46,21 @@
     <figcaption>图 18-2　Git Mm 工作区标签页：识别 .mm 目录并以 git mm 标识打开，显示工作区路径</figcaption>
   </figure>
 
+  <h2>子仓标签页拖拽重排</h2>
+  <p>Git Mm 工作区内每个子仓库都可作为独立的标签页打开。当你在子仓库之间切换工作时，可以直接<strong>拖拽标签页头部</strong>来调整它们在标签栏中的顺序，把最常用的子仓放到更顺手的位置。释放后标签顺序即时更新，被拖拽的子仓标签会自动选中。</p>
+
+  <figure>
+    <img src="screenshots/18-gitmm/02-gitmm-subrepo-tabs.png" alt="Git Mm 子仓标签页" loading="lazy">
+    <figcaption>图 18-6　子仓标签页：repoA 与 repoB 各占一个标签，可拖拽头部调整顺序</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/18-gitmm/03-gitmm-subrepo-tabs-reordered.png" alt="拖拽重排后的子仓标签页" loading="lazy">
+    <figcaption>图 18-7　子仓标签拖拽重排：拖拽 repoA 标签越过 repoB 后顺序更新，被拖标签保持选中</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>子仓标签的先后顺序只影响界面排列，不影响各子仓自身状态；在「git mm」模式标签页内所有子仓保持独立可操作。</div>
+
   <h2>子仓库操作：Start / Sync / Upload</h2>
   <p>针对工作区内的子仓库，ForkPlus 提供三个操作窗口。它们都先显示对应的 <code>git mm</code> 命令预览，并有「复制命令」按钮供手动粘贴执行：</p>
   <ul>
@@ -67,6 +82,14 @@
   <figure>
     <img src="screenshots/18-gitmm/05-gitmm-upload.png" alt="Git Mm 上传窗口" loading="lazy">
     <figcaption>图 18-5　上传（Upload）窗口：推送子仓库本地改动到远端</figcaption>
+  </figure>
+
+  <h3>上传窗口的「允许空提交」</h3>
+  <p>上传（Upload）窗口底部「高级选项」中提供<strong>允许空提交</strong>开关：勾选后，即使子仓库没有任何改动，也会以 <code>--honor-no-changes</code> 参数执行上传——常用于需要一个「空提交」来触发 CI 或驱动评审流程、而无需真实代码改动的场景。命令预览会随勾选实时追加该参数。</p>
+
+  <figure>
+    <img src="screenshots/18-gitmm/06-gitmm-upload-honor-no-changes.png" alt="Git Mm 上传窗口允许空提交" loading="lazy">
+    <figcaption>图 18-8　上传窗口：展开「高级选项」并勾选「允许空提交」，命令预览带 --honor-no-changes</figcaption>
   </figure>
 
   <div class="warn"><strong>注意：</strong>Git Mm 的真正同步/上传会改写子仓库 <code>HEAD</code> 或推送远端，请在确认当前分支干净、无未提交改动后再执行。为确保版本一致，建议先「同步」再在子仓库内开发，最后「上传」分享改动。</div>
