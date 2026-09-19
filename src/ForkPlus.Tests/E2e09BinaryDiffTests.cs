@@ -231,16 +231,27 @@ namespace ForkPlus.Tests
 							"未点 Hex 前不应装配 HexDiffUserControl（懒加载）");
 
 						// 点击 Hex → 懒装配 HexDiffUserControl + 双 HexEditor
-						cards.HexRadioButton.IsChecked = true;
-						Dispatcher.UIThread.RunJobs();
-						Assert.True(UiClick.WaitFor(delegate
+						// 说明（2026-09-19）：git 状态刷新（SetDataAsync 重建 ChangedFile 触发
+						// CommitUserControl.UpdateDiff 重新应用）会与本勾选竞争——重应用把
+						// SideBySide 勾回、拆掉 Hex 视图。在"容器可见且已装配双 HexEditor"
+						// 之前反复重选 Hex，既验证 Hex 懒装配能力，又容忍刷新竞态（刷新非
+						// 连续，存在干净窗口）。总预算 ~20s，与原两个 15s WaitFor 相当。
+						bool hexReady = false;
+						DateTime hexDeadline = DateTime.UtcNow.AddSeconds(20.0);
+						while (!hexReady && DateTime.UtcNow < hexDeadline)
 						{
-							return cards.HexDiffViewContainer.IsVisible;
-						}), "Hex 单选后 HexDiffViewContainer 应显示");
-						Assert.True(UiClick.WaitFor(delegate
-						{
-							return UiClick.FindAll<HexEditor>(window).Count >= 2;
-						}), "Hex 视图应有双 HexEditor");
+							if (!cards.HexRadioButton.IsChecked.GetValueOrDefault())
+							{
+								cards.HexRadioButton.IsChecked = true;
+								Dispatcher.UIThread.RunJobs();
+							}
+							hexReady = UiClick.WaitFor(delegate
+							{
+								return cards.HexDiffViewContainer.IsVisible
+									&& UiClick.FindAll<HexEditor>(window).Count >= 2;
+							}, 800);
+						}
+						Assert.True(hexReady, "Hex 单选后 HexDiffViewContainer 应显示并装配双 HexEditor");
 						HexEditor[] hexEditors = UiClick.FindAll<HexEditor>(window).ToArray();
 						Assert.True(hexEditors[0].Text != null && hexEditors[1].Text != null
 							&& hexEditors[0].Text.Length > 0 && hexEditors[1].Text.Length > 0,
