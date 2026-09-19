@@ -95,6 +95,17 @@
     <figcaption>图 13-9　推送新分支：以 --set-upstream 建立跟踪关系</figcaption>
   </figure>
 
+  <h2>删除远端</h2>
+  <p>「删除远端」对话框用于删除不再需要的远程仓库：选中某个远程后，会显示将要执行的 <code>git remote remove &lt;name&gt;</code> 命令预览，确认后删除该远程及其所有引用（本地对它的 <code>origin/&lt;branch&gt;</code> 引用一并移除）。删除前请确认本地没有依赖该远程的尚未推送的分支。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/10-remove-remote.png" alt="删除远端" loading="lazy">
+    <figcaption>图 13-10　删除远端：预览 git remote remove 命令并确认</figcaption>
+  </figure>
+
+  <h2>变更远程跟踪</h2>
+  <p>「变更远程跟踪」对话框用于调整本地分支与其上游远程分支的关联关系：可为当前分支选择新的上游（预览 <code>git branch --set-upstream-to</code> 命令），或取消跟踪（预览 <code>git branch --unset-upstream</code>）。当分支不再跟踪远程、或需要把跟踪目标切换到另一个远程分支（如接管他人分支）时使用。</p>
+
   <div class="note"><strong>说明：</strong>远程相关操作完成后，仓库的远程分支列表（<code>origin/&lt;branch&gt;</code>）会自动刷新。若本地与远程分叉，可结合「历史改写」章节的 Rebase/Fetch 选择适合的同步策略。</div>
 </main>
 <footer class="manual-footer">
