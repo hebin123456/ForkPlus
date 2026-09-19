@@ -497,6 +497,8 @@ namespace ForkPlus.Tests
 				Assert.Null(FindButton(about, Tr("Cancel")));
 				Assert.Null(FindButton(about, Tr("Close")));
 				Assert.Contains("hebin.me", VisibleButtonTexts(about));
+				// v4.1.6：新增"用户手册"链接（蓝色超链接，跳转 GitHub Pages 在线手册）
+				Assert.Contains(Tr("User manual"), VisibleButtonTexts(about));
 
 				global::ForkPlus.Tests.ScreenshotHelper.Snap(about, "08-about", ModuleDir);
 

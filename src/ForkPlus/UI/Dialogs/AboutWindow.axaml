@@ -32,6 +32,11 @@
       </ContentControl>
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,8,0,0" Text="Designed and implemented by" Foreground="{DynamicResource ForegroundBrush.Gray}" />
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,4,0,4" Text="Hebin" />
+      <ContentControl DockPanel.Dock="Top" HorizontalAlignment="Center" FontSize="13" Margin="0,4,0,0">
+        <HyperlinkButton x:Name="UserManualHyperlink" NavigateUri="https://hebin123456.github.io/ForkPlus/" Theme="{DynamicResource HyperlinkStyle}">
+          <TextBlock HorizontalAlignment="Center" x:Name="UserManualTextBlock" Margin="0" />
+        </HyperlinkButton>
+      </ContentControl>
       <TextBlock DockPanel.Dock="Top" HorizontalAlignment="Center" FontSize="11" Margin="0,4,0,0" x:Name="CopyrightTextBlock" />
     </DockPanel>
   </Grid>

@@ -28,6 +28,9 @@ namespace ForkPlus.UI.Dialogs
 			base.DialogTitle = title;
 			VersionTextBlock.Text = string.Format(Translate("Version {0}"), App.Version);
 			CopyrightTextBlock.Text = string.Format(Translate("Copyright © {0} Hebin"), DateTime.Now.Year);
+			// 2026-09-19：关于窗口新增"用户手册"入口，跳转 GitHub Pages 上的在线手册,
+			// 与官网链接 hebin.me 同款蓝色超链接样式（上面那条），排版在版权行上方。
+			UserManualTextBlock.Text = Translate("User manual");
 			// 2026-09-17：双击 About 窗口的大 Fork 图标 → 当前版本"更新内容"弹窗
 			//（版本 + RELEASE_NOTE.md 当前版本章节，与弹窗左上角 Fork 图标同款入口；
 			//  本窗口 ShowLogo=false 无头部小图标，故在自有大图标上接线）。
