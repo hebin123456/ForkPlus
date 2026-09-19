@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 20 章 · 查看器窗口 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 20 章 · 查看器窗口</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-18-gitmm.html">Git Mm</a>
+  <a href="ch-19-lfs.html">Git LFS</a>
+  <a href="ch-20-viewers.html" class="active">查看器</a>
+  <a href="ch-21-preferences.html">偏好设置</a>
+  <a href="ch-22-repo-settings.html">仓库设置</a>
+</nav>
+<main class="manual-main">
+  <p>ForkPlus 提供一组独立的「查看器」窗口，用于从不同角度审视仓库：逐行归属（Blame）、单个文件/文件夹历史、仓库整体概览、贡献统计，以及修订详情、跳转行等。</p>
+
+  <h2>Blame（逐行归属）</h2>
+  <p>对单个文件打开 <strong>Blame</strong> 窗口，可逐行查看「这行代码是哪个提交、哪个作者引入的」。左侧通常给出提交信息/作者，右侧是代码行，适合回溯一行改动的来龙去脉。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/01-blame.png" alt="Blame 窗口" loading="lazy">
+    <figcaption>图 20-1　Blame 窗口：逐行显示文件 f1.txt 每一行的引入提交与作者</figcaption>
+  </figure>
+
+  <h2>文件 / 文件夹历史</h2>
+  <p>对某个文件或文件夹打开历史窗口，可只看到「影响它的提交」，而忽略仓库其他部分的改动，便于聚焦某个模块的演进。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/02-file-history.png" alt="文件历史窗口" loading="lazy">
+    <figcaption>图 20-2　文件历史窗口：列出影响 f1.txt 的提交树</figcaption>
+  </figure>
+
+  <h2>仓库概览</h2>
+  <p>「仓库概览」以树图/矩阵形式展示仓库的目录与文件大小分布，快速定位「哪些目录最臃肿、哪些文件最占空间」，是接手新仓库时快速建立认知的入口。选择节点后，下方会联动显示其提交列表与主要作者。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/03-repository-overview.png" alt="仓库概览窗口" loading="lazy">
+    <figcaption>图 20-3　仓库概览窗口：树图展示目录/文件分布，选中可联动查看提交与作者</figcaption>
+  </figure>
+
+  <h2>贡献统计（Statistics）</h2>
+  <p>「统计」窗口基于当前活跃分支的提交进行作者聚合：</p>
+  <ul>
+    <li><strong>每月提交数</strong>：线/柱图展示提交的时间分布。</li>
+    <li><strong>贡献热力图</strong>：GitHub 风格的格子图，绿色深浅表示某日提交活跃度；下方给出「总计」「最长连续」「最活跃」指标。</li>
+    <li><strong>作者聚合</strong>：通过「所有贡献者 / 主要贡献者」切换，查看各作者的提交总数。</li>
+  </ul>
+  <p>同时还有饼图、按星期几/小时的提交柱状图等，帮助理解团队的提交节奏。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/04-repository-stats.png" alt="仓库统计窗口" loading="lazy">
+    <figcaption>图 20-4　统计窗口：提交热力图、每月提交图表与作者聚合（总计 4 次提交）</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>统计需要当前分支有<b>多于 2 个</b>提交才会生成全部图表；提交过少时窗口会提示无法生成统计。</div>
+
+  <h2>修订详情（Revision Details）</h2>
+  <p>对某个具体提交（修订）打开详情窗口，集中查看其作者、提交说明、改动文件列表及 diff，适合在不切换主工作区的情况下单独审查某一个提交。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/05-revision-details.png" alt="修订详情窗口" loading="lazy">
+    <figcaption>图 20-5　修订详情窗口：展示指定提交 f3.txt 的改动详情</figcaption>
+  </figure>
+
+  <h2>跳转行（Go To Line）</h2>
+  <p>在需要按行导航的编辑器/history 场景中，可用「跳转行」窗口输入目标行号：输入有效的非负数字后跳到该行；留空或输入非数字内容则忽略。适合大文件快速定位。</p>
+
+  <figure>
+    <img src="screenshots/20-viewers/06-go-to-line.png" alt="跳转行窗口" loading="lazy">
+    <figcaption>图 20-6　跳转行窗口：输入行号即可跳转（空/非法输入忽略）</figcaption>
+  </figure>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 20 章 · 查看器窗口
+</footer>
+</body>
+</html>

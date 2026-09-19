@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 19 章 · Git LFS · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 19 章 · Git LFS</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-17-gitflow.html">GitFlow</a>
+  <a href="ch-18-gitmm.html">Git Mm</a>
+  <a href="ch-19-lfs.html" class="active">Git LFS</a>
+  <a href="ch-20-viewers.html">查看器</a>
+  <a href="ch-21-preferences.html">偏好设置</a>
+</nav>
+<main class="manual-main">
+  <p><strong>Git LFS</strong>（Large File Storage）用于管理二进制与大文件：仓库里只保存文件的轻量「指针」，真正的文件内容存放在独立的 LFS 存储中，从而让克隆与历史保持轻量。ForkPlus 提供 <strong>跟踪（Track）</strong>、<strong>文件状态</strong>、<strong>拉取/获取（Pull/Fetch）</strong> 与 <strong>锁定（Lock/Unlock）</strong> 图形界面。</p>
+
+  <h2>跟踪大文件（Track）</h2>
+  <p>打开「跟踪文件」窗口，输入文件名模式（如 <code>*.dat</code>）。ForkPlus 会：</p>
+  <ul>
+    <li>实时预览将写入 <code>.gitattributes</code> 的 <code>git lfs track &lt;模式&gt;</code> 命令。</li>
+    <li>扫描当前工作区，统计并列出匹配该模式的文件数（如 <code>*.dat</code> 匹配 2 个文件）。</li>
+  </ul>
+  <p>确认后，该模式即被登记为 LFS 跟踪，之后同类文件会以指针方式入库。</p>
+
+  <figure>
+    <img src="screenshots/19-lfs/01-lfs-track.png" alt="LFS 跟踪文件窗口" loading="lazy">
+    <figcaption>图 19-1　跟踪文件窗口：输入 *.dat 模式，预览 git lfs track 命令并显示匹配文件数</figcaption>
+  </figure>
+
+  <h2>LFS 文件状态</h2>
+  <p>打开「LFS 文件状态」窗口可查看仓库当前纳入 LFS 的文件列表：</p>
+  <ul>
+    <li><strong>过滤框</strong>：按文件名（或锁定所有者）实时筛选，快速定位目标。</li>
+    <li><strong>文件列表</strong>：列出 LFS 文件，可选中后操作。</li>
+    <li><strong>锁定 / 解锁</strong>：对选中的 LFS 文件执行 <code>git lfs lock / unlock</code>。锁定后显示所有者；对已被他人锁定的文件重复锁定会得到 409 冲突提示。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/19-lfs/02-lfs-status.png" alt="LFS 文件状态窗口" loading="lazy">
+    <figcaption>图 19-2　LFS 文件状态窗口：data.bin 在列表中，可用于过滤、锁定与解锁</figcaption>
+  </figure>
+
+  <h2>获取与拉取 LFS 对象</h2>
+  <p>当仓库的 LFS 指针已就位但对象尚未下载时：</p>
+  <ul>
+    <li><strong>Fetch（获取）</strong>：把 LFS 对象下载到本地对象库但<em>不检出</em>，工作区仍保留指针。</li>
+    <li><strong>Pull（拉取）</strong>：拉取并 <code>smudge</code>，把工作区的指针替换为真实文件内容，即可直接使用。</li>
+  </ul>
+  <p>两个窗口都会给出对应的 <code>git lfs</code> 命令预览，确认后执行。</p>
+
+  <figure>
+    <img src="screenshots/19-lfs/03-lfs-fetch.png" alt="LFS 获取窗口" loading="lazy">
+    <figcaption>图 19-3　获取（Fetch）窗口：下载 LFS 对象到本地对象库，工作区仍为指针</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/19-lfs/04-lfs-pull.png" alt="LFS 拉取窗口" loading="lazy">
+    <figcaption>图 19-4　拉取（Pull）窗口：拉取并检出 LFS 真实内容，替换工作区指针</figcaption>
+  </figure>
+
+  <h2>锁定协作</h2>
+  <p>多人协同编辑同一份二进制/LFS 文件时，建议先<b>锁定</b>再编辑。被锁定的文件只有你本人能推送修改，避免改后才发现与他人冲突。完成后<b>解锁</b>释放。锁信息存放于 LFS 锁定 API，ForkPlus 会在状态窗口的「所有者」列中展示当前锁归属。</p>
+
+  <div class="tip"><strong>小贴士：</strong>提交 LFS 文件前，可在提交视图中通过「是否 LFS」识别。被跟踪的二进制内容会以指针文件进入提交，而真实对象在 <code>push</code> 时一并上传到 LFS 存储。</div>
+
+  <div class="warn"><strong>注意：</strong>锁定功能需要配置 LFS 锁定服务的访问地址（<code>lfs.url</code> 或远端默认地址）并允许 Git LFS 3.x；本地 <code>file://</code> 远端通常无法提供锁定 API。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 19 章 · Git LFS
+</footer>
+</body>
+</html>
