@@ -305,18 +305,21 @@ jobs:
   #               core-a 是纯否定式 filter，须显式排除 AskPass/RI/AutoUpdaterTests
   #               命名空间（否则 solution 级命令会把这三个小工程的用例吸进来，与
   #               e2e-1 片重叠——该重叠正是"分片完整性守卫"在开发期实锤抓到的第一只虫）。
-  #   manual     在 2026-09-19(v4.1.6) 起单独成片：5 个 Manual 截图类约为 42 个重量级
-  #               headless UI 用例（每用例要渲染窗口/拉真实 git 场景/落 PNG，单类就要
-  #               好几分钟），先前全落在 core-a（类名 Manual* 属 A-S 前缀），把 core-a
-  #               从历史 ~2min 撑到 20-30+min、频繁触发 30min 超时"阻塞"。拆分后 core-a
-  #               恢复 ~2-3min，manual 片独占最长运行（job 级 timeout-minutes 提到 60，
-  #               各片墙钟差可忽略）。filter 用子串 `ForkPlus.Tests.Manual` 即可：5 个
-  #               Manual 类都在 ForkPlus.Tests 命名空间，FQN(ForkPlus.Tests.ManualXxx)
-  #               天然包含该子串而精确命中；后续新增 Manual 截图类由同前缀自动吸入。
+  #   manual     在 2026-09-19(v4.1.6) 起单独成片，随即分成 manual-a/b/c 三个子片。
+  #               背景：5 个 Manual 截图类约 42 个重量级 headless UI 用例（每用例要
+  #               渲染窗口/拉真实 git 场景/落 PNG），先前全落在 core-a（类名 Manual*
+  #               属 A-S 前缀）把 core-a 撑到 20-30+min 触发 30min 超时"阻塞"；拆出后
+  #               单片的 42 用例又撞上 60min 超时。故按类拆分三片（filter 用 ~ 包含，
+  #               各片互斥且并集覆盖全部 Manual 类，守卫生效）：
+  #                 manual-a : ManualAgentB_ChaptersTests     18 用例（最重单类）
+  #                 manual-b : ManualAgentA + ManualAgentC    8+9=17 用例
+  #                 manual-c : ManualAuditExtras + ConflictAi 5+2=7 用例
+  #             三片各约 25/23/10min，均远低于 job 级 60min 上限。core-a 恢复 ~2-3min。
   # 维护：新增 E2e3x 模块（E2e30+）时需显式扩 e2e-3 的 filter（E2e2 前缀覆盖不到
-  # E2e3x，且会被 core 片的 !~ 排除）；新增 Manual 截图类则无需改 filter（manual 片
-  # 子串命中）。否则 e2e-1 里的"分片完整性守卫"会红灯（各片 --list-tests 求和 !=
-  # 全量总数），不会静默丢覆盖。
+  # E2e3x，且会被 core 片的 !~ 排除）；新增 Manual 截图类时需把它显式加进 manual-a/b/c
+  # 任一子片的 filter（单片已不用泛化的 `ForkPlus.Tests.Manual` 子串，避免与前两组
+  # 重叠——即使漏了，"分片完整性守卫"也会照常红灯拦截）。否则 e2e-1 里的守卫会红灯
+  # （各片 --list-tests 求和 != 全量总数），不会静默丢覆盖。
   test:
     name: test (${{ matrix.shard }})
     runs-on: ubuntu-latest
@@ -331,8 +334,12 @@ jobs:
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
           - shard: e2e-3
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2e3|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
-          - shard: manual
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.Manual"
+          - shard: manual-a
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAgentB"
+          - shard: manual-b
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAgentA|FullyQualifiedName~ForkPlus.Tests.ManualAgentC"
+          - shard: manual-c
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAuditExtras|FullyQualifiedName~ForkPlus.Tests.ManualConflictAndAi"
           - shard: core-a
             test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.Tests.Manual)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
           - shard: core-b
