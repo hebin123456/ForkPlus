@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 24 章 · AI 功能 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 24 章 · AI 功能</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-23-ssh.html">SSH</a>
+  <a href="ch-24-ai.html" class="active">AI</a>
+  <a href="ch-25-dialogs.html">对话框与工具</a>
+</nav>
+<main class="manual-main">
+  <p>ForkPlus 提供三组 AI 增强能力：<strong>提交信息组合（AI 提交编排）</strong>、<strong>代码审查（代码检视）</strong>与<strong>AI 开发助手</strong>。它们共用同一套模型配置（在「偏好设置 → AI」页指定后端与模型）。窗口右上角的模型下拉可随时切换所用模型，供智能分组/检视/对话的模型可动态拉取。</p>
+
+  <h2>提交信息组合（AI 提交编排）</h2>
+  <p>当工作区有批量暂存（Staged）文件时，可用「AI 提交编排」让 AI 把一整批改动<strong>按语义拆分为多个逻辑提交</strong>，并为每组自动生成提交信息。窗口分为三栏：</p>
+  <ul>
+    <li><strong>提交分组</strong>（左）：AI 生成的提交分组列表，每项带文件数，可点选切换。</li>
+    <li><strong>本组文件</strong>（中）：当前分组包含的文件路径。</li>
+    <li><strong>提交消息</strong>（右）：当前分组的<strong>标题</strong>与<strong>描述</strong>，可在此人工编辑后应用。</li>
+  </ul>
+  <p>右侧底部还会展示该分组的<strong>理由</strong>（Reason），说明 AI 为何把若干文件归到同一提交，便于审查其分组逻辑。底部「全部应用」把各组按序应用为多个提交；「重试」可让 AI 重新编排。</p>
+
+  <figure>
+    <img src="screenshots/24-ai/01-ai-composer.png" alt="AI 提交编排窗口" loading="lazy">
+    <figcaption>图 24-1　「AI 提交编排」：3 个暂存文件被拆为 2 组（Refactor App entry point 2 文件 / Add documentation notes 1 文件），并附每组理由</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>分组依据是改动之间的功能关联而非目录位置——左侧示例中即使 <code>app.cs</code> 与 <code>util.cs</code> 都在 <code>src/</code>，它与引用它的入口重构一起归组；独立的文档改动则单独成组。应用前务必核对「提交消息」栏内容。</div>
+
+  <h2>代码审查（代码检视）</h2>
+  <p>「代码检视」窗口对多个待审查文件逐一运行 AI 审查，采用三栏布局：</p>
+  <ul>
+    <li><strong>文件树</strong>（左）：待审查文件与文件夹结构，带绿色对勾表示该文件已检视。</li>
+    <li><strong>代码 / Diff 视图</strong>（中）：当前文件的统一 Diff（如 <code>@@ -0,0 +1,1 @@</code>），新增行以浅绿色高亮。</li>
+    <li><strong>检视结果</strong>（右）：当前文件的问题报告；无问题时显示「此文件没有报告发现的问题。」。可通过「全部检视结果」下拉在单文件与全量结果间切换。</li>
+  </ul>
+  <p>窗口标题显示审查规模（如「对 3 个文件进行代码检视」），右上同样可选模型与「重试」。</p>
+
+  <figure>
+    <img src="screenshots/24-ai/02-ai-code-review.png" alt="AI 代码检视窗口" loading="lazy">
+    <figcaption>图 24-2　「代码检视」三栏：文件树（含 docs/src）、Diff 视图（docs/notes.md 新增行）与右侧检视结果（无发现问题）</figcaption>
+  </figure>
+
+  <h2>AI 开发助手</h2>
+  <p>「AI 辅助开发」是一个面向当前仓库的<strong>对话式助手</strong>，采用聊天界面：右侧为自己提出的需求，左侧为 AI 响应。具备：</p>
+  <ul>
+    <li><strong>会话上下文</strong>：AI 会记住本次会话的先前对话，便于多轮迭代。</li>
+    <li><strong>请求状态</strong>：显式显示「排队中…」「正在请求 AI（模型名）…」等处理中状态。</li>
+    <li><strong>发送快捷键</strong>：按 <kbd>Enter</kbd> 发送，<kbd>Shift</kbd>+<kbd>Enter</kbd> 换行。</li>
+    <li><strong>清空 / 发送</strong>按钮：底部输入框右侧提供「清空」与「发送（Enter）」。此处演示向 AI 提出「给 App 类添加 Main 方法」的开发需求，AI 正在生成响应。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/24-ai/03-ai-development.png" alt="AI 辅助开发窗口" loading="lazy">
+    <figcaption>图 24-3　「AI 辅助开发」：发送需求「Add a Main method to App class」后 AI 进入排队/响应状态；支持 Enter 发送、会话记忆</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>AI 功能以本地假服务（stub 模型）验证时返回占位响应；接入真实模型后，提交编排、代码审查与开发助手的输出质量取决于所选模型与后端配置。请在「偏好设置 → AI」页填写可用的 API 端点与密钥。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 24 章 · AI 功能
+</footer>
+</body>
+</html>

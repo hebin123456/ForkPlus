@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 25 章 · 通用对话框与工具 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 25 章 · 通用对话框与工具</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-24-ai.html">AI</a>
+  <a href="ch-25-dialogs.html" class="active">对话框与工具</a>
+</nav>
+<main class="manual-main">
+  <p>本章汇总 ForkPlus 中可复用的「通用对话框与工具」，它们贯穿于各功能模块：<strong>消息框</strong>、<strong>错误窗</strong>、<strong>AskPass 密码短语输入</strong>、<strong>自定义颜色</strong>、<strong>关于窗口</strong>与<strong>通知中心</strong>。</p>
+
+  <h2>消息框（Message Box）</h2>
+  <p>用于<strong>确认破坏性操作</strong>。以删除仓库为例，消息框同时给出标题「Delete repository」、说明「The repository will be removed from the list. This cannot be undone.」，并提供「删除 / 取消」两个按钮。此类弹窗强调操作的<strong>不可撤销性</strong>，需用户主动确认后才执行。</p>
+
+  <figure>
+    <img src="screenshots/25-dialogs/01-messagebox.png" alt="消息框" loading="lazy">
+    <figcaption>图 25-1　确认消息框：提示删除仓库「不可撤销」，提供「删除 / 取消」两个操作</figcaption>
+  </figure>
+
+  <h2>错误窗（Error Window）</h2>
+  <p>当执行 Git 请求遇到意外错误时，ForkPlus 弹出「Git 错误」错误窗。窗口以警示图标提示「执行 Git 请求时发生意外错误」，并在下方蓝色框内展示底层错误详情文本。点击「关闭」结束；该窗口通常由全应用统一错误处理捕获并抛出。</p>
+
+  <figure>
+    <img src="screenshots/25-dialogs/02-errorwindow.png" alt="错误窗" loading="lazy">
+    <figcaption>图 25-2　「Git 错误」错误窗：标题 + 提示语 + 详情文本框（本图为演示构造的错误详情）</figcaption>
+  </figure>
+
+  <h2>AskPass：SSH 密码短语输入</h2>
+  <p>push / pull 等需要解锁 SSH 密钥时，ForkPlus 弹出 AskPass 对话框要求输入<strong>密码短语（Passphrase）</strong>。窗口标明是哪把密钥（如 SSH 密钥 <code>'/home/user/.ssh/id_ed25519'</code>），提供：</p>
+  <ul>
+    <li><strong>密码短语</strong>输入框（掩码输入）；</li>
+    <li><strong>「记住到凭据管理器」</strong>复选框：勾选后下次不再询问；</li>
+    <li><strong>确定 / 取消</strong>按钮。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/25-dialogs/03-askpass.png" alt="AskPass 密码短语窗口" loading="lazy">
+    <figcaption>图 25-3　AskPass：为 SSH 密钥 <code>id_ed25519</code> 输入密码短语，可选「记住到凭据管理器」</figcaption>
+  </figure>
+
+  <h2>自定义颜色（Custom Colors）</h2>
+  <p>「自定义颜色（浅色）」窗口以<strong>语义化颜色令牌</strong>的形式精细定制界面配色，每行含：颜色名称、预览色块、十六进制值与「重置」按钮。涵盖背景/面板、文本层级、强调色，以及 Diff 新增/删除等专门令牌。底部提供批量工具：</p>
+  <ul>
+    <li><strong>导入颜色</strong> / <strong>导出颜色</strong>：分享或复用自己的配色方案；</li>
+    <li><strong>随机配色</strong>：一键生成一套随机配色用于探索；</li>
+    <li><strong>全部重置</strong>：回到默认色板。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/25-dialogs/04-custom-colors.png" alt="自定义颜色窗口" loading="lazy">
+    <figcaption>图 25-4　「自定义颜色（浅色）」：背景/文本/强调/Diff 等语义色令牌 + 导入导出/随机配色/全部重置</figcaption>
+  </figure>
+
+  <h2>关于窗口（About）</h2>
+  <p>「关于」窗口展示应用标识信息：ForkPlus 图标、产品名、版本号（v4.1.5）、官网（hebin.me）、设计与实现者，以及版权信息。用于快速确认版本与出处。</p>
+
+  <figure>
+    <img src="screenshots/25-dialogs/05-about.png" alt="关于窗口" loading="lazy">
+    <figcaption>图 25-5　「关于」窗口：ForkPlus v4.1.5、官网 hebin.me、设计与实现 Hebin</figcaption>
+  </figure>
+
+  <h2>通知中心（Notification Center）</h2>
+  <p>「通知」面板集中展示应用产生的通知消息。面板顶部为标题栏（含设置/刷新图标），下方为通知内容区。无通知时显示空白净面板；有通知时在此按时间汇总，便于统一查看后台任务（拉取、推送、AI 等）的结果。</p>
+
+  <figure>
+    <img src="screenshots/25-dialogs/06-notification-center.png" alt="通知中心面板" loading="lazy">
+    <figcaption>图 25-6　「通知」面板：顶部标题栏 + 通知内容区（当前为空态）</figcaption>
+  </figure>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 25 章 · 通用对话框与工具
+</footer>
+</body>
+</html>
