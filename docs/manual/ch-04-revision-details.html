@@ -61,13 +61,13 @@
 
   <div class="note"><strong>说明：</strong>文件树反映的是提交时刻的仓库全貌（非仅改动文件），遇到含子目录的提交可点击文件夹节点逐层展开。通过「导出完整文件树」可将该版本的目录结构导出。</div>
 
-  <h3>导出文件树与跨版本比对</h3>
+  <h3 id="filetree">导出文件树与跨版本比对</h3>
   <p>文件树还支持<strong>导出</strong>与<strong>跨版本比对</strong>：</p>
   <ul>
     <li><strong>导出完整文件树</strong>：将当前版本的目录结构导出到临时目录，便于脚本归档或与外部工具比对。</li>
-    <li><strong>用外部工具比较文件树</strong>：在修订列表中同时<strong>选中两个修订</strong>后右键，选择「在 {工具} 中比较完整文件树」（Compare File Trees in {工具}），即可调用配置的外部比对工具（如 DiffX）对照这两份完整文件树。</li>
+    <li><strong>用外部工具比较完整文件树</strong>：在「所有提交」修订列表中，按住 <kbd>Ctrl</kbd>（macOS 为 <kbd>Cmd</kbd>）同时<strong>选中两条提交</strong>（通常是两个分支的最新提交，如 <code>master</code> 与 <code>feature/x</code> 的头）后右键，在顶部菜单选择「用 {工具} 比较完整文件树」（Compare File Trees in {工具}），即可调用配置的外部比对工具（Beyond Compare、WinMerge、DiffX 等）对这两份完整文件树做整树对照。配置了多个工具时，该项收敛进「比较完整文件树」子菜单逐一列出；若本机未探测到任何比对工具，该入口不显示。</li>
   </ul>
-  <p>前者适合把某版本结构落盘留存，后者适合直观地观察两次提交之间目录与文件的增减差异，尤其适用于评审大范围重构或多文件增删的场景。</p>
+  <p>前者适合把某版本结构落盘留存；后者适合在两个分支之间宏观对比目录与文件的增减——例如选中 <code>feature/x</code> 与 <code>master</code> 的最新提交，用外部工具一次性看到两者全量文件树的差异，比逐文件 diff 更直观，尤其适合评审大范围重构或多文件增删。</p>
 
   <figure>
     <img src="screenshots/04-revision-details/05-filetree-compare-context-menu.png" alt="双选修订比较文件树" loading="lazy">

@@ -878,26 +878,36 @@ namespace ForkPlus.Tests
 			// ----- 消息框 + 错误窗 + AskPass -----
 			HeadlessAppBootstrap.Run(delegate
 			{
-				var box = new global::ForkPlus.UI.Dialogs.MessageBoxWindow(
-					"Delete repository", "The repository will be removed from the list. This cannot be undone.",
-					"Delete", "Cancel");
-				box.Show();
-				RunJobs();
-				ManualScreenshotHelper.Snap(box, "01-messagebox", "25-dialogs");
-				box.Close();
+				// 看门狗暂停（模块 25 基建约定）：默认每 200ms 自动关闭任何可见 ErrorWindow，
+				// 本片段要截图 ErrorWindow，需存活；finally 恢复后 Run 收尾仍兜底关残留。
+				HeadlessAppBootstrap.SetErrorDialogWatchdogSuspended(true);
+				try
+				{
+					var box = new global::ForkPlus.UI.Dialogs.MessageBoxWindow(
+						"Delete repository", "The repository will be removed from the list. This cannot be undone.",
+						"Delete", "Cancel");
+					box.Show();
+					RunJobs();
+					ManualScreenshotHelper.Snap(box, "01-messagebox", "25-dialogs");
+					box.Close();
 
-				var plain = new global::ForkPlus.UI.Dialogs.ErrorWindow("boom: something went wrong");
-				plain.Show();
-				RunJobs();
-				ManualScreenshotHelper.Snap(plain, "02-errorwindow", "25-dialogs");
-				plain.Close();
+					var plain = new global::ForkPlus.UI.Dialogs.ErrorWindow("boom: something went wrong");
+					plain.Show();
+					RunJobs();
+					ManualScreenshotHelper.Snap(plain, "02-errorwindow", "25-dialogs");
+					plain.Close();
 
-				var askPass = new global::ForkPlus.UI.Dialogs.AskPassWindow(
-					"Enter passphrase for key '/home/user/.ssh/id_ed25519':", "/tmp/fpe2e-askpass-repo");
-				askPass.Show();
-				RunJobs();
-				ManualScreenshotHelper.Snap(askPass, "03-askpass", "25-dialogs");
-				askPass.Close();
+					var askPass = new global::ForkPlus.UI.Dialogs.AskPassWindow(
+						"Enter passphrase for key '/home/user/.ssh/id_ed25519':", "/tmp/fpe2e-askpass-repo");
+					askPass.Show();
+					RunJobs();
+					ManualScreenshotHelper.Snap(askPass, "03-askpass", "25-dialogs");
+					askPass.Close();
+				}
+				finally
+				{
+					HeadlessAppBootstrap.SetErrorDialogWatchdogSuspended(false);
+				}
 			});
 
 			// ----- 自定义颜色 + 关于窗口 -----
