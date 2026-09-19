@@ -294,6 +294,10 @@ jobs:
   #               E2eStageScrollbarRefresh 显式并入 e2e-3；AskPass/RI/AutoUpdaterTests
   #               三个秒级小工程（10+6+54 用例）搭最轻的 e2e-1 凑平衡（core-a 的纯
   #               否定式 filter 同步排除三工程，防 solution 级命令重叠吸入）。
+  #   e2e-3      在 2026-09-19(v4.1.6) 起把前缀扩到 E2e3（E2e30+ 模块并入本片）：新增的
+  #               E2e30RemoveRemoteTests 曾落在所有分片 filter 之外——E2e2 前缀覆盖不到
+  #               E2e3x，且 core 片负匹配 `!~E2e` 把它排除，导致"分片完整性守卫"红灯
+  #               (sum=4886 != total=4887)。今后的 E2e31+ 由 E2e3 前缀顺带吸入。
   #   core-a/b  ：非 E2E 用例按类名首字母在 T 处切两半。T-W 片集中 Theme*/TextBox*
   #               等重量级 UI 类，A-S 片摊平其余（按用例数 4053 vs 277 悬殊，但 A-S
   #               的大头是 Class/Source 两个 Coverage 清单类（1900+/1500+ 用例，纯
@@ -317,7 +321,7 @@ jobs:
           - shard: e2e-2
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
           - shard: e2e-3
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2e3|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
           - shard: core-a
             test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
           - shard: core-b
