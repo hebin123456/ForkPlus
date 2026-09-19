@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 8 章 · 键盘快捷键 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 8 章 · 键盘快捷键</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html">修订详情</a>
+  <a href="ch-05-commit.html">变更与提交</a>
+  <a href="ch-06-text-diff.html">文本 Diff</a>
+  <a href="ch-07-binary-diff.html">二进制与图片 Diff</a>
+  <a href="ch-08-shortcuts.html" class="active">键盘快捷键</a>
+</nav>
+<main class="manual-main">
+  <p>ForkPlus 提供了完整的键盘快捷键体系，覆盖视图导航、提交历史、变更暂存、仓库操作与仓库管理。可在应用内打开「键盘快捷键」窗口随时查阅。</p>
+
+  <figure>
+    <img src="screenshots/08-shortcuts/01-shortcuts-window.png" alt="键盘快捷键窗口" loading="lazy">
+    <figcaption>图 8-1　「键盘快捷键」窗口：按类别列出所有快捷键及其用途</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>「键盘快捷键」窗口只读列出全部快捷键，按 <kbd>Esc</kbd> 或「关闭」按钮即可退出。</div>
+
+  <h2>常规导航</h2>
+  <table>
+    <thead><tr><th>快捷键</th><th>功能</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>1</kbd></td><td>显示「变更」视图（再次按下聚焦提交输入框）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>2</kbd></td><td>显示「所有提交」视图（再次按下跳转到 HEAD）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>0</kbd></td><td>显示 HEAD</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>P</kbd></td><td>显示「快速启动」窗口</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Tab</kbd></td><td>选择下一个标签页</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>选择上一个标签页</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>T</kbd></td><td>打开新标签页</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td>关闭当前标签页</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>=</kbd> / <kbd>Ctrl</kbd>+<kbd>-</kbd></td><td>放大 / 缩小</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>,</kbd></td><td>打开 ForkPlus 偏好设置</td></tr>
+    </tbody>
+  </table>
+
+  <h2>所有提交视图</h2>
+  <table>
+    <thead><tr><th>快捷键</th><th>功能</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>0</kbd></td><td>跳转到 HEAD</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>提交搜索</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>F3</kbd></td><td>跳转到下一个搜索结果</td></tr>
+      <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd> / <kbd>Shift</kbd>+<kbd>F3</kbd></td><td>跳转到上一个搜索结果</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>复制提交信息</td></tr>
+      <tr><td><kbd>Delete</kbd></td><td>删除分支 / 贮藏</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>A</kbd></td><td>按当前分支筛选</td></tr>
+    </tbody>
+  </table>
+
+  <h2>变更视图</h2>
+  <table>
+    <thead><tr><th>快捷键</th><th>功能</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>提交</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>提交并推送</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>1</kbd></td><td>聚焦提交消息输入框</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>筛选</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>暂存 / 取消暂存选中文件（或行）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd></td><td>暂存 / 取消暂存全部文件</td></tr>
+      <tr><td><kbd>Backspace</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd></td><td>丢弃选中的文件（或行）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>打开选中的文件</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>用外部差分工具打开选中文件</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd></td><td>复制选中文件的完整路径</td></tr>
+    </tbody>
+  </table>
+
+  <h2>仓库操作</h2>
+  <table>
+    <thead><tr><th>快捷键</th><th>功能</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>F5</kbd></td><td>刷新</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd></td><td>初始化新仓库</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>克隆新仓库</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td>初始化 git mm 仓库</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>打开仓库</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd></td><td>抓取（Fetch）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> / <kbd>Ctrl</kbd>+点击</td><td>快速抓取（Quick Fetch）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd></td><td>拉取（Pull）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd> / <kbd>Ctrl</kbd>+点击</td><td>快速拉取（Quick Pull）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></td><td>推送（Push）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> / <kbd>Ctrl</kbd>+点击</td><td>快速推送（Quick Push）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd></td><td>新建分支</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd></td><td>新建标签</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd></td><td>创建贮藏（Stash）</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>O</kbd></td><td>在文件资源管理器中打开</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>T</kbd></td><td>在终端中打开</td></tr>
+    </tbody>
+  </table>
+
+  <h2>仓库管理器</h2>
+  <table>
+    <thead><tr><th>快捷键</th><th>功能</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>F2</kbd></td><td>重命名仓库</td></tr>
+      <tr><td><kbd>Delete</kbd></td><td>移除仓库</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>打开仓库</td></tr>
+    </tbody>
+  </table>
+
+  <div class="tip"><strong>小贴士：</strong>「抓取 / 拉取 / 推送」同时按住 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd> 加对应字母可执行跳过确认的「快速」版本；在变更视图中选中 diff 选区后按 <kbd>Enter</kbd> 可快速暂存/取消暂存选中行。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 8 章 · 键盘快捷键
+</footer>
+</body>
+</html>

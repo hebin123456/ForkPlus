@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 章 · 二进制与图片 Diff · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 7 章 · 二进制与图片 Diff</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html">修订详情</a>
+  <a href="ch-05-commit.html">变更与提交</a>
+  <a href="ch-06-text-diff.html">文本 Diff</a>
+  <a href="ch-07-binary-diff.html" class="active">二进制与图片 Diff</a>
+  <a href="ch-08-shortcuts.html">键盘快捷键</a>
+</nav>
+<main class="manual-main">
+  <p>对于图片与其他二进制文件，ForkPlus 不再以文本行对比，而是提供专用的图形化差异工具，帮助你直观判断一张图、一个二进制文件在两个版本间到底改了什么。选择图片文件时提供<strong>四种对比模式</strong>；非图片二进制则提供简略卡片与 Hex 视图。</p>
+
+  <h2>图片 Diff：四种对比模式</h2>
+  <p>选中一个发生变更的图片文件后，编辑器下方出现四个模式按钮：<strong>并排 / 滑动（Swipe）/ 洋葱皮（Onion Skin）/ 十六进制（Hex）</strong>，并标注「旧」「新」两个版本。</p>
+
+  <h3>并排（Side-by-Side）</h3>
+  <p>默认模式：并排显示旧图（左侧）与新图（右侧），一目了然看到两版的全貌差异。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/01-image-side-by-side.png" alt="图片并排对比" loading="lazy">
+    <figcaption>图 7-1　并排模式：旧图（绿）与新图（橙）左右并列显示</figcaption>
+  </figure>
+
+  <h3>滑动（Swipe）</h3>
+  <p><strong>滑动</strong>模式在两张图上叠加一条可拖动的分隔线：左侧露出旧图、右侧露出新图。左右拖拽分隔线即可在任意位置「刮开」对比新旧内容，非常适合精确定位某个像素区域的改动。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/02-image-swipe.png" alt="图片滑动对比" loading="lazy">
+    <figcaption>图 7-2　滑动模式：拖拽中央分隔线，左旧右新逐区域对比</figcaption>
+  </figure>
+
+  <h3>洋葱皮（Onion Skin）</h3>
+  <p><strong>洋葱皮</strong>模式把旧图叠在新图上，通过透明度滑杆控制底层（新图）的显露程度，模拟「洋葱皮透叠」效果。完全不透明时只见顶层旧图。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/03-image-onionskin.png" alt="洋葱皮模式" loading="lazy">
+    <figcaption>图 7-3　洋葱皮模式：新图叠加在旧图上（不透明）</figcaption>
+  </figure>
+  <figure>
+    <img src="screenshots/07-binary-diff/04-image-onionskin-half.png" alt="洋葱皮半透明对比" loading="lazy">
+    <figcaption>图 7-4　洋葱皮 + 半透明滑杆：通过透明度透视两张图的差异区域</figcaption>
+  </figure>
+
+  <h3>十六进制（Hex）</h3>
+  <p><strong>十六进制</strong>模式用双 Hex 编辑器展示图片文件的原始字节（左右分栏、逐字节对齐），供需要从二进制层面审查图片数据的场景使用。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/05-image-hex.png" alt="图片 Hex 视图" loading="lazy">
+    <figcaption>图 7-5　图片的十六进制视图：双 Hex 编辑器逐字节对比</figcaption>
+  </figure>
+
+  <h2>非图片二进制的简略卡片视图</h2>
+  <p>对于非图片的二进制文件（如 <code>.bin</code>），ForkPlus 提供<strong>简略卡片视图</strong>：左右两个卡片分别显示「旧」「新」版本的文件图标与字节大小（如 256 B → 512 B），不尝试解析内容，仅直观告知文件变化与体积变化。此时模式按钮只保留 <strong>并排 / 十六进制</strong> 两项（滑动 / 洋葱皮自动隐藏）。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/06-binary-card-view.png" alt="二进制简略卡片视图" loading="lazy">
+    <figcaption>图 7-6　二进制简略卡片视图：仅显示旧/新文件图标与字节大小（此例 256 B → 512 B）</figcaption>
+  </figure>
+
+  <h3>Hex 视图</h3>
+  <p>点击「十六进制」把二进制文件切到 Hex 视图，以字节（十六进制）形式逐行对比新旧内容，左右双编辑器对齐，可精确查看每个字节的变化。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/07-binary-hex-view.png" alt="二进制 Hex 视图" loading="lazy">
+    <figcaption>图 7-7　二进制文件的 Hex 视图：左右双栏逐字节对比</figcaption>
+  </figure>
+
+  <h2>大文件 Diff</h2>
+  <p>对于体积较大的二进制文件，Hex 视图首屏只渲染开头一段字节，并提供「加载更多」分页加载机制，按需读取后续内容，避免一次载入大文件造成卡顿。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/08-large-binary-hex.png" alt="大文件 Hex 视图" loading="lazy">
+    <figcaption>图 7-8　大文件 Hex 视图：首屏仅渲染开头字节，滚动时按需加载更多</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>处理图片改动时，先用「并排」看整体、再用「滑动」或「洋葱皮」定位具体差异区域；若怀疑文件结构异常，切到「十六进制」核实原始字节。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 7 章 · 二进制与图片 Diff
+</footer>
+</body>
+</html>

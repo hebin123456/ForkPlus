@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 章 · 文本 Diff · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 6 章 · 文本 Diff</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html">修订详情</a>
+  <a href="ch-05-commit.html">变更与提交</a>
+  <a href="ch-06-text-diff.html" class="active">文本 Diff</a>
+  <a href="ch-07-binary-diff.html">二进制与图片 Diff</a>
+  <a href="ch-08-shortcuts.html">键盘快捷键</a>
+</nav>
+<main class="manual-main">
+  <p>ForkPlus 的 Diff 视图用于对比文件的两个版本（工作区 vs 暂存区/HEAD、或历史提交 vs 其父提交）。文本文件默认支持两种展示模式，并针对长行、多文件评审做了专门优化。</p>
+
+  <h2>Split 模式（单编辑器）</h2>
+  <p>Split（拆分）模式使用<strong>一个</strong>统一编辑器展示差异：左侧行号为旧版本（红色/粉色背景表示删除行），右侧行号为新版本（绿色背景表示新增行），同一 hunk 内两种改动并排展示在一行内。顶部文件头显示文件路径与 hunk 范围（如 <code>@@ -1,122 +1,122 @@</code>）。</p>
+  <p>Split 是最紧凑的查看方式，适合改动集中在少量行、无需频繁左右对照的场景。可通过 Commit 视图的 <code>DiffLayoutModeToggleButton</code> 在 Split 与 Side-by-side 之间切换。</p>
+
+  <figure class="wide">
+    <img src="screenshots/06-text-diff/01-textdiff-split.png" alt="Split 模式文本 Diff" loading="lazy">
+    <figcaption>图 6-1　Split 模式：单一编辑器内并排旧（红）/ 新（绿）内容，hunk 头标出范围</figcaption>
+  </figure>
+
+  <h2>Side-by-Side 模式（双栏对照）</h2>
+  <p>Side-by-Side（并排）模式把编辑器一分为二：左栏显示旧版本（红色），右栏显示新版本（绿色）。逐行对齐便于观察每个改动点的旧貌与新貌，适合大段结构改动或代码重构。切换后 Commit 视图内会出现两个独立编辑器，左右栏一一对应。</p>
+
+  <figure>
+    <img src="screenshots/06-text-diff/02-textdiff-side-by-side.png" alt="Side-by-Side 模式文本 Diff" loading="lazy">
+    <figcaption>图 6-2　Side-by-Side 模式：左红右绿双栏对照，逐行对齐查看旧新内容</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>默认的 Diff 布局可在设置中调整（Commit 布局 / 弹窗布局）。此处示例文件 <code>width.txt</code> 全部 51 行都被修改，因此每行都显示为红 / 绿。</div>
+
+  <h2>双编辑器的滚动同步</h2>
+  <p>在 Side-by-Side 模式下，左右两个编辑器会<strong>自动同步垂直与水平滚动</strong>：滚动右侧编辑器，左侧会自动跟随到同一相对位置，确保上下两栏始终停留在相同的内容区段，方便连续评审长文件。</p>
+
+  <figure>
+    <img src="screenshots/06-text-diff/03-textdiff-scroll-synced.png" alt="滚动同步" loading="lazy">
+    <figcaption>图 6-3　滚动同步：右侧垂直滚动后，左侧自动跟随到对应位置</figcaption>
+  </figure>
+
+  <h2>长行水平滚动</h2>
+  <p>对于包含超长行的文件（如压缩 / 生成的单行内容），Diff 编辑器提供横向滚动条，并保持左右两栏水平同步，保证在对比超宽行时两栏的列基准一致。</p>
+
+  <figure>
+    <img src="screenshots/06-text-diff/04-textdiff-horizontal-scrolled.png" alt="长行水平滚动" loading="lazy">
+    <figcaption>图 6-4　长行水平滚动：左右滚动条联动，适配超长行对比</figcaption>
+  </figure>
+
+  <h2>Diff 弹窗窗口</h2>
+  <p>在 Commit 视图的未暂存/已暂存文件列表中选中某个文件后按 <kbd>空格</kbd>（Space），ForkPlus 会打开一个<strong>独立的 Diff 弹窗窗口</strong>，标题为文件名（如 <code>width.txt</code>），在更大视野下展示该文件的差异。</p>
+  <p>弹窗窗口便于「只看这个文件」的聚焦评审。底部状态栏提供快捷键提示：<kbd>空格</kbd> 关闭弹窗、<kbd>上</kbd>/<kbd>下</kbd> 在文件列表间移动选择——即在多个变更文件之间快速跳转逐个评审。</p>
+
+  <figure class="wide">
+    <img src="screenshots/06-text-diff/05-diff-popup-window.png" alt="Diff 弹窗窗口" loading="lazy">
+    <figcaption>图 6-5　Diff 弹窗窗口：独立窗口放大展示选中文件差异，支持快捷键逐文件跳转</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>弹窗底部右侧的迷你图（minimap）用红/绿标记展示了全部改动在文件中的分布，点击可快速跳转到改动密集区域。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 6 章 · 文本 Diff
+</footer>
+</body>
+</html>
