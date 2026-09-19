@@ -1,0 +1,45 @@
+# ForkPlus 用户手册 → GitHub Pages 自动发布
+#
+# 把 docs/manual/（自包含静态站:index.html + ch-*.html + assets/manual.css + screenshots/）
+# 部署为站点根目录。手册内全部为相对路径,故根部署即可原样工作,无需改链接。
+# 触发:push master 自动更新线上手册;workflow_dispatch 可随时手动重发(无需改代码)。
+# 产出网址:项目站点 https://<owner>.github.io/ForkPlus/（Docs 的 index.html 即站点首页）。
+# 与 build.yml（发布门禁+Release）完全独立:此工作流只发布文档,不影响四平台构建/测试。
+name: pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/manual/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 以 docs/manual 为站点根上传:index.html 自动成为首页,章节页/截图/css 相对引用保持可用
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/manual
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
