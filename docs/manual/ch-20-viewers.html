@@ -62,6 +62,17 @@
 
   <div class="tip"><strong>小贴士：</strong>统计需要当前分支有<b>多于 2 个</b>提交才会生成全部图表；提交过少时窗口会提示无法生成统计。</div>
 
+  <h2>代码行数统计（Code Lines）</h2>
+  <p>「统计」窗口底部提供 <strong>代码行数统计</strong> 面板，基于 <code>tokei</code> 工具扫描仓库，按编程语言聚合代码行、注释行与空白行，帮助你快速了解仓库的规模与技术构成。面板同样位于"统计"窗口内，向下滚动即可看到。</p>
+  <ul>
+    <li><strong>统计范围</strong>：默认统计当前工作区；通过右上角的 <strong>Ref</strong> 下拉（可搜索的分支/标签/提交选择器）可改统计任一历史版本——ForkPlus 会先用 <code>git archive</code> 导出该版本再统计，不影响工作区。</li>
+    <li><strong>语言饼图</strong>：展示 Top 12 语言的代码行占比，其余语言合并为 <code>Other</code>。</li>
+    <li><strong>明细列表</strong>：按语言列出 <strong>文件数 · 代码行 · 注释行 · 空白行</strong>，左侧色块与饼图一一对应。</li>
+    <li><strong>排除模式</strong>：在 <code>Exclude</code> 输入框按行填写 glob 模式（语义同 .gitignore，例如 <code>tests/</code>、<code>**/*.Tests/</code>、<code>bin/</code>），点「Recount with excludes」按排除后的结果重新统计。</li>
+    <li><strong>摘要</strong>：在面板顶部给出当前范围的「N files · N code · N comments · N blanks」总览。</li>
+  </ul>
+  <div class="tip"><strong>小贴士：</strong>代码行数统计依赖 <code>tokei</code>。若提示 "tokei not found"，请从 <a href="https://github.com/XAMPPRocky/tokei/releases" target="_blank" rel="noopener">tokei 官方发布页</a> 下载对应平台的可执行文件放到 ForkPlus 程序目录（或安装到系统 PATH），再点「Refresh」重试。</div>
+
   <h2>修订详情（Revision Details）</h2>
   <p>对某个具体提交（修订）打开详情窗口，集中查看其作者、提交说明、改动文件列表及 diff，适合在不切换主工作区的情况下单独审查某一个提交。</p>
 

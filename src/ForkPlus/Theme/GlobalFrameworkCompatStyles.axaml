@@ -28,4 +28,15 @@
   <Style Selector="ComboBox /template/ ContentPresenter#contentPresenter > Rectangle">
     <Setter Property="HorizontalAlignment" Value="Left" />
   </Style>
+  <!-- 修复（2026-09-19，"所有提交的提交tab 里 commit 信息鼠标选不中/复制不了"）：
+       主题一直没有 SelectableTextBlock 的全局样式 → SelectionBrush 为 null，选中态
+       无高亮渲染（MarkdownHtmlRenderer 里曾为此对单个控件手设 SelectionBrush）。
+       本样式给全应用 SelectableTextBlock（提交tab 的 Subject/Description、作者、
+       SHA 等处的可选中文本）统一补齐选区画笔，复用项目既定的固定选区蓝
+       TextBox.Selection.*（全皮肤一致 #236BD2 + 白字，见 Brushes.axaml 注释），
+       使"拖选→复制"有可见高亮，切实可复制。 -->
+  <Style Selector="SelectableTextBlock">
+    <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
+  </Style>
 </Styles>
