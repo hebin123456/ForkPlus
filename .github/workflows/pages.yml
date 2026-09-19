@@ -2,16 +2,15 @@
 #
 # 把 docs/manual/（自包含静态站:index.html + ch-*.html + assets/manual.css + screenshots/）
 # 部署为站点根目录。手册内全部为相对路径,故根部署即可原样工作,无需改链接。
-# 触发:push master 自动更新线上手册;workflow_dispatch 可随时手动重发(无需改代码)。
+# 触发:push v* 标签时随发布重新发布线上手册;workflow_dispatch 可随时手动重发。
+# （不随每次 push master 重发,只在打 tag 的发布节点更新线上版本。）
 # 产出网址:项目站点 https://<owner>.github.io/ForkPlus/（Docs 的 index.html 即站点首页）。
 # 与 build.yml（发布门禁+Release）完全独立:此工作流只发布文档,不影响四平台构建/测试。
 name: pages
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'docs/manual/**'
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
