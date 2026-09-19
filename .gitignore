@@ -23,3 +23,7 @@ third_party/nuget/
 # 测试运行期落在 docs/evidence 顶层的过程性截图（如 InteractiveRebaseScreenshotTests 的 ir-*.png）；
 # docs/evidence/e2e/ 下的 E2E 证据截图正常入库
 docs/evidence/*.png
+
+# 并行子代理编写用户手册时用的隔离构建/输出目录（防 CS0579 重复程序集特性 + 防杂物入库）
+obj-agent*/
+bin-agent*/
