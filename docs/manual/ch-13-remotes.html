@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 13 章 · 远程交互 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 13 章 · 远程交互</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html" class="active">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>Fetch 拉取</h2>
+  <p>「Fetch」对话框用于从远程获取更新而不合并。默认仅针对当前活动的上游，也可以下拉选择其他远程。对话框底部实时预览将要执行的 <code>git fetch</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/01-fetch.png" alt="Fetch 默认预览" loading="lazy">
+    <figcaption>图 13-1　Fetch：默认预览针对当前远程的 git fetch 命令</figcaption>
+  </figure>
+
+  <h2>Fetch 全部远程</h2>
+  <p>勾选「所有远程」开关后，将一次性从配置的全部远程拉取，并把 FETCH 命令扩展为遍历每个远程的完整形式，适合远程较多时一键同步引用。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/02-fetch-all.png" alt="Fetch 全部远程" loading="lazy">
+    <figcaption>图 13-2　Fetch all remotes：遍历全部远程拉取引用</figcaption>
+  </figure>
+
+  <h2>Pull 合并拉取</h2>
+  <p>「Pull」对话框把远程更新合并到当前分支。默认采用 <code>git pull</code> 的快速合并语义，也有回退到 Rebase 的选项。命令预览会随选择切换。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/03-pull.png" alt="Pull 默认预览" loading="lazy">
+    <figcaption>图 13-3　Pull：默认合并拉取并预览命令</figcaption>
+  </figure>
+
+  <h2>Pull 并 Rebase</h2>
+  <p>勾选「以 Rebase 方式拉取」，Pull 将改为 <code>git pull --rebase</code>，把本地提交重新摆放到远程最新提交之上，形成更线性的历史。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/04-pull-rebase.png" alt="Pull 并 Rebase" loading="lazy">
+    <figcaption>图 13-4　Pull --rebase：以变基方式拉取更新</figcaption>
+  </figure>
+
+  <h2>Push 推送</h2>
+  <p>「Push」对话框把本地分支推送到远程。对于已建立上游的分支，窗口会预填远端与命令预览；你还可以勾选是否同时推送所有标签。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/05-push.png" alt="Push 默认预览" loading="lazy">
+    <figcaption>图 13-5　Push：对已有上游分支预览推送命令</figcaption>
+  </figure>
+
+  <h2>编辑远程：添加</h2>
+  <p>「编辑远程」对话框以 Add 模式添加新的远程：输入名称与 URL 后，预览 <code>git remote add</code> 命令，用于注册新的远程源。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/06-edit-remote-add.png" alt="添加远程" loading="lazy">
+    <figcaption>图 13-6　添加远程：name + URL 并预览 git remote add</figcaption>
+  </figure>
+
+  <h2>编辑远程：修改</h2>
+  <p>选择已存在的远程后进入 Edit 模式，自动预填原名称与 URL，修改后预览 <code>git remote set-url</code> 命令，便于更新远程地址而不丢失本地跟踪关系。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/07-edit-remote-edit.png" alt="编辑远程" loading="lazy">
+    <figcaption>图 13-7　编辑远程：预填并预览 set-url 命令</figcaption>
+  </figure>
+
+  <h2>自定义 Refspec</h2>
+  <p>「添加自定义 refspec」对话框允许为某个远程补充额外的 fetch 映射规则，以自定义的 refspec 精确控制从远程获取哪些引用，适合特殊的分支/标签同步需求。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/08-custom-refspec.png" alt="自定义 Refspec" loading="lazy">
+    <figcaption>图 13-8　自定义 Refspec：为远程补充 fetch 映射</figcaption>
+  </figure>
+
+  <h2>推送新分支到远程</h2>
+  <p>当本地分支尚未建立上游时，Push 对话框会以「推送新分支」呈现：选择目标远程后，预览以 <code>--set-upstream</code> 建立跟踪关系的推送命令，让后续 Push/Pull 文件名自动关联。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/09-push-new-branch.png" alt="推送新分支" loading="lazy">
+    <figcaption>图 13-9　推送新分支：以 --set-upstream 建立跟踪关系</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>远程相关操作完成后，仓库的远程分支列表（<code>origin/&lt;branch&gt;</code>）会自动刷新。若本地与远程分叉，可结合「历史改写」章节的 Rebase/Fetch 选择适合的同步策略。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 13 章 · 远程交互
+</footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 14 章 · 合并冲突解决 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 14 章 · 合并冲突解决</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html" class="active">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>冲突视图</h2>
+  <p>合并（或拉取、变基、应用 Stash）发生冲突时，ForkPlus 会在「变更与提交」视图中把冲突文件单独列出，并在选中后切入冲突视图。视图顶部提供两种版本（<strong>本地</strong> 与 <strong>远程</strong> 版本，即 <code>--ours</code> 与 <code>--theirs</code>）的勾选，以及一个「合并」按钮，用于直接选用某一侧或打开三方合并编辑器。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/01-conflict-view.png" alt="冲突视图" loading="lazy">
+    <figcaption>图 14-1　冲突视图：双版本勾选与「合并」入口</figcaption>
+  </figure>
+
+  <h2>选择「仅远程版本」</h2>
+  <p>当确认当前本地版本的改动不需要保留、只需采用远程侧的版本时，可只勾选「远程版本」。此时冲突视图会进入 <strong>Choose {theirs}</strong> 状态，随后执行的操作将把文件内容替换为所选的一侧。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/02-choose-theirs.png" alt="选择仅远程版本" loading="lazy">
+    <figcaption>图 14-2　仅勾选远程版本，进入「选择远程版本」状态</figcaption>
+  </figure>
+
+  <h2>三方合并编辑器</h2>
+  <p>若需要更精细地逐行决定冲突取舍，点击「合并」会打开三方并排合并窗口。它并排展示「本地版本 / 合并结果 / 远程版本」三列：左侧与右侧分别是本地与远程的完整内容，中间一列是可编辑的合并结果。可以通过中间的合并编辑器逐项选择标记、增删行，最终形成既保留本地又纳入远程的最终文件。</p>
+
+  <p>三方窗口中原有的冲突标记（<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>、<code>=======</code>、<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>）会被解析为可逐块选择的冲突块；完成编辑后，ForkPlus 会应用合并结果并移除标记。</p>
+
+  <div class="note"><strong>提示：</strong>如果希望直接采用其中一侧并丢弃另一侧，使用冲突视图顶部的「选择本地 / 选择远程」更快捷；三方合并编辑器适合需要逐块混合两方的复杂场景。</div>
+
+  <div class="tip"><strong>小贴士：</strong>做完选择后记得暂存并提交合并结果。若想放弃合并返回合并前的状态，可参考「历史改写」章节的 Reset 操作。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 14 章 · 合并冲突解决
+</footer>
+</body>
+</html>
