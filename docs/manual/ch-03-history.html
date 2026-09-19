@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 3 章 · 提交历史与修订列表 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 3 章 · 提交历史与修订列表</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html" class="active">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html">修订详情</a>
+</nav>
+<main class="manual-main">
+  <h2>修订列表：图表视图</h2>
+  <p>主界面中部的修订列表以「图表」方式展示全部提交历史。左侧的图形列用不同颜色的线条绘制分支的合并与分叉关系；每一行显示：</p>
+  <ul>
+    <li><strong>分支 / 标签标记</strong>：如 <code>main</code>、<code>v2.0</code>、<code>feature/one</code>。</li>
+    <li><strong>提交说明</strong>：提交消息的第一行。</li>
+    <li><strong>构建状态</strong>：绿色 <code>Test</code> 徽标（CI 状态）。</li>
+    <li><strong>提交哈希</strong>：7 位短哈希。</li>
+    <li><strong>时间戳</strong>：提交时间。</li>
+  </ul>
+
+  <figure class="wide">
+    <img src="screenshots/03-history/01-revision-list-loaded.png" alt="修订列表图表视图" loading="lazy">
+    <figcaption>图 3-1　修订列表图表视图：彩色分支图 + 分支/标签标记 + 提交说明 + 哈希 + 时间</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>选中某行后，行高亮为蓝色；分支线颜色对应不同分支（如蓝色 = main、黄色 = feature/two、紫红 = feature/one），便于快速辨认提交归属。</div>
+
+  <h2>选中修订行与变更文件列表</h2>
+  <p>单击任意提交行即可选中。选中后，底部修订详情面板立即加载该提交的作者、日期、引用（分支/标签）、SHA、父提交与提交说明；在「提交」标签页内还会列出该提交涉及的变更文件，可点击「全部展开」查看详情。</p>
+
+  <figure>
+    <img src="screenshots/03-history/02-revision-row-selected.png" alt="选中修订行" loading="lazy">
+    <figcaption>图 3-2　选中 <code>c3 on main</code> 行：底部详情面板同步加载该提交的元信息与变更文件列表</figcaption>
+  </figure>
+
+  <h2>修订搜索（上下文匹配）</h2>
+  <p>在侧边栏顶部的搜索框输入关键词（如 <code>feature</code>），修订列表会在提交说明与分支/标签引用中做上下文匹配，并在右上角显示命中数量（如「2 matches」）。匹配到的提交仍保留在列表中（不缩小行集），以黄色背景高亮命中的文本。</p>
+
+  <figure>
+    <img src="screenshots/03-history/03-revision-search-matches.png" alt="修订搜索匹配" loading="lazy">
+    <figcaption>图 3-3　搜索 <code>feature</code>：命中 2 条提交（c5 on feature/two、c4 on feature/one），匹配文本黄色高亮</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>清空搜索框即可清除匹配标记，列表恢复原样。按 <kbd>Enter</kbd> / <kbd>F3</kbd> 可跳转到下一个搜索结果，<kbd>Shift</kbd> + <kbd>Enter</kbd> / <kbd>Shift</kbd> + <kbd>F3</kbd> 跳转到上一个。</div>
+
+  <h2>列表方向切换（横向布局）</h2>
+  <p>修订列表默认采用「纵向布局」：列表在上、详情在下。通过工具栏/视图菜单可以切换为「横向布局」——列表收窄至中部、修订详情面板移动到右侧，更适合宽屏显示完整提交信息。</p>
+
+  <figure>
+    <img src="screenshots/03-history/04-revision-orientation-switched.png" alt="修订列表横向布局" loading="lazy">
+    <figcaption>图 3-4　切换为横向布局：修订详情面板移至右侧，列表与详情并排展示</figcaption>
+  </figure>
+
+  <h2>排序</h2>
+  <p>修订列表默认按提交时间从新到旧排列。工具栏/上下文菜单中可调整排序方式，配合搜索可以快速定位目标提交。</p>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 3 章 · 提交历史与修订列表
+</footer>
+</body>
+</html>

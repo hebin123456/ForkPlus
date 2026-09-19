@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 章 · 修订详情 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 4 章 · 修订详情</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html" class="active">修订详情</a>
+  <a href="ch-05-commit.html">变更与提交</a>
+</nav>
+<main class="manual-main">
+  <p>在修订列表中选中任意提交后，底部修订详情面板会加载该提交的完整信息。详情面板通过 <strong>提交 / 变更 / 文件树</strong> 三个标签页展示不同维度的内容。</p>
+
+  <h2>提交摘要标签页</h2>
+  <p>「提交」标签页集中展示一条提交的全部元信息：</p>
+  <ul>
+    <li><strong>作者</strong>：头像、用户名（Test）与邮箱（test@example.com）。</li>
+    <li><strong>日期</strong>：含时区的完整提交时间（如 <code>18 Sep 2026 23:45:35 +00:00</code>）。</li>
+    <li><strong>引用 References</strong>：该提交被哪些分支 / 标签引用（如下图的 <code>feature/two</code>）。</li>
+    <li><strong>SHA</strong>：完整 40 位哈希。</li>
+    <li><strong>父提交 Parent</strong>：上一提交的短哈希。</li>
+    <li><strong>提交说明</strong>：提交消息全文。</li>
+    <li><strong>变更文件列表</strong>：该提交新增 / 修改 / 删除的文件，默认折叠，可点击「全部展开」逐个查看。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/04-revision-details/01-revision-details-summary.png" alt="提交摘要标签页" loading="lazy">
+    <figcaption>图 4-1　「提交」标签页：显示作者、邮箱、日期、引用、完整 SHA、父提交与变更文件列表</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>变更文件列表按文件名列出，右侧提供「全部展开」按钮。未展开时仅显示文件图标与名称。</div>
+
+  <h2>变更标签页：文件列表与 Diff</h2>
+  <p>「变更」标签页左侧列出该提交变更的文件列表，右侧为选中文件的内容差异（Diff）。单击列表中的任意文件，右侧 Diff 立即切换到该文件的变更内容。本示例中提交 <code>c5 on feature/two</code> 仅变更了 <code>two.txt</code> 一个文件，选中后右侧显示新增行（绿色高亮，<code>+1</code> 统计：新增 1 行）。</p>
+
+  <figure>
+    <img src="screenshots/04-revision-details/02-revision-details-changes.png" alt="变更标签页" loading="lazy">
+    <figcaption>图 4-2　「变更」标签页：左侧文件列表，右侧选中文件 Diff（此提交仅 two.txt，新增 1 行）</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>「变更」标签页是非只读的提交级 Diff，可以从文件列表快速遍历一次提交涉及的所有改动，适合代码评审。</div>
+
+  <h2>文件树标签页</h2>
+  <p>「文件树」标签页以目录树形式展示该提交时刻的完整文件快照。与「变更」只显示改动文件不同，文件树展示 <strong>整个仓库该版本的所有文件</strong>，支持文件夹层级展开。本示例显示 <code>main.txt</code> 与 <code>two.txt</code> 两个根级文件。</p>
+
+  <figure>
+    <img src="screenshots/04-revision-details/03-revision-details-filetree.png" alt="文件树标签页" loading="lazy">
+    <figcaption>图 4-3　「文件树」标签页：以目录树展示该提交时刻的完整文件快照</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>文件树反映的是提交时刻的仓库全貌（非仅改动文件），遇到含子目录的提交可点击文件夹节点逐层展开。通过「导出完整文件树」可将该版本的目录结构导出。</div>
+
+  <h2>Reflog 显示模式</h2>
+  <p>开启「Reflog 模式」后，修订列表不再只展示提交历史，而是展示 <strong>HEAD 与各引用的移动记录（reflog）</strong>。进入该模式后，顶部出现「Reflog 模式已启用」横幅并提供「退出」按钮，列表会按引用更新时间顺序列出条目，并内联标注每个条目所处的分支 / 标签引用。</p>
+  <p>Reflog 特别适合恢复「看起来丢失」的提交——即使提交已从分支移除，只要它曾在 HEAD 上停留过，就会出现在 reflog 中，可据此找回其 SHA 或重新检回分支。</p>
+
+  <figure>
+    <img src="screenshots/04-revision-details/04-revision-details-reflog.png" alt="Reflog 显示模式" loading="lazy">
+    <figcaption>图 4-4　Reflog 模式：修订列表展示 HEAD 与引用移动记录，可据此找回历史提交</figcaption>
+  </figure>
+
+  <div class="warn"><strong>注意：</strong>reflog 记录会在一定时间后被 Git 清理。若需要长期保留历史提交，请在清理前为相关提交创建标签或分支。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 4 章 · 修订详情
+</footer>
+</body>
+</html>

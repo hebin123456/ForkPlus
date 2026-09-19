@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 章 · 变更与提交 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 5 章 · 变更与提交</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-01-welcome.html">欢迎页与仓库管理</a>
+  <a href="ch-02-main-window.html">主界面总览</a>
+  <a href="ch-03-history.html">提交历史与修订列表</a>
+  <a href="ch-04-revision-details.html">修订详情</a>
+  <a href="ch-05-commit.html" class="active">变更与提交</a>
+  <a href="ch-06-text-diff.html">文本 Diff</a>
+</nav>
+<main class="manual-main">
+  <p>Commit 视图是日常开发最常用的界面：它把工作区中的改动分成「未暂存」与「已暂存」两组，配合右侧的 Diff，帮你有选择地暂存文件（甚至逐行暂存）并填写提交信息完成提交。</p>
+
+  <h2>工作区状态与文件级暂存</h2>
+  <p>进入 Commit 视图后，中部左侧分为两组：</p>
+  <ul>
+    <li><strong>未暂存</strong>（上部）：工作区中尚未加入暂存区的文件，图标区分状态——黄色 = 已修改、绿色 = 新增/未跟踪、红色 = 已删除。</li>
+    <li><strong>已暂存</strong>（下部）：已通过 <code>git add</code> 加入暂存区、准备提交的文件。</li>
+  </ul>
+  <p>工具栏提供 <strong>「暂存」</strong>（Stage）与 <strong>「取消暂存」</strong>（Unstage）按钮。选中左侧文件后用「暂存」把它移入「已暂存」区；选中「已暂存」区文件后用「取消暂存」把它移回未暂存。右侧 Diff 会始终跟随当前选中的文件。</p>
+
+  <figure>
+    <img src="screenshots/05-commit/01-commit-working-dir.png" alt="Commit 视图工作区状态" loading="lazy">
+    <figcaption>图 5-1　Commit 视图：未暂存（a.txt 已修改 / b.txt 已修改 / new.txt 新增）与已暂存（c.txt）分组显示，右侧为选中文件 diff</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/05-commit/02-commit-stage-selected.png" alt="暂存选中文件后" loading="lazy">
+    <figcaption>图 5-2　将 a.txt「暂存」后：a.txt 移入「已暂存」区（与 c.txt 并列），底部状态变为可提交</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>勾选底部「暂存全部」/「取消暂存全部」按钮（Stage All ↔ Unstage All）可一键批量把整组文件移入或移出暂存区。暂存量会实时体现在底部「提交 N 个文件」按钮上。</div>
+
+  <h2>取消暂存</h2>
+  <p>若发现某个文件不该进入本次提交，在「已暂存」区选中它并点击「取消暂存」，即可把它移回「未暂存」区，同时右侧 Diff 切换到该文件的工作区版本。</p>
+
+  <figure>
+    <img src="screenshots/05-commit/03-commit-unstage-selected.png" alt="取消暂存选中文件后" loading="lazy">
+    <figcaption>图 5-3　对 a.txt「取消暂存」后：a.txt 回到「未暂存」区，已暂存区恢复为仅 c.txt</figcaption>
+  </figure>
+
+  <h2>提交消息输入与 Amend</h2>
+  <p>底部是提交消息区：</p>
+  <ul>
+    <li><strong>提交标题</strong>：提交消息第一行，必填才会启用提交按钮。</li>
+    <li><strong>描述 Description</strong>：补充正文。输入 <code>Co-authored-by:</code> 等关键字时，ForkPlus 会自动给出补全建议，按 <kbd>Tab</kbd> 可填入。</li>
+    <li><strong>修补提交 Amend</strong>：勾选后，本次提交会「修正」最近一次提交（合并进上一次提交而不是新增一条），适合修正最后一条提交的遗漏或拼写。</li>
+  </ul>
+  <p>底部右侧实时显示差异统计（如 <code>+3 -0</code>）与可提交的文件数。</p>
+
+  <figure>
+    <img src="screenshots/05-commit/04-commit-message-input.png" alt="提交消息输入" loading="lazy">
+    <figcaption>图 5-4　填写提交标题「write something」与描述信息，提交按钮随消息与暂存状态联动</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/05-commit/05-commit-amend-checked.png" alt="勾选 Amend" loading="lazy">
+    <figcaption>图 5-5　勾选「修补提交 Amend」：本次提交将修正最近一次提交</figcaption>
+  </figure>
+
+  <h2>文件列表模式切换（树形/列表）</h2>
+  <p>在工作区状态区域可切换文件列表的展示模式：<strong>列表模式</strong>把所有变更文件平铺排列；<strong>树形模式</strong>把文件按文件夹层级分组，便于在大型仓库中按目录定位改动。</p>
+
+  <figure>
+    <img src="screenshots/05-commit/06-commit-file-list-tree.png" alt="文件列表树形模式" loading="lazy">
+    <figcaption>图 5-6　文件列表「树形模式」：变更文件按目录层级组织展示</figcaption>
+  </figure>
+
+  <h2>行级暂存：选区浮窗</h2>
+  <p>ForkPlus 支持比「文件级」更精细的 <strong>行级暂存</strong>。在未暂存文件的 Diff 编辑器中用鼠标拖选若干行，选区上方会浮动出现 <strong>「暂存」</strong> 与 <strong>「丢弃…」</strong> 两个悬浮按钮：</p>
+  <ul>
+    <li><strong>暂存</strong>：仅把本次选中的行加入暂存区（等价于 <code>git add -p</code> 的局部暂存），可在同一个文件里拆分多次暂存。</li>
+    <li><strong>丢弃…</strong>：把选中的行还原为暂存区 / HEAD 版本（不可恢复的破坏性操作，会二次确认）。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/05-commit/07-commit-line-level-floating.png" alt="行级暂存选区浮窗" loading="lazy">
+    <figcaption>图 5-7　在 diff 中拖选新追加行后弹出「暂存 / 丢弃…」浮窗：实现局部（行级）暂存</figcaption>
+  </figure>
+
+  <div class="warn"><strong>注意：</strong>「丢弃」会真实改写工作区文件且不可撤销。执行前请确认选中的行确实是想要丢弃的内容。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 5 章 · 变更与提交
+</footer>
+</body>
+</html>
