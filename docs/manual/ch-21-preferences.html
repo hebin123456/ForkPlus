@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 21 章 · 偏好设置 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 21 章 · 偏好设置</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-17-gitflow.html">GitFlow</a>
+  <a href="ch-20-viewers.html">查看器</a>
+  <a href="ch-21-preferences.html" class="active">偏好设置</a>
+  <a href="ch-22-repo-settings.html">仓库设置</a>
+  <a href="ch-23-ssh.html">SSH</a>
+</nav>
+<main class="manual-main">
+  <p>「偏好设置」集中管理 ForkPlus 的全局配置，通过「偏好设置」菜单打开。窗口顶部以多个标签页组织设置项，改动即时生效。本手册重点介绍其中的<strong>切换界面语言</strong>与<strong>切换主题</strong>。</p>
+
+  <h2>设置标签页</h2>
+  <p>偏好设置窗口包含多个标签页，可按功能域快速定位：</p>
+  <ul>
+    <li><strong>通用（General）</strong>：界面语言、差异视图外观、提交排序、Git 行为（自动拉取、提交后推送等）。</li>
+    <li><strong>提交（Commit）</strong>：提交相关默认行为。</li>
+    <li><strong>Git</strong>：Git 核心参数与行为。</li>
+    <li><strong>集成（Integration）</strong>：与外部工具/服务的集成。</li>
+    <li><strong>自定义命令（Custom Commands）</strong>：管理自定义的 Git 命令菜单。</li>
+    <li><strong>AI 增强（AI）</strong>：AI 提交/审查/开发助手服务配置。</li>
+    <li><strong>导入/导出（Import/Export）</strong>：设置与快捷键的导入导出。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/21-preferences/01-preferences-general.png" alt="偏好设置 - 通用页" loading="lazy">
+    <figcaption>图 21-1　偏好设置「通用」页：顶部为标签页导航，可看到差异视图、提交排序、Git 行为与底部「语言」下拉</figcaption>
+  </figure>
+
+  <h2>切换界面语言</h2>
+  <p>ForkPlus 内置 <strong>8 种界面语言</strong>，在「通用」页底部的「语言」下拉框中即点即切：</p>
+  <table>
+    <thead>
+      <tr><th>语言</th><th>代码</th><th>显示名</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>简体中文</td><td>zh-Hans</td><td>简体中文</td></tr>
+      <tr><td>繁體中文</td><td>zh-Hant</td><td>繁體中文</td></tr>
+      <tr><td>英文</td><td>en</td><td>English</td></tr>
+      <tr><td>日文</td><td>ja-JP</td><td>日本語</td></tr>
+      <tr><td>韩文</td><td>ko-KR</td><td>한국어</td></tr>
+      <tr><td>法文</td><td>fr-FR</td><td>Français</td></tr>
+      <tr><td>德文</td><td>de-DE</td><td>Deutsch</td></tr>
+      <tr><td>西班牙文</td><td>es-ES</td><td>Español</td></tr>
+    </tbody>
+  </table>
+  <p>选择目标语言后，ForkPlus 会<strong>立即重本地化</strong>全部界面文本——包括菜单、标签页标题、按钮、提示等，无需重启应用。语言设置持久化保存，下次启动沿用。</p>
+
+  <figure>
+    <img src="screenshots/21-preferences/01-preferences-general.png" alt="偏好设置 - 语言下拉" loading="lazy">
+    <figcaption>图 21-2　「通用」页底部「语言」下拉（当前为简体中文）：内置 8 种语言可即时切换</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>语言切换后如果某些第三方/自定义语言包缺失翻译，ForkPlus 会回退到英文显示，不影响功能使用。</div>
+
+  <h2>切换主题</h2>
+  <p>ForkPlus 支持多种主题（明/暗 × 强调色）。可通过菜单「切换主题」打开主题二级菜单（内含 <strong>Solid Colors</strong> 三级菜单）快速切换。切换后整屏配色立即更新。</p>
+  <p>下面以同一仓库窗口在三种主题下的表现说明切换效果：</p>
+
+  <h3>浅色主题（Light）</h3>
+  <figure>
+    <img src="screenshots/21-preferences/02-theme-light.png" alt="浅色主题" loading="lazy">
+    <figcaption>图 21-3　浅色主题（Light）：明亮背景，适合日间与打印场景</figcaption>
+  </figure>
+
+  <h3>深色主题（Dark）</h3>
+  <figure>
+    <img src="screenshots/21-preferences/03-theme-dark.png" alt="深色主题" loading="lazy">
+    <figcaption>图 21-4　深色主题（Dark）：深色背景降低夜间眩光，突出代码与图表高亮</figcaption>
+  </figure>
+
+  <h3>强调色主题（Solid）</h3>
+  <figure>
+    <img src="screenshots/21-preferences/04-theme-solid-purple.png" alt="紫色强调色调主题" loading="lazy">
+    <figcaption>图 21-5　Solid 配色下的紫色强调色主题（PurpleLight）：在明暗之外提供品牌化/个性化解法</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>主题选择会持久化，并在新开窗口/标签页中保持一致。若希望跟随系统外观，可在主题菜单中选用「随系统」的选项。</div>
+
+  <h2>其他通用设置示例</h2>
+  <ul>
+    <li><strong>差异视图字体大小</strong>：调整 Diff 编辑器字号，并可关闭语法高亮。</li>
+    <li><strong>提交排序</strong>：提交图按「拓扑排序」或「按日期」展示。</li>
+    <li><strong>自动拉取远端</strong>：打开标签页时自动 fetch；可配套「拉取时包含标签」。</li>
+    <li><strong>提交后自动推送</strong>：提交完成立即推送到远端。</li>
+  </ul>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 21 章 · 偏好设置
+</footer>
+</body>
+</html>

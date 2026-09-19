@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 22 章 · 仓库设置 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 22 章 · 仓库设置</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-20-viewers.html">查看器</a>
+  <a href="ch-21-preferences.html">偏好设置</a>
+  <a href="ch-22-repo-settings.html" class="active">仓库设置</a>
+  <a href="ch-23-ssh.html">SSH</a>
+  <a href="ch-24-ai.html">AI</a>
+</nav>
+<main class="manual-main">
+  <p>与「偏好设置」管理全局配置不同，<strong>「仓库设置」</strong>针对<strong>当前打开的单个仓库</strong>生效。通过仓库工具栏的「仓库设置」打开，窗口顶部以 <strong>4 个标签页</strong>组织，改动仅影响该仓库，不会被其他仓库共享。</p>
+
+  <h2>四个设置标签页</h2>
+  <table>
+    <thead>
+      <tr><th>标签页</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>通用（General）</td><td>本仓库的用户标识与差异视图外观</td></tr>
+      <tr><td>提交（Commit）</td><td>本仓库的提交行为与提交消息相关项</td></tr>
+      <tr><td>问题跟踪器（Issue Tracker）</td><td>绑定第三方问题跟踪系统的集成</td></tr>
+      <tr><td>自定义命令（Custom Commands）</td><td>为本仓库单独维护的自定义 Git 命令菜单</td></tr>
+    </tbody>
+  </table>
+
+  <figure>
+    <img src="screenshots/22-repo-settings/01-repo-settings-general.png" alt="仓库设置 - 通用页" loading="lazy">
+    <figcaption>图 22-1　仓库设置「通用」页：顶部为 4 个标签页（通用/提交/问题跟踪器/自定义命令）</figcaption>
+  </figure>
+
+  <h2>通用页（General）</h2>
+  <p>「通用」页集中管理<strong>本仓库</strong>的提交身份与差异外观，其配置只写回该仓库的本地 Git 配置，不会污染全局：</p>
+  <ul>
+    <li><strong>用户信息</strong>：
+      <ul>
+        <li>「使用全局 Git 凭据」复选框：勾选后沿用全局 Git 用户配置；取消勾选则为本仓库单独填写作者。</li>
+        <li><strong>用户名 / 邮箱</strong>字段：未勾选全局凭据时可独立设置，用于决定该仓库提交的 author/committer。</li>
+        <li><strong>头像</strong>：根据邮箱显示 Gravatar 头像，「在此修改头像」链接前往 <code>gravatar.com</code>。</li>
+      </ul>
+    </li>
+    <li><strong>差异视图</strong>：
+      <ul>
+        <li><strong>制表符宽度</strong>：Diff 编辑器中 Tab 符按几个空格渲染（默认 4），影响缩进一致性差文件的比对可读性。</li>
+      </ul>
+    </li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/22-repo-settings/01-repo-settings-general.png" alt="仓库设置 - 通用页详情" loading="lazy">
+    <figcaption>图 22-2　通用页详情：用户信息区（使用全局 Git 凭据、用户名 Test、邮箱 test@example.com、头像）与差异视图的「制表符宽度」</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>仓库级配置优先级高于全局。若在一个「工作用」仓库里需要与个人全局身份不同的提交作者，取消勾选「使用全局 Git 凭据」单独填写即可，既不影响其他仓库，也不改动 <code>~/.gitconfig</code>。</div>
+
+  <h2>其余标签页</h2>
+  <ul>
+    <li><strong>提交</strong>：设置本仓库提交时的默认行为（如是否启用消息模板、Diff 上下略等于提交相关的呈现偏好）。</li>
+    <li><strong>问题跟踪器</strong>：为分支/提交的引用提供「关联 #issue」之类的外部系统集成能力。</li>
+    <li><strong>自定义命令</strong>：维护仅本仓库可见的自定义命令条目，便于按团队规范预置常用操作。</li>
+  </ul>
+
+  <p>窗口底部为「关闭」按钮。各选项在改动后即生效，并写回该仓库的本地 Git 配置。</p>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 22 章 · 仓库设置
+</footer>
+</body>
+</html>
