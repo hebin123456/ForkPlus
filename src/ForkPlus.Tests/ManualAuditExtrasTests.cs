@@ -135,7 +135,7 @@ namespace ForkPlus.Tests
 						Assert.True(bar.NotificationTextBlock.IsVisible, "通知条文本应可见");
 						Assert.True(bar.Button1.IsVisible && bar.Button2.IsVisible && bar.Button3.IsVisible
 							&& bar.AbortButton.IsVisible, "Good/Bad/Skip/Abort 四键应可见");
-						ManualScreenshotHelper.Snap(window, "01-bisect-notification-bar", "11-history-rewrite");
+						ManualScreenshotHelper.Snap(window, "09-bisect-notification-bar", "11-history-rewrite");
 
 						// 收敛收尾,防止遗留 BISECT_START 污染后续测试
 						WaitForRepositoryPipelineIdle(repoControl, "bisect reset");
@@ -250,7 +250,7 @@ namespace ForkPlus.Tests
 						}), "子仓 tab 应完成布局");
 						System.Threading.Tasks.Task.Delay(400).GetAwaiter().GetResult();
 						Dispatcher.UIThread.RunJobs();
-						ManualScreenshotHelper.Snap(window, "02-gitmm-subrepo-tabs", "18-gitmm");
+						ManualScreenshotHelper.Snap(window, "07-gitmm-subrepo-tabs", "18-gitmm");
 
 						Point? pressAt = PointIn(tabA, window, 0.5, 0.5);
 						Point? dropAt = PointIn(tabB, window, 0.75, 0.5);
@@ -263,7 +263,7 @@ namespace ForkPlus.Tests
 						Assert.True(order.Length == 2 && order[0] == "repoB" && order[1] == "repoA",
 							"拖拽后子仓 tab 应换位为 [repoB, repoA](实际:[" + string.Join(", ", order) + "])");
 						Assert.True(tabA.IsSelected, "拖拽完成后被拖子仓 tab 应被选中");
-						ManualScreenshotHelper.Snap(window, "03-gitmm-subrepo-tabs-reordered", "18-gitmm");
+						ManualScreenshotHelper.Snap(window, "08-gitmm-subrepo-tabs-reordered", "18-gitmm");
 
 						HeadlessAppBootstrap.TakeCapturedErrorDialogs();
 					}
