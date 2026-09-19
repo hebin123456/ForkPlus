@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 18 章 · Git Mm 工作区 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 18 章 · Git Mm 工作区</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-17-gitflow.html">GitFlow</a>
+  <a href="ch-18-gitmm.html" class="active">Git Mm</a>
+  <a href="ch-19-lfs.html">Git LFS</a>
+  <a href="ch-20-viewers.html">查看器</a>
+  <a href="ch-21-preferences.html">偏好设置</a>
+</nav>
+<main class="manual-main">
+  <p><strong>Git Mm</strong> 是一种以子仓库（sub-repo）为核心的源码管理扩展：一个「工作区」通过 <code>manifest</code> 清单引用若干外部仓库并通过相对路径组合出完整源码树。ForkPlus 可以识别这类工作区（含 <code>.mm</code> / <code>.repo</code> 标记目录），并为其中的子仓库提供 <strong>开始（Start）/ 同步（Sync）/ 上传（Upload）</strong> 等常用操作。</p>
+
+  <div class="tip"><strong>小贴士：</strong>Git Mm 操作依赖单独的 <code>git-mm</code> 命令行工具（3.x）并需要它位于 PATH 中（或在偏好设置里配置其路径）。若未安装，ForkPlus 会弹窗提示 Git Mm 功能不可用，但仓库仍可作为普通仓库浏览。</div>
+
+  <h2>初始化 Git Mm 工作区</h2>
+  <p>打开「初始化 Git Mm」窗口，填写三类信息：</p>
+  <ul>
+    <li><strong>清单地址 Manifest URL</strong>：引用子仓库清单的远端仓库地址。</li>
+    <li><strong>父目录 Parent Directory</strong>：工作区将被创建在该目录下。</li>
+    <li><strong>仓库名 Repository Name</strong>：工作区目录名。</li>
+  </ul>
+  <p>窗口下方实时预览将执行的命令（如 <code>git mm init -u &lt;manifest&gt; -m dependency.xml -b master -g default</code>），确认后提交。</p>
+
+  <figure>
+    <img src="screenshots/18-gitmm/01-gitmm-init.png" alt="初始化 Git Mm 工作区窗口" loading="lazy">
+    <figcaption>图 18-1　初始化 Git Mm 工作区：填写清单地址、父目录、仓库名，下方为命令预览</figcaption>
+  </figure>
+
+  <h2>Git Mm 工作区标签页</h2>
+  <p>打开一个含 <code>.mm</code>（或 <code>.repo</code>）标记目录的路径，ForkPlus 会识别它是一个 Git Mm 工作区，并以专用的 <strong>Git Mm 标签页</strong>打开：标签标题以 <code>git mm: &lt;工作区名&gt;</code> 标识，并显示工作区根路径。该标签页归纳了工作区内各子仓库的状态。</p>
+
+  <figure>
+    <img src="screenshots/18-gitmm/02-gitmm-workspace.png" alt="Git Mm 工作区标签页" loading="lazy">
+    <figcaption>图 18-2　Git Mm 工作区标签页：识别 .mm 目录并以 git mm 标识打开，显示工作区路径</figcaption>
+  </figure>
+
+  <h2>子仓库操作：Start / Sync / Upload</h2>
+  <p>针对工作区内的子仓库，ForkPlus 提供三个操作窗口。它们都先显示对应的 <code>git mm</code> 命令预览，并有「复制命令」按钮供手动粘贴执行：</p>
+  <ul>
+    <li><strong>开始 Start</strong>：为选中的子仓库在指定目标分支上开始一个任务（新分支）。</li>
+    <li><strong>同步 Sync</strong>：把子仓库与清单声明的版本同步（拉取并检出到目标提交）。</li>
+    <li><strong>上传 Upload</strong>：把子仓库的本地改动推送到远端，便于他人同步。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/18-gitmm/03-gitmm-start.png" alt="Git Mm 开始子仓库任务" loading="lazy">
+    <figcaption>图 18-3　开始（Start）窗口：选择子仓库与目标分支，预览 git mm start 命令</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/18-gitmm/04-gitmm-sync.png" alt="Git Mm 同步窗口" loading="lazy">
+    <figcaption>图 18-4　同步（Sync）窗口：把子仓库同步到清单声明的版本，含命令预览</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/18-gitmm/05-gitmm-upload.png" alt="Git Mm 上传窗口" loading="lazy">
+    <figcaption>图 18-5　上传（Upload）窗口：推送子仓库本地改动到远端</figcaption>
+  </figure>
+
+  <div class="warn"><strong>注意：</strong>Git Mm 的真正同步/上传会改写子仓库 <code>HEAD</code> 或推送远端，请在确认当前分支干净、无未提交改动后再执行。为确保版本一致，建议先「同步」再在子仓库内开发，最后「上传」分享改动。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 18 章 · Git Mm 工作区
+</footer>
+</body>
+</html>

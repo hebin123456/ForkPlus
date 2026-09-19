@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 17 章 · GitFlow 工作流 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 17 章 · GitFlow 工作流</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-17-gitflow.html" class="active">GitFlow</a>
+  <a href="ch-18-gitmm.html">Git Mm</a>
+  <a href="ch-19-lfs.html">Git LFS</a>
+  <a href="ch-20-viewers.html">查看器</a>
+  <a href="ch-21-preferences.html">偏好设置</a>
+</nav>
+<main class="manual-main">
+  <p><strong>GitFlow</strong> 是一套基于分支的功能开发流程：常驻 <code>develop</code> 分支汇集开发，从它派生 <code>feature/</code> 功能分支；临近发布时从 <code>develop</code> 派生 <code>release/</code> 分支；线上紧急修复从 <code>main</code> 派生 <code>hotfix/</code>。ForkPlus 为这些操作提供了图形化窗口，会自动生成对应的 <code>git flow</code> 命令并给出命令预览。</p>
+
+  <div class="tip"><strong>小贴士：</strong>GitFlow 操作会调用 <code>git-flow</code> 插件。若仓库尚未初始化 git-flow，请先在下方「初始化 GitFlow」窗口完成初始化；初始化信息（主分支 <code>main</code>、开发分支 <code>develop</code>、功能前缀 <code>feature/</code>）会预填为常用默认值。</div>
+
+  <h2>初始化 GitFlow</h2>
+  <p>首次使用前，打开「初始化 GitFlow」窗口。ForkPlus 会自动预填：</p>
+  <ul>
+    <li><strong>主分支 Master</strong>：<code>main</code>（生产分支，通常为默认分支）。</li>
+    <li><strong>开发分支 Develop</strong>：<code>develop</code>（日常集成开发的分支）。</li>
+    <li><strong>功能分支前缀 Feature Prefix</strong>：<code>feature/</code>。</li>
+  </ul>
+  <p>窗口下方实时显示将执行的命令<strong>预览</strong>（<code>git flow init</code>）。确认后提交即完成初始化。</p>
+
+  <figure>
+    <img src="screenshots/17-gitflow/01-gitflow-init.png" alt="GitFlow 初始化窗口" loading="lazy">
+    <figcaption>图 17-1　初始化 GitFlow 窗口：主分支/开发分支/功能前缀已预填，下方显示命令预览</figcaption>
+  </figure>
+
+  <h2>功能分支 Feature Start</h2>
+  <p>在已初始化的仓库中，打开「开始新功能」窗口，输入功能分支名（如 <code>login</code>）。ForkPlus 据此生成 <code>git flow feature start login</code>，从 <code>develop</code> 派生一个名为 <code>feature/login</code> 的分支并检出。功能开发完成后，可再用对应的「完成功能」操作合并回 <code>develop</code>。</p>
+
+  <figure>
+    <img src="screenshots/17-gitflow/02-gitflow-feature-start.png" alt="开始新功能分支" loading="lazy">
+    <figcaption>图 17-2　开始功能分支：输入功能名 login，预览命令为 git flow feature start login</figcaption>
+  </figure>
+
+  <h2>发布分支 Release</h2>
+  <p>功能开发告一段落、准备发布时，通过「开始发布」窗口从 <code>develop</code> 派生 <code>release/&lt;版本号&gt;</code> 分支。在发布分支上只做版本号调整与 bug 修复，不新加功能。</p>
+
+  <figure>
+    <img src="screenshots/17-gitflow/03-gitflow-release-start.png" alt="开始发布分支" loading="lazy">
+    <figcaption>图 17-3　开始发布分支：输入版本号 2.0，预览命令为 git flow release start 2.0 develop</figcaption>
+  </figure>
+
+  <h2>热修复分支 Hotfix</h2>
+  <p>线上出现紧急问题时，从 <code>main</code> 派生 <code>hotfix/&lt;名称&gt;</code> 分支（如 <code>patch-1</code>），修复后同时合并回 <code>main</code> 与 <code>develop</code>，保证两端都包含本次修复。</p>
+
+  <figure>
+    <img src="screenshots/17-gitflow/04-gitflow-hotfix-start.png" alt="开始热修复分支" loading="lazy">
+    <figcaption>图 17-4　开始热修复分支：输入 hotfix 名称 patch-1，从 main 派生修复分支</figcaption>
+  </figure>
+
+  <div class="warn"><strong>注意：</strong>feature / release / hotfix 的「开始」窗口都只负责<em>创建并检出</em>新分支；对应的「完成」（finish）操作会执行合并与清理，属于较重的流程动作，请确认当前分支与工作区状态后再执行。</div>
+
+  <h2>使用建议</h2>
+  <ul>
+    <li>保持 <code>develop</code> 始终可部署：功能成熟后再合并进去。</li>
+    <li>每个功能一个独立 <code>feature/</code> 分支，便于并行开发与回滚。</li>
+    <li>发布版本号语义化（如 <code>2.0</code>），便于热修复回溯。</li>
+  </ul>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 17 章 · GitFlow 工作流
+</footer>
+</body>
+</html>
