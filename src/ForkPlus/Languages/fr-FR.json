@@ -656,6 +656,8 @@
     "Delete local branch from your repository": "Supprimer la branche locale de votre dépôt",
     "Delete local branches from your repository": "Supprimer les branches locales de votre dépôt",
     "Delete remote '{0}'": "Supprimer le distant '{0}'",
+    "Delete remote repository reference": "Supprimer la référence du dépôt distant",
+    "Delete Remote": "Supprimer le dépôt distant",
     "Delete stash after applying": "Supprimer le remisage après application",
     "Delete stash from your repository": "Supprimer le remisage de votre dépôt",
     "Delete stashes from your repository": "Supprimer les remisages de votre dépôt",

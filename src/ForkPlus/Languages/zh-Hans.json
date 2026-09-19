@@ -659,6 +659,8 @@
     "Delete local branch from your repository": "从仓库中删除本地分支",
     "Delete local branches from your repository": "从仓库中删除本地分支",
     "Delete remote '{0}'": "删除远端 '{0}'",
+    "Delete remote repository reference": "删除远端仓库引用",
+    "Delete Remote": "删除远端",
     "Delete stash after applying": "应用后删除贮藏",
     "Delete stash from your repository": "从仓库中删除贮藏",
     "Delete stashes from your repository": "从仓库中删除贮藏",

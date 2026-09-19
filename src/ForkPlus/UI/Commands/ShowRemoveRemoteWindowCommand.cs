@@ -19,22 +19,16 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl, GitModule gitModule, Remote remote)
 		{
-			if (!new MessageBoxWindow("Are you sure you want to delete reference to remote '" + remote.Name + "'?", "Do you want to delete '" + remote.Name + "'?", "Delete", "Cancel", showCancelButton: true, 550.0).ShowDialog().GetValueOrDefault())
+			RemoveRemoteWindow removeRemoteWindow = new RemoveRemoteWindow(repositoryUserControl, remote);
+			if (!removeRemoteWindow.ShowDialog().GetValueOrDefault())
 			{
 				return;
 			}
-			repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Delete remote '{0}'", remote.Name), delegate(JobMonitor monitor)
+			if (!removeRemoteWindow.GitResult.Succeeded)
 			{
-				GitCommandResult removeRemoteResult = new RemoveRemoteGitCommand().Execute(gitModule, remote, monitor);
-				repositoryUserControl.Dispatcher.Post(delegate
-				{
-					if (!removeRemoteResult.Succeeded && !monitor.IsCanceled)
-					{
-						new ErrorWindow(repositoryUserControl, removeRemoteResult.Error).ShowDialog();
-					}
-					repositoryUserControl.InvalidateAndRefresh(SubDomain.Revisions | SubDomain.Remotes | SubDomain.References);
-				});
-			}, JobFlags.SaveToLog);
+				new ErrorWindow(repositoryUserControl, removeRemoteWindow.GitResult.Error).ShowDialog();
+			}
+			repositoryUserControl.InvalidateAndRefresh(SubDomain.Revisions | SubDomain.Remotes | SubDomain.References);
 		}
 	}
 }

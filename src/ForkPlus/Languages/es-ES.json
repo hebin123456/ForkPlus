@@ -656,6 +656,8 @@
     "Delete local branch from your repository": "Eliminar rama local de tu repositorio",
     "Delete local branches from your repository": "Eliminar ramas locales de tu repositorio",
     "Delete remote '{0}'": "Eliminar remoto '{0}'",
+    "Delete remote repository reference": "Eliminar la referencia al repositorio remoto",
+    "Delete Remote": "Eliminar remoto",
     "Delete stash after applying": "Eliminar stash después de aplicar",
     "Delete stash from your repository": "Eliminar stash de tu repositorio",
     "Delete stashes from your repository": "Eliminar stashes de tu repositorio",

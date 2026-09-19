@@ -656,6 +656,8 @@
     "Delete local branch from your repository": "リポジトリからローカルブランチを削除",
     "Delete local branches from your repository": "リポジトリからローカルブランチを削除",
     "Delete remote '{0}'": "リモート '{0}' を削除",
+    "Delete remote repository reference": "リモートリポジトリの参照を削除",
+    "Delete Remote": "リモートを削除",
     "Delete stash after applying": "適用後にスタッシュを削除",
     "Delete stash from your repository": "リポジトリからスタッシュを削除",
     "Delete stashes from your repository": "リポジトリからスタッシュを削除",

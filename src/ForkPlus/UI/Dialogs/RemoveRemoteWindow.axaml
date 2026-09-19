@@ -1,0 +1,10 @@
+<dialogs:ForkPlusDialogWindow Width="460" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.RemoveRemoteWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <TextBlock Grid.Column="0" Margin="0,2,10,2" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" x:Name="RemoteNameTextBlock" />
+    <TextBlock Grid.Column="1" Margin="0,2,0,2" FontSize="13" VerticalAlignment="Center" TextWrapping="Wrap" x:Name="DescriptionTextBlock" />
+  </Grid>
+</dialogs:ForkPlusDialogWindow>
