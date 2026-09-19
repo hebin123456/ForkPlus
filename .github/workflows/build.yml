@@ -39,6 +39,15 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      # 常规 CI(push tag / 默认手动)只跑核心 + E2E 门禁(约 2 分钟)。
+      # 仅在显式勾选此开关时,才额外运行 42 个 Manual 截图测试(较耗时,单次 ~30-60min),
+      # 用于 UI 变更后重新产生 docs/manual/screenshots/ 插图。
+      regenerate_screenshots:
+        description: '重新生成用户手册截图(运行 Manual 截图测试,耗时较长)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: build-${{ github.ref }}
@@ -305,20 +314,20 @@ jobs:
   #               core-a 是纯否定式 filter，须显式排除 AskPass/RI/AutoUpdaterTests
   #               命名空间（否则 solution 级命令会把这三个小工程的用例吸进来，与
   #               e2e-1 片重叠——该重叠正是"分片完整性守卫"在开发期实锤抓到的第一只虫）。
-  #   manual     在 2026-09-19(v4.1.6) 起单独成片，随即分成 manual-a/b/c 三个子片。
-  #               背景：5 个 Manual 截图类约 42 个重量级 headless UI 用例（每用例要
-  #               渲染窗口/拉真实 git 场景/落 PNG），先前全落在 core-a（类名 Manual*
-  #               属 A-S 前缀）把 core-a 撑到 20-30+min 触发 30min 超时"阻塞"；拆出后
-  #               单片的 42 用例又撞上 60min 超时。故按类拆分三片（filter 用 ~ 包含，
-  #               各片互斥且并集覆盖全部 Manual 类，守卫生效）：
-  #                 manual-a : ManualAgentB_ChaptersTests     18 用例（最重单类）
-  #                 manual-b : ManualAgentA + ManualAgentC    8+9=17 用例
-  #                 manual-c : ManualAuditExtras + ConflictAi 5+2=7 用例
-  #             三片各约 25/23/10min，均远低于 job 级 60min 上限。core-a 恢复 ~2-3min。
+  #   manual     已完成使命:它是 4.1.6 手册时期用于"生成并入库 docs/manual/screenshots/ 插图"的
+  #               42 个重型截图测试(5 个 Manual 类,每个都起 App/拉真实 git 仓库/开弹窗/截
+  #               1920×1080 全屏多张)。复用之前实测发现:这些用例单类就要好几分钟,42 个
+  #               一次跑完约 30-60min(manual-a/b/c 拆分无法根治,是数量+重量本身的问题)。
+  #               截图产物已落库(HEAD 含 142 张 PNG),无需再随每次发布重复生成,故将这些
+  #               Manual 测试整体移出"发布门禁"矩阵,改为独立按需 job
+  #               manual-screenshots(仅 workflow_dispatch 勾选 regenerate_screenshots 时跑),
+  #               不参与 release 的 needs 依赖。常规 CI(push tag / 默认手动)因此恢复到 ~2min。
+  #               下方分片守卫仍会枚举到 manual-screenshots 的 test-filter,故完整性校验不变
+  #               (新增 Manual 截图类若漏进 filter 仍会红灯,不会静默丢覆盖)。
   # 维护：新增 E2e3x 模块（E2e30+）时需显式扩 e2e-3 的 filter（E2e2 前缀覆盖不到
-  # E2e3x，且会被 core 片的 !~ 排除）；新增 Manual 截图类时需把它显式加进 manual-a/b/c
-  # 任一子片的 filter（单片已不用泛化的 `ForkPlus.Tests.Manual` 子串，避免与前两组
-  # 重叠——即使漏了，"分片完整性守卫"也会照常红灯拦截）。否则 e2e-1 里的守卫会红灯
+  # E2e3x，且会被 core 片的 !~ 排除）；新增 Manual 截图类则无需改 matrix——按需 job
+  # manual-screenshots 用泛化子串 `ForkPlus.Tests.Manual` 自动吸入（若真漏配，守卫生效，
+  # gate(+manual) 求和 != 全量时会红灯），不会静默丢覆盖。否则 e2e-1 里的守卫会红灯
   # （各片 --list-tests 求和 != 全量总数），不会静默丢覆盖。
   test:
     name: test (${{ matrix.shard }})
@@ -334,12 +343,6 @@ jobs:
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
           - shard: e2e-3
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2e3|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
-          - shard: manual-a
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAgentB"
-          - shard: manual-b
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAgentA|FullyQualifiedName~ForkPlus.Tests.ManualAgentC"
-          - shard: manual-c
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.ManualAuditExtras|FullyQualifiedName~ForkPlus.Tests.ManualConflictAndAi"
           - shard: core-a
             test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.Tests.Manual)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
           - shard: core-b
@@ -432,8 +435,14 @@ jobs:
             echo "  $n tests  <- $f"
             sum=$((sum + n))
           done
-          echo "shard sum = $sum, full total = $total"
-          if [ "$sum" -ne "$total" ]; then
+          # Manual 截图测试(42 个)不在发布门禁矩阵里(独立按需 job manual-screenshots,
+          # filter 内联在命令中,不占 test-filter: 键),此处显式作为"按需覆盖集"计入,
+          # 保证门禁分片 ∪ Manual == 全量(新增 Manual 截图类漏配仍会红灯,不静默丢覆盖)。
+          manual=$(dotnet test ForkPlus.sln --no-build --list-tests --nologo --filter "FullyQualifiedName~ForkPlus.Tests.Manual" 2>/dev/null | grep -c '^    ' || true)
+          echo "  $manual tests  <- (on-demand) ForkPlus.Tests.Manual"
+          gate=$((sum + manual))
+          echo "gate(+manual) sum = $gate, full total = $total"
+          if [ "$gate" -ne "$total" ]; then
             echo "::error::分片不完整（sum=$sum != total=$total）：有测试类落在所有分片 filter 之外，或分片间有重叠。新增 E2e3x 模块需显式扩 e2e-3 的 filter。"
             exit 1
           fi
@@ -454,6 +463,57 @@ jobs:
           path: docs/evidence/
           retention-days: 7
           if-no-files-found: ignore
+
+  # ── 手册截图(按需,不进发布门禁)──
+  # 仅在 workflow_dispatch 勾选 regenerate_screenshots 时运行;push tag 自动跳过。
+  # 运行全部 42 个 Manual 截图测试,重新生成 docs/manual/screenshots/ 插图(产物已入库,
+  # 常规 CI 无需重复生成)。job 名 manual-screenshots 独立于 test 矩阵,release 不依赖它,
+  # 即截图重跑慢/失败都不会阻塞发布。
+  manual-screenshots:
+    name: manual-screenshots (on-demand)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.regenerate_screenshots == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download OxyPlot.Avalonia nupkg
+        shell: bash
+        run: |
+          mkdir -p third_party/nuget
+          base="https://github.com/hebin123456/oxyplot-avalonia/releases/latest/download"
+          asset="OxyPlot.Avalonia.2.1.2-avalonia12.1.nupkg"
+          out="third_party/nuget/$asset"
+          echo "Downloading $asset ..."
+          ok=0
+          for i in 1 2 3 4 5; do
+            if curl -fsSL --retry 3 "$base/$asset" -o "$out"; then ok=1; break; fi
+            echo "attempt $i failed, retrying in $((i*5))s..."
+            sleep $((i*5))
+          done
+          [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+          size=$(wc -c < "$out")
+          [ "$size" -gt 10000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
+      - name: Install modern git (>= 2.44)
+        shell: bash
+        run: |
+          sudo add-apt-repository -y ppa:git-core/ppa
+          sudo apt-get update
+          sudo apt-get install -y git
+          git --version
+      - name: Install gitflow-avh
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/petervanderdoes/gitflow-avh.git /tmp/gitflow-avh
+          sudo make -C /tmp/gitflow-avh install
+          git flow version
+      - name: Run Manual screenshot tests
+        shell: bash
+        run: dotnet test ForkPlus.sln --nologo --filter "FullyQualifiedName~ForkPlus.Tests.Manual"
 
   # ── 发布（仅 tag 触发；手动 workflow_dispatch 只跑 build+test 不发 Release）──
   # build + test 全绿后：下载四平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，

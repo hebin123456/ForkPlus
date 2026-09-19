@@ -49,9 +49,14 @@ namespace ForkPlus.UI.Dialogs
 				bool valueOrDefault = ShowWorkspaceInTitleCheckBox.IsChecked.GetValueOrDefault();
 				ForkPlusSettings.Default.Workspaces.Update(array, activeWorkspace, valueOrDefault);
 				ForkPlusSettings.Default.Save();
-				MainWindow.Instance.TabManager.RestoreSession();
-				MainWindow.Instance.Toolbar.RefreshWorkspacesButton();
-				MainWindow.Instance.RefreshTitle();
+				// 关闭时若无主窗口（如 headless 截图测试只开本对话框未开主窗口）跳过刷新，
+				// 避免 MainWindow.Instance 空引用崩溃。
+				if (MainWindow.Instance != null)
+				{
+					MainWindow.Instance.TabManager.RestoreSession();
+					MainWindow.Instance.Toolbar.RefreshWorkspacesButton();
+					MainWindow.Instance.RefreshTitle();
+				}
 			}
 			base.OnClosing(e);
 		}
