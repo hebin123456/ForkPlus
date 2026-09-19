@@ -64,6 +64,10 @@
     <figcaption>图 24-3　「AI 辅助开发」：发送需求「Add a Main method to App class」后 AI 进入排队/响应状态；支持 Enter 发送、会话记忆</figcaption>
   </figure>
 
+  <h2>AI 冲突解析</h2>
+  <p>除了上述三组窗口，AI 能力还可直接用于<strong>合并冲突的自动解决</strong>：当合并（或拉取、变基、应用 Stash）引发冲突时，可在冲突视图中点击 <strong>🤖 AI 解决冲突</strong> 按钮，让 AI 读取带冲突标记的文件并智能合并两侧变更、去除冲突标记；确认应用后写回并暂存。</p>
+  <p>其模型与后端同样取自「偏好设置 → AI」页的 <em>AI 检视设置</em>，无需单独配置。详细步骤（如何配置 AI、点击 AI 解析按钮、查看合并结果与确认写回）见 <a href="ch-14-conflicts.html">第 14 章 · 合并冲突解决</a> 的「AI 辅助解决冲突」一节。</p>
+
   <div class="tip"><strong>小贴士：</strong>AI 功能以本地假服务（stub 模型）验证时返回占位响应；接入真实模型后，提交编排、代码审查与开发助手的输出质量取决于所选模型与后端配置。请在「偏好设置 → AI」页填写可用的 API 端点与密钥。</div>
 </main>
 <footer class="manual-footer">

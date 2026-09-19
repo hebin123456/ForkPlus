@@ -44,9 +44,45 @@
 
   <p>三方窗口中原有的冲突标记（<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>、<code>=======</code>、<code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>）会被解析为可逐块选择的冲突块；完成编辑后，ForkPlus 会应用合并结果并移除标记。</p>
 
+  <figure>
+    <img src="screenshots/14-conflicts/03-side-by-side-merge.png" alt="三方并排合并编辑器" loading="lazy">
+    <figcaption>图 14-3　三方并排合并编辑器：本地 / 合并结果 / 远程 三列</figcaption>
+  </figure>
+
   <div class="note"><strong>提示：</strong>如果希望直接采用其中一侧并丢弃另一侧，使用冲突视图顶部的「选择本地 / 选择远程」更快捷；三方合并编辑器适合需要逐块混合两方的复杂场景。</div>
 
   <div class="tip"><strong>小贴士：</strong>做完选择后记得暂存并提交合并结果。若想放弃合并返回合并前的状态，可参考「历史改写」章节的 Reset 操作。</div>
+
+  <h2>AI 辅助解决冲突</h2>
+  <p>ForkPlus 可以借助 AI 自动合并冲突，免去逐块手动选择。使用前请先在「偏好设置 → AI」中配置 AI 检视服务地址、API 密钥与模型（即 <em>AI 检视设置</em>）。配置完成后，进入冲突视图即可看到 <strong>🤖 AI 解决冲突</strong> 按钮。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/04-ai-resolve-button.png" alt="配置 AI 后的冲突视图" loading="lazy">
+    <figcaption>图 14-4　配置 AI 后，冲突视图显示「AI 解决冲突」按钮</figcaption>
+  </figure>
+
+  <p>点击 <strong>AI 解决冲突</strong> 按钮，ForkPlus 会读取当前工作区中仍带冲突标记（<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> / <code>=======</code> / <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>）的文件内容，连同文件清单发送给 AI，要求其智能合并两侧变更、保留非冲突上下文并去除所有标记。处理过程中按钮会进入忙碌状态并显示进度。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/05-ai-resolving.png" alt="AI 正在解决冲突" loading="lazy">
+    <figcaption>图 14-5　AI 正在读取带冲突标记的文件并生成合并结果（忙碌状态）</figcaption>
+  </figure>
+
+  <p>AI 返回合并结果后，ForkPlus 会先校验其中不再残留冲突标记，再弹出确认对话框，把「AI 已解决所有冲突。是否应用解决后的内容？」展示给你。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/06-ai-resolve-confirm.png" alt="AI 冲突解析确认" loading="lazy">
+    <figcaption>图 14-6　AI 返回合并结果，等待用户确认</figcaption>
+  </figure>
+
+  <p>确认「应用」后，ForkPlus 会将 AI 生成的合并内容写回文件、暂存到索引并刷新冲突视图，冲突被解决。建议在应用后审阅最终内容再提交。</p>
+
+  <figure>
+    <img src="screenshots/14-conflicts/07-ai-resolved.png" alt="AI 冲突已解决" loading="lazy">
+    <figcaption>图 14-7　AI 解析结果已写回，冲突标记全部移除</figcaption>
+  </figure>
+
+  <div class="note"><strong>提示：</strong>AI 解析用于快速「兜底」，输出仍可能存在不完美之处。建议按需利用三方合并编辑器复核，或在确认前自行核对合并结果。</div>
 </main>
 <footer class="manual-footer">
   ForkPlus 用户手册 · 第 14 章 · 合并冲突解决
