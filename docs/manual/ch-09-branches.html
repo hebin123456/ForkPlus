@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 章 · 分支操作 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 9 章 · 分支操作</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html" class="active">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>分支列表总览</h2>
+  <p>打开仓库后，会在侧边栏/提交图区域展示当前仓库的全部分支。主界面会标注当前检出的活跃分支、每个本地分支指向的提交，以及工作区状态，方便你快速掌握仓库拓扑。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/01-branch-list.png" alt="分支列表总览" loading="lazy">
+    <figcaption>图 9-1　仓库主界面中的分支列表 / 侧边栏 / 提交图</figcaption>
+  </figure>
+
+  <p>本示例仓库包含 <code>main</code> 与两条特性分支（<code>feature/one</code>、<code>feature/two</code>），分别含各自的独立提交。你可以在一个启动的对话框中创建、检出、重命名或删除分支。</p>
+
+  <h2>创建分支</h2>
+  <p>在「新建分支」对话框中输入合法的分支名，即可基于当前活跃分支创建新分支。输入名称时，对话框底部会实时预览将要执行的 <code>git</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/02-create-branch.png" alt="创建分支对话框" loading="lazy">
+    <figcaption>图 9-2　创建新分支：输入分支名并预览 git 命令</figcaption>
+  </figure>
+
+  <div class="note"><strong>提示：</strong>分支名不能为空或非法；两者任一不满足时「创建」按钮会禁用，并在命令预览中以占位符 <code>&lt;branch-name&gt;</code> 展示命令骨架。你也可以选择是否在创建后立即检出该分支。</div>
+
+  <h2>检出分支</h2>
+  <p>「检出分支」对话框列出可以切换的目标分支。选定后点击确定，工作区将检出到目标分支。切换前请确保没有会阻塞检出的未提交改动。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/03-checkout-branch.png" alt="检出分支对话框" loading="lazy">
+    <figcaption>图 9-3　检出分支：选择要切换到的分支</figcaption>
+  </figure>
+
+  <h2>重命名分支</h2>
+  <p>「重命名本地分支」对话框允许你为已有分支换一个新名字。输入新名后会即时预览 <code>git branch -m</code> 命令，确认后执行重命名。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/04-rename-branch.png" alt="重命名分支对话框" loading="lazy">
+    <figcaption>图 9-4　重命名分支：输入新名称并预览命令</figcaption>
+  </figure>
+
+  <h2>删除本地分支</h2>
+  <p>「删除本地分支」对话框以列表形式展示可选分支。你可以勾选一个或多个分支进行删除，并决定是否同时删除对应的远程分支。如果分支有未合并的提交，删除前需要确认强制删除。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/05-remove-local-branch.png" alt="删除本地分支对话框" loading="lazy">
+    <figcaption>图 9-5　删除本地分支：选择分支并从列表移除</figcaption>
+  </figure>
+
+  <h2>检测分支为 Worktree</h2>
+  <p>除了在主工作区检出分支，你还可以把某个分支「检出为 Worktree」——在独立目录中检出该分支，实现并行开发互不干扰。对话框会自动派生一个合法的落地路径，也可自行调整。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/06-checkout-as-worktree.png" alt="检出分支为 Worktree 对话框" loading="lazy">
+    <figcaption>图 9-6　检出分支为 Worktree：自动派生目标目录并执行 <code>git worktree add</code></figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>使用 Worktree 可以同时检出多个分支而无需切换主工作区；每个 Worktree 拥有独立的工作目录与索引，非常适合并行维护多个版本。</div>
+
+  <h2>跟踪远程分支</h2>
+  <p>当远程出现了本地不存在的新分支时，可选中该远程分支并「跟踪」它——在本地创建对应分支并建立上下游关系（<code>--track</code>/<code>--set-upstream</code>），之后 <code>fetch/pull/push</code> 都会默认处理该分支。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/07-track-remote-branch.png" alt="跟踪远程分支对话框" loading="lazy">
+    <figcaption>图 9-7　跟踪远程分支：为本地建立到远程分支的追踪关系</figcaption>
+  </figure>
+
+  <h2>推送多个分支</h2>
+  <p>「推送多分支」对话框集中列出可推送的本地分支并预选目标远程。你可以一次性选择多个分支推送到远程（写远端的同一个 <code>origin</code>），并预览对应的 <code>git push</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/09-branches/08-push-multiple-branches.png" alt="推送多分支对话框" loading="lazy">
+    <figcaption>图 9-8　推送多分支：选择目标远程与多个待推送分支</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>推送到新建分支时，对话框会单独展示追踪与命令预览，详见「远程交互」章节。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 9 章 · 分支操作
+</footer>
+</body>
+</html>

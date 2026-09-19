@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 10 章 · 标签操作 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 10 章 · 标签操作</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html" class="active">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>创建标签</h2>
+  <p>在「创建标签」对话框中输入标签名，并可附加说明消息。选择目标提交后，对话框底部会实时预览要执行的 <code>git tag</code> 命令（附注标签默认使用 <code>-a</code> 与 <code>-m</code>）。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/01-create-tag.png" alt="创建标签对话框" loading="lazy">
+    <figcaption>图 10-1　创建标签：输入名称、消息并预览 git 命令</figcaption>
+  </figure>
+
+  <h2>标签详情：附注标签</h2>
+  <p>选择某个标签后可查看其详情窗口。附注标签（annotated）带有创建者、创建时间、消息与指向的对象类型，并展示其所指的提交信息，便于追溯发布版本。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/02-tag-details-annotated.png" alt="附注标签详情窗口" loading="lazy">
+    <figcaption>图 10-2　附注标签详情：作者、日期、消息与指向提交</figcaption>
+  </figure>
+
+  <h2>标签详情：轻量标签</h2>
+  <p>轻量标签（lightweight）只是某个提交的直接引用，不携带独立的标签对象。在详情窗口中会如实展示它直接指向提交、而没有标签自身的作者/消息字段。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/03-tag-details-lightweight.png" alt="轻量标签详情窗口" loading="lazy">
+    <figcaption>图 10-3　轻量标签详情：直接指向提交、无独立标签对象</figcaption>
+  </figure>
+
+  <h2>删除多个标签</h2>
+  <p>「删除标签」对话框以列表形式展示标签。可以勾选一个或多个标签批量删除，并选择是否同时从远程删除（对应 <code>git push origin :refs/tags/&lt;name&gt;</code>）。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/04-remove-tags-multi.png" alt="删除多标签对话框" loading="lazy">
+    <figcaption>图 10-4　删除多个标签：列表多选并移除</figcaption>
+  </figure>
+
+  <h2>创建并推送标签</h2>
+  <p>创建标签时勾选「创建后推送到远程」，会在本地创建标签后立即 <code>git push</code> 到选中远程；命令预览随之切换为包含推送的完整命令链。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/05-create-tag-push.png" alt="创建并推送标签" loading="lazy">
+    <figcaption>图 10-5　创建标签并推送：勾选推送开关预览完整命令</figcaption>
+  </figure>
+
+  <h2>删除标签并同步远程</h2>
+  <p>当你需要删除某个标签时，可勾选「同时从远程删除」。此时对话框会在本地删除之外，追加远程删除命令，保证远端标签一并清理。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/06-remove-tag-remote.png" alt="删除标签并删除远程标签" loading="lazy">
+    <figcaption>图 10-6　删除标签并从远程删除：两级命令预览</figcaption>
+  </figure>
+
+  <h2>推送单个标签</h2>
+  <p>对单个标签，可单独发起推送使其在远程出现。选定目标远程后，窗口会预览 <code>git push origin &lt;tag&gt;</code> 对应的推送命令。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/07-push-tag.png" alt="推送单个标签" loading="lazy">
+    <figcaption>图 10-7　推送单个标签到远程</figcaption>
+  </figure>
+
+  <h2>推送多个标签</h2>
+  <p>多条标签需要同步到远程时，可一次勾选多个标签批量推送，避免逐条操作。命令预览会汇总为一次远程推送。</p>
+
+  <figure>
+    <img src="screenshots/10-tags/08-push-tags-multi.png" alt="推送多标签" loading="lazy">
+    <figcaption>图 10-8　一次推送多个标签到远程</figcaption>
+  </figure>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 10 章 · 标签操作
+</footer>
+</body>
+</html>
