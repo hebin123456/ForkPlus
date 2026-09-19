@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 16 章 · 补丁与快照 · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 16 章 · 补丁与快照</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html" class="active">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>保存补丁：单个修订</h2>
+  <p>「保存为补丁」对话框把一个或多个提交导出为 .patch 文件。选择单个修订后，revisions 列表装载出一条提交，勾选希望纳入的变更后即预览 <code>git format-patch</code> 风格的导出命令。</p>
+
+  <figure>
+    <img src="screenshots/16-patch-snapshot/01-save-as-patch.png" alt="保存单个修订补丁" loading="lazy">
+    <figcaption>图 16-1　保存补丁：单个修订导出</figcaption>
+  </figure>
+
+  <h2>保存补丁：范围模式</h2>
+  <p>当需要把一段连续的提交导出为补丁时，可指定范围（起始到当前），“revisions” 列表会装载范围内的全部提交，你可统一勾选后一次性导出，便于把一段功能迁移到其他仓库或分支。</p>
+
+  <figure>
+    <img src="screenshots/16-patch-snapshot/02-save-as-patch-range.png" alt="保存范围修订补丁" loading="lazy">
+    <figcaption>图 16-2　保存补丁：范围模式下装载多条提交</figcaption>
+  </figure>
+
+  <h2>应用补丁：从文件</h2>
+  <p>「应用补丁」对话框从本地的 .patch 文件把改动应用到当前工作区。选择文件后，对话框会解析补丁内容并确认可应用，提交按钮随即启用，对应 <code>git apply</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/16-patch-snapshot/03-apply-patch-file.png" alt="从文件应用补丁" loading="lazy">
+    <figcaption>图 16-3　应用补丁：从文件路径载入</figcaption>
+  </figure>
+
+  <h2>应用补丁：从剪贴板</h2>
+  <p>补丁也可以直接放在剪贴板中应用。选择「剪贴板」来源后，ForkPlus 读取剪贴板中的补丁文本。若勾选「创建提交」开关，则使用 <code>git am</code> 语义，把补丁作为完整提交应用到历史，而不仅写入工作区；命令预览随开关切换。</p>
+
+  <figure>
+    <img src="screenshots/16-patch-snapshot/04-apply-patch-clipboard.png" alt="从剪贴板应用补丁" loading="lazy">
+    <figcaption>图 16-4　应用补丁：剪贴板来源 + 勾选创建提交（git am）</figcaption>
+  </figure>
+
+  <h2>保存快照</h2>
+  <p>「保存快照」对话框类似 Stash 的保存，但更强调“把当前改动整体留档”：输入描述消息并决定是否纳入新文件后，它能一键把工作区改动暂存归档，方便暂时离开当前上下文，之后随时恢复。</p>
+
+  <figure>
+    <img src="screenshots/16-patch-snapshot/05-save-snapshot.png" alt="保存快照" loading="lazy">
+    <figcaption>图 16-5　保存快照：消息 + 纳入新文件开关</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>补丁适合跨仓库/跨机器传递精确的改动（与 Stash 的“留在本仓库”不同）；快照则更贴近“本地临时存档”。需要回放历史或重新应用时，可配合「历史改写」的 Revert 与「Stash 贮藏」章节理解各自定位。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 16 章 · 补丁与快照
+</footer>
+</body>
+</html>

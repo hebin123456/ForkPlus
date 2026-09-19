@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 15 章 · 子模块与 Worktree · ForkPlus 用户手册</title>
+<link rel="stylesheet" href="assets/manual.css">
+</head>
+<body>
+<header class="manual-header">
+  <h1>第 15 章 · 子模块与 Worktree</h1>
+  <p>ForkPlus 用户手册 · 版本 v4.1.5</p>
+</header>
+<nav class="manual-nav">
+  <a href="index.html">总览</a>
+  <a href="ch-09-branches.html">分支操作</a>
+  <a href="ch-10-tags.html">标签操作</a>
+  <a href="ch-11-history-rewrite.html">历史改写</a>
+  <a href="ch-12-stash.html">Stash 贮藏</a>
+  <a href="ch-13-remotes.html">远程交互</a>
+  <a href="ch-14-conflicts.html">合并冲突解决</a>
+  <a href="ch-15-submodule-worktree.html" class="active">子模块与 Worktree</a>
+  <a href="ch-16-patch-snapshot.html">补丁与快照</a>
+</nav>
+<main class="manual-main">
+  <h2>添加子模块</h2>
+  <p>「添加子模块」对话框通过指定外部仓库 URL 与目标子目录路径，把一个 Git 仓库作为子模块嵌入当前仓库。填妥后预览对应的 <code>git submodule add</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/01-add-submodule.png" alt="添加子模块" loading="lazy">
+    <figcaption>图 15-1　添加子模块：URL + 目标路径并预览命令</figcaption>
+  </figure>
+
+  <h2>子模块 Diff 视图</h2>
+  <p>当子模块的指针前进（指向了新提交）或工作区变脏时，它会在变更视图里表现为一个待处理条目。选中后用子模块 Diff 视图展示指针变化的方向与新旧提交，方便确认是否要更新并提交该子模块引用。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/02-submodule-diff.png" alt="子模块 Diff 视图" loading="lazy">
+    <figcaption>图 15-2　子模块 Diff：展示子模块指针前进与工作区状态</figcaption>
+  </figure>
+
+  <h2>删除子模块</h2>
+  <p>「删除子模块」对话框把某个已嵌入的子模块从仓库中移除。它会预览 <code>git submodule deinit</code> 与 <code>git rm</code> 的双命令链，先解除注册再删除目录与索引引用。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/03-delete-submodule.png" alt="删除子模块" loading="lazy">
+    <figcaption>图 15-3　删除子模块：deinit + rm 双命令预览</figcaption>
+  </figure>
+
+  <h2>创建新 Worktree</h2>
+  <p>「创建 Worktree」对话框从当前仓库派生出另一个工作目录，并以新分支检出。指定新分支名后，ForkPlus 会自动派生落地目录，并预览 <code>git worktree add</code> 命令，适合在不打断当前工作区时并行开展新功能。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/04-create-worktree.png" alt="创建 Worktree" loading="lazy">
+    <figcaption>图 15-4　创建 Worktree：新分支 + 自动派生路径</figcaption>
+  </figure>
+
+  <h2>把分支检出为 Worktree</h2>
+  <p>若想把某个已经存在的分支单独放到独立的 Worktree 目录中（而不是切换当前目录的检出），可使用「检出为 Worktree」对话框，选择目标分支后预览 <code>git worktree add</code> 命令。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/05-checkout-as-worktree.png" alt="检出分支为 Worktree" loading="lazy">
+    <figcaption>图 15-5　把已存在分支检出为独立的 Worktree</figcaption>
+  </figure>
+
+  <h2>删除 Worktree</h2>
+  <p>「删除 Worktree」对话框移除不再需要的 Worktree。它会预览 <code>git worktree remove</code> 命令并清理对应的工作目录，之后该分支即可重新被其他目录检出。</p>
+
+  <figure>
+    <img src="screenshots/15-submodule-worktree/06-delete-worktree.png" alt="删除 Worktree" loading="lazy">
+    <figcaption>图 15-6　删除 Worktree：移除独立工作目录</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>子模块与 Worktree 都以独立小仓库/独立目录的形式存在。删除 Worktree 前请确保没有未提交的改动；改用 Worktree 后，原目录任意时刻仍能检出其他分支而不必暂停当前工作。</div>
+</main>
+<footer class="manual-footer">
+  ForkPlus 用户手册 · 第 15 章 · 子模块与 Worktree
+</footer>
+</body>
+</html>
