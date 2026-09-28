@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.1.6</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.2.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,14 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v4.2.0 更新</h2>
+  <ul>
+    <li><strong>标签条布局</strong>：主窗口仓库标签条支持<strong>顶部 / 左侧 / 右侧</strong>三种布局；左侧/右侧为 VSCode 风格垂直标签条，可拖拽调宽（120–600px）、可一键收拢，布局与宽度自动记忆。详见<a href="ch-02-main-window.html">第 2 章 · 主界面总览</a>。</li>
+    <li><strong>分支下拉框搜索</strong>：推送 / 拉取 / 跟踪远程 / Worktree / GitFlow 等窗口的分支下拉框内新增搜索框，可即时过滤分支，分支较多时无需逐个翻找。详见<a href="ch-13-remotes.html">第 13 章 · 远程交互</a>。</li>
+    <li><strong>体验修复</strong>：修订详情文本可拖选复制、下拉过滤消除残影、搜索框焦点更稳定、主菜单弹层定位修正。</li>
+  </ul>
+
   <div class="chapter-grid" id="chapterGrid">
     <a class="chapter-card" href="ch-01-welcome.html">
       <span class="num">CH-01</span>
@@ -26,7 +34,7 @@
     <a class="chapter-card" href="ch-02-main-window.html">
       <span class="num">CH-02</span>
       <h3>主界面总览</h3>
-      <p>工具栏、侧边栏、修订列表、修订详情与状态栏</p>
+      <p>工具栏、侧边栏、修订列表、修订详情与标签条布局</p>
     </a>
     <a class="chapter-card" href="ch-03-history.html">
       <span class="num">CH-03</span>
@@ -81,7 +89,7 @@
     <a class="chapter-card" href="ch-13-remotes.html">
       <span class="num">CH-13</span>
       <h3>远程交互</h3>
-      <p>Fetch、Pull/Pull--rebase、Push、编辑远程与 Refspec</p>
+      <p>Fetch、Pull/Pull--rebase、Push、编辑远程与 Refspec、分支下拉搜索</p>
     </a>
     <a class="chapter-card" href="ch-14-conflicts.html">
       <span class="num">CH-14</span>
@@ -146,7 +154,7 @@
   </div>
 </main>
 <footer class="manual-footer">
-  ForkPlus 用户手册 · 生成于 2026-09-19
+  ForkPlus 用户手册 · 生成于 2026-09-28
 </footer>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 2 章 · 主界面总览</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.1.6</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -75,6 +75,23 @@
 
   <div class="tip"><strong>小贴士：</strong>用 <kbd>Ctrl</kbd> + <kbd>Tab</kbd> 可在标签页间顺序切换；<kbd>Ctrl</kbd> + <kbd>W</kbd> 关闭当前标签页。切换后侧边栏、修订列表与详情面板会整体更新为对应仓库的内容。</div>
 
+  <h2>标签条布局（v4.2.0）</h2>
+  <p>仓库标签条默认位于主窗口<strong>顶部</strong>（水平排列）。v4.2.0 起支持切换为<strong>左侧</strong>或<strong>右侧</strong>的垂直标签条（VSCode 风格），入口有两处：主菜单「视图 → 标签布局」二级菜单，以及工具栏「外观」下拉中的「标签布局」分组，均含<strong>顶部 / 左侧 / 右侧</strong>三个选项并实时切换。</p>
+
+  <figure class="wide">
+    <img src="screenshots/02-main-window/05-tabbar-layout-left.png" alt="垂直标签条（左侧布局）" loading="lazy">
+    <figcaption>图 2-4　左侧垂直标签条：仓库标签竖向排列，「+」按钮沉底，与内容区分隔可拖拽调宽</figcaption>
+  </figure>
+
+  <ul>
+    <li><strong>垂直标签条</strong>：切换为左侧/右侧后，标签竖向排列，宽度默认为 220 像素。</li>
+    <li><strong>拖拽调宽</strong>：标签条与内容区之间的分隔条可左右拖拽，宽度在 120–600 像素之间调整并持久化。</li>
+    <li><strong>收拢 / 展开</strong>：点击分隔条上的箭头按钮可把垂直标签条收拢为仅剩一个展开按钮，再次点击即展开并恢复原宽度。</li>
+    <li><strong>持久化</strong>：布局（顶部/左侧/右侧）、宽度与收拢状态都写入 <code>settings.json</code>，重启后保持。</li>
+  </ul>
+
+  <div class="note"><strong>说明：</strong>仅「左侧 / 右侧」布局下才显示分隔条与收拢按钮；「顶部」布局保持与旧版本一致的水平标签行为。</div>
+
   <h2>快速启动（Quick Launch）</h2>
   <p>按 <kbd>Ctrl</kbd> + <kbd>P</kbd>（macOS 为 <kbd>Cmd</kbd> + <kbd>P</kbd>）随时打开<strong>快速启动</strong>窗口。它是一个键盘驱动的命令面板，在一个输入框里即可完成多种导航：</p>
   <ul>
@@ -86,7 +103,7 @@
 
   <figure>
     <img src="screenshots/02-main-window/04-quick-launch.png" alt="快速启动窗口" loading="lazy">
-    <figcaption>图 2-4　快速启动窗口：搜索框 +「最近的仓库」+「命令」分组，支持键盘导航</figcaption>
+    <figcaption>图 2-5　快速启动窗口：搜索框 +「最近的仓库」+「命令」分组，支持键盘导航</figcaption>
   </figure>
 </main>
 <footer class="manual-footer">

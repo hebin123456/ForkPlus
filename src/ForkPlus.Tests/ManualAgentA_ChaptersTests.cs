@@ -151,6 +151,7 @@ namespace ForkPlus.Tests
 			ForkPlusSettings.Default.UiLanguage = "zh-Hans";
 			string repo = TestRepoFactory.CreateBranches();
 			string repo2 = TestRepoFactory.CreateBasic();
+			TabBarLayout savedLayout = ForkPlusSettings.Default.TabBarLayout;
 			try
 			{
 				HeadlessAppBootstrap.Run(delegate
@@ -205,6 +206,16 @@ namespace ForkPlus.Tests
 							return secondRevList.RevisionsDataSource.Count > 0;
 						}), "第二个标签页修订列表未加载(15s 超时)");
 						ManualScreenshotHelper.Snap(window, "03-main-window-multi-tabs", "02-main-window");
+
+						// ===== 4) 标签条布局:切换为左侧垂直标签条(v4.2.0) =====
+						MainWindow.Commands.SwitchTabBarLayout.Execute(TabBarLayout.Left);
+						window.ApplyTabBarLayout(); // 兜底:设置已是 Left 时命令会提前返回
+						Dispatcher.UIThread.RunJobs();
+						ManualScreenshotHelper.Snap(window, "05-tabbar-layout-left", "02-main-window");
+						// 复原为顶部布局,避免污染同进程后续用例的截图
+						MainWindow.Commands.SwitchTabBarLayout.Execute(TabBarLayout.Top);
+						window.ApplyTabBarLayout();
+						Dispatcher.UIThread.RunJobs();
 					}
 					finally
 					{
@@ -215,6 +226,11 @@ namespace ForkPlus.Tests
 			}
 			finally
 			{
+				if (ForkPlusSettings.Default.TabBarLayout != savedLayout)
+				{
+					ForkPlusSettings.Default.TabBarLayout = savedLayout;
+					ForkPlusSettings.Default.Save();
+				}
 				TestRepoFactory.Cleanup(repo);
 				TestRepoFactory.Cleanup(repo2);
 			}

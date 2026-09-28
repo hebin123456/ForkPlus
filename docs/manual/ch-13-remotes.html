@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 13 章 · 远程交互</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.1.6</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -107,6 +107,16 @@
   <p>「变更远程跟踪」对话框用于调整本地分支与其上游远程分支的关联关系：可为当前分支选择新的上游（预览 <code>git branch --set-upstream-to</code> 命令），或取消跟踪（预览 <code>git branch --unset-upstream</code>）。当分支不再跟踪远程、或需要把跟踪目标切换到另一个远程分支（如接管他人分支）时使用。</p>
 
   <div class="note"><strong>说明：</strong>远程相关操作完成后，仓库的远程分支列表（<code>origin/&lt;branch&gt;</code>）会自动刷新。若本地与远程分叉，可结合「历史改写」章节的 Rebase/Fetch 选择适合的同步策略。</div>
+
+  <h2>分支下拉框搜索（v4.2.0）</h2>
+  <p>当仓库分支较多时，在下拉列表里逐个翻找目标分支很费时。v4.2.0 起，凡是从列表中选择分支的下拉框都内置了<strong>搜索过滤</strong>：打开下拉后，顶部会出现一个搜索框并自动获得焦点，输入关键字即可<strong>即时过滤</strong>出匹配的分支（按项名称做不区分大小写的包含匹配），直接点选结果即可。适用于 <strong>Push（本地 / 远程分支）、Pull、变更远程跟踪、创建 Worktree、GitFlow</strong> 各窗口的分支下拉框，以及提交历史顶部的 Ref 选择器。</p>
+
+  <figure>
+    <img src="screenshots/13-remotes/11-push-branch-search.png" alt="Push 窗口本地分支下拉框的搜索过滤" loading="lazy">
+    <figcaption>图 13-11　Push 窗口的本地分支下拉：顶部搜索框即时过滤分支</figcaption>
+  </figure>
+
+  <div class="tip"><strong>小贴士：</strong>下拉打开后直接键入即可过滤，无需先点击搜索框。键盘操作：<kbd>↑</kbd>/<kbd>↓</kbd> 在可见结果间移动选中，<kbd>Enter</kbd> 选中并关闭下拉，<kbd>Esc</kbd> 先清空搜索词、再关闭下拉。关闭下拉后列表与原有选中项会原样恢复。</div>
 </main>
 <footer class="manual-footer">
   ForkPlus 用户手册 · 第 13 章 · 远程交互

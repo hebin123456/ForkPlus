@@ -515,6 +515,16 @@ jobs:
         shell: bash
         run: dotnet test ForkPlus.sln --nologo --filter "FullyQualifiedName~ForkPlus.Tests.Manual"
 
+      # 上传重新生成的插图（docs/manual/screenshots/ 全量），供维护者下载后替换入库。
+      # 此前该 job 不产出产物，只能靠本地重跑；加此步后 CI 跑一次即可拿到最新 PNG。
+      - name: Upload regenerated screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-screenshots
+          path: docs/manual/screenshots/
+          retention-days: 14
+          if-no-files-found: error
+
   # ── 发布（仅 tag 触发；手动 workflow_dispatch 只跑 build+test 不发 Release）──
   # build + test 全绿后：下载四平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
   # 内层无嵌套）→ 从 RELEASE_NOTE.md 提取当前版本章节作为正文 → 发布 Release。

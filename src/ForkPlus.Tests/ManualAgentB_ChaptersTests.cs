@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git;
@@ -853,6 +854,80 @@ namespace ForkPlus.Tests
 						Assert.True(UiClick.WaitFor(delegate { return FooterOf(push).SubmitButton.IsEnabled; }),
 							"Push 弹窗应完成装配并启用提交（15s 超时）");
 						ManualScreenshotHelper.Snap(push, "09-push-new-branch", "13-remotes");
+						push.Close();
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, work);
+					}
+				});
+			}
+			finally
+			{
+				ForkPlusSettings.Default.Push_PushAllTags = savedPushAllTags;
+				ForkPlusSettings.Default.Save();
+				TestRepoFactory.Cleanup(work);
+			}
+		}
+
+		/// <summary>v4.2.0 分支下拉框搜索过滤：分支较多的仓库里打开 Push 窗口的本地分支下拉，
+		/// 输入关键字即时过滤（截图 11-push-branch-search 供手册 ch-13 使用）。</summary>
+		[Fact]
+		public void Ch13d_PushBranchSearch()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			ForkPlusSettings.Default.UiLanguage = "zh-Hans";
+			string work = TestRepoFactory.CreateBareRemote();
+			foreach (string name in new[]
+			{
+				"feature/login", "feature/signup", "feature/dashboard", "feature/payments",
+				"bugfix/crash-on-start", "bugfix/typo", "release/4.2", "release/4.1",
+				"hotfix/urgent", "chore/deps", "docs/readme", "experiment/spike"
+			})
+			{
+				TestRepoFactory.GitOutput(work, "branch " + name);
+			}
+			bool savedPushAllTags = ForkPlusSettings.Default.Push_PushAllTags;
+			try
+			{
+				ForkPlusSettings.Default.Push_PushAllTags = false;
+				ForkPlusSettings.Default.Save();
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(work, out var window);
+					try
+					{
+						var push = new PushWindow(repoControl);
+						push.Show();
+						Dispatcher.UIThread.RunJobs();
+						Assert.True(UiClick.WaitFor(delegate { return FooterOf(push).SubmitButton.IsEnabled; }),
+							"Push 弹窗应完成装配并启用提交（15s 超时）");
+						Assert.True(UiClick.WaitFor(delegate { return push.LocalBranchesComboBox.ItemCount >= 13; }),
+							"本地分支下拉应加载出全部 13 个分支（15s 超时）");
+
+						// 打开本地分支下拉 → 弹层顶部出现搜索框
+						push.LocalBranchesComboBox.IsDropDownOpen = true;
+						Dispatcher.UIThread.RunJobs();
+						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+						Dispatcher.UIThread.RunJobs();
+						// 弹层内容挂在 Popup.Child 下（headless 走 OverlayPopupHost，仍在窗口可视树内）；
+						// 两个分支下拉都有 PART_SearchBox，须沿本地分支下拉自己的 Popup 精确定位。
+						Popup localPopup = push.LocalBranchesComboBox.GetVisualDescendants()
+							.OfType<Popup>().FirstOrDefault();
+						Assert.NotNull(localPopup);
+						TextBox searchBox = localPopup.Child?.GetVisualDescendants().OfType<TextBox>()
+							.FirstOrDefault(t => t.Name == "PART_SearchBox");
+						Assert.NotNull(searchBox);
+
+						// 输入关键字即时过滤（只剩 feature/* 分支）
+						searchBox.Text = "feature";
+						Dispatcher.UIThread.RunJobs();
+						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+						Assert.Equal(4, push.LocalBranchesComboBox.ItemCount);
+						ManualScreenshotHelper.Snap(push, "11-push-branch-search", "13-remotes");
+
+						push.LocalBranchesComboBox.IsDropDownOpen = false;
+						Dispatcher.UIThread.RunJobs();
 						push.Close();
 					}
 					finally
