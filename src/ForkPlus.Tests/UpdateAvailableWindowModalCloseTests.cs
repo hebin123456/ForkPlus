@@ -8,6 +8,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -45,15 +46,29 @@ namespace ForkPlus.Tests
 			bool cancelEnabledBeforeClick = false;
 
 			// 生产时序：后台线程 Dispatcher.Invoke → UI 线程执行 shim ShowDialog（PushFrame 模态）
+			// 生产里 ShowDialog 无显式 owner，靠 WindowDialogCompat 取"活动窗口"兜底——
+			// 真实环境恒有可见的 MainWindow。测试若无可见窗口，owner 会落到全局 1x1 代理窗口，
+			// headless CI 下该代理可能尚未呈现，ShowDialog 抛"owner 非可见"导致 Opened 不触发。
+			// 这里显式造一个可见 owner（等价 MainWindow）并设 OwnerCompat，保持模态语义稳定。
 			var t = new Thread(delegate()
 			{
 				try
 				{
 					Dispatcher.UIThread.Invoke(delegate
 					{
-						window = new UpdateAvailableWindow(info);
-						window.Opened += delegate { opened.Set(); };
-						window.ShowDialog();
+						Window owner = new Window { Width = 900, Height = 700 };
+						owner.Show();
+						try
+						{
+							window = new UpdateAvailableWindow(info);
+							window.SetOwnerCompat(owner);
+							window.Opened += delegate { opened.Set(); };
+							window.ShowDialog();
+						}
+						finally
+						{
+							owner.Close();
+						}
 					});
 				}
 				catch (Exception e)
@@ -70,7 +85,8 @@ namespace ForkPlus.Tests
 
 			try
 			{
-				Assert.True(opened.Wait(15000), "模态弹窗未显示");
+				Assert.True(opened.Wait(15000),
+					"模态弹窗未显示" + (modalError != null ? "；modalError=" + modalError : ""));
 
 				// 点击动作投进模态 frame（PushFrame 泵 Default 优先级队列）
 				Dispatcher.UIThread.Post(delegate

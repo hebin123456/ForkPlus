@@ -16,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace ForkPlus.Tests
 {
+	[Collection("HeadlessAvalonia")]
 	public class PushWindowSearchGhostTests
 	{
 		private readonly ITestOutputHelper _output;

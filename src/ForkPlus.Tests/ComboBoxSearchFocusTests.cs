@@ -14,6 +14,7 @@ using Xunit;
 
 namespace ForkPlus.Tests
 {
+	[Collection("HeadlessAvalonia")]
 	public class ComboBoxSearchFocusTests
 	{
 		private sealed class BranchItem
