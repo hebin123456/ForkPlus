@@ -48,6 +48,14 @@ on:
         required: false
         default: false
         type: boolean
+      # 截图用例过滤器(vstest --filter)。默认跑全部 Manual 用例；套件整体超时/挂起时
+      # 可改为只跑指定类/方法(如 FullyQualifiedName~ManualAgentB_ChaptersTests.Ch13d)，
+      # 快速拿到个别插图而不必等全量。仅 regenerate_screenshots=true 时生效。
+      screenshot_filter:
+        description: '截图用例过滤器(vstest --filter)，留空=全部 Manual 用例'
+        required: false
+        default: 'FullyQualifiedName~ForkPlus.Tests.Manual'
+        type: string
 
 concurrency:
   group: build-${{ github.ref }}
@@ -473,7 +481,9 @@ jobs:
     name: manual-screenshots (on-demand)
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.regenerate_screenshots == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # 全量 42 个重型截图用例实测 >90min（2026-09-28 首跑在 90min 处被取消）；放宽到 180min，
+    # 并在下方用 if: always() 上传，即便个别用例挂起导致超时也能拿到已生成的插图。
+    timeout-minutes: 180
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -513,11 +523,18 @@ jobs:
           git flow version
       - name: Run Manual screenshot tests
         shell: bash
-        run: dotnet test ForkPlus.sln --nologo --filter "FullyQualifiedName~ForkPlus.Tests.Manual"
+        env:
+          SCREENSHOT_FILTER: ${{ github.event.inputs.screenshot_filter }}
+        run: |
+          filter="${SCREENSHOT_FILTER:-FullyQualifiedName~ForkPlus.Tests.Manual}"
+          echo "manual screenshot filter: $filter"
+          dotnet test ForkPlus.sln --nologo --filter "$filter"
 
       # 上传重新生成的插图（docs/manual/screenshots/ 全量），供维护者下载后替换入库。
       # 此前该 job 不产出产物，只能靠本地重跑；加此步后 CI 跑一次即可拿到最新 PNG。
+      # if: always()——套件个别用例挂起导致超时/失败时，也要拿到已生成的那部分插图。
       - name: Upload regenerated screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: manual-screenshots
