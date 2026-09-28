@@ -2,6 +2,32 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.2.0
+
+> 主窗口仓库标签条布局支持顶部/左侧/右侧三种摆放（VSCode 式垂直标签，可拖拽调宽、可收拢，设置持久化）；Push / Pull / Track / Git Flow 等分支下拉框弹层新增搜索框，输入即过滤、键盘可导航；修复提交详情文本无法拖选复制、分支下拉框过滤残影与搜索框焦点被抢；主菜单弹层位置微调；应用版本号升至 4.2.0。
+
+### 新增
+
+- **主窗口仓库标签条布局（顶部/左侧/右侧）**：新增 `TabBarLayout` 设置（settings.json，缺省 Top = 保持旧版水平标签），菜单栏"切换主题"下方与工具栏 Appearance 下拉同步提供"标签布局"二级菜单（顶部/左侧/右侧，勾选态随切换即时重建同步）；左侧/右侧为 VSCode 式垂直标签条——标签行改整行卡片样式（圆角四角、行高随内容），"+"按钮沉底、标签列表可滚动；分隔线上悬浮收拢/展开切换按钮（箭头方向随布局与收拢态切换，收拢后仅剩展开条）；GridSplitter 拖拽调宽（钳制 120–600px），收拢态与展开宽度均持久化（`TabStripWidth` / `TabStripCollapsed`，旧 settings.json 缺失回落默认 220 / 展开）；实现与既有 `SwitchRevisionListOrientationCommand` 同模式（`SwitchTabBarLayoutCommand` + `NotificationCenter.TabBarLayoutChanged` 事件，写设置 → 广播 → 立即应用）；"Tab Layout" / "Top" / "Left" / "Right" 词条补齐 8 语言翻译。
+- **分支下拉框搜索过滤（ComboBoxSearch 附加行为）**：Push / Pull / 变更远程跟踪（Track）/ 创建 Worktree / Git Flow 开始与完成（feature / hotfix / release）弹窗及工具栏引用下拉的分支 ComboBox，弹层顶部新增搜索框——打开下拉自动缓存当前列表快照并聚焦搜索框；输入按项文本（Name / ShortName / Title / FullReference 属性或字符串本体，OrdinalIgnoreCase 包含匹配）实时过滤（空文本分隔项在过滤期间一律隐藏）；↑/↓ 在当前可见项中移动选中、Enter 选中并关闭、Escape 先清空搜索词再关闭；关闭 / 清空时原样恢复列表与选中项，外部（对话框 code-behind）更换 ItemsSource 的既有流程（Push 窗口 "Custom..." 交互、Pull 窗口异步刷新）联动刷新缓存不被破坏。XAML 上 `controls:ComboBoxSearch.IsEnabled="True"` 即启用，弹层搜索框由 `.searchable` 类按需显示，未启用的 ComboBox 行为不变。
+
+### 修复
+
+- **提交详情（所有提交 → 提交 tab）Subject / Description 等文本无法拖选复制**：三层叠加根因缺一不可——① 全局选区画笔样式选择器写的是 `Selector="SelectableTextBlock"`，而 Avalonia 类型选择器是精确类型匹配（与 WPF"类型选择器匹配派生类"语义不同），应用内全部可选中文本是 ForkPlus 派生类 → 9/19 补的选区画笔样式从未生效（选中无高亮不可见），改 `:is(SelectableTextBlock)`（IsAssignableFrom 语义，基类 + 派生类全匹配）；② Background=null 时命中测试只认字形像素，行间留白 / 字后空白 / 控件边距全部穿透，按下落到下层 ScrollContentPresenter 被吃掉，OnPointerPressed 永不触发 → 拖选从未启动，样式补 Background=Transparent（透明填充参与命中测试，整个控件区域可起选，无视觉副作用）；③ 新增回归测试 `RevisionSummaryDragSelectionTests` 走真实输入管线（RawPointerEventArgs + 真实命中测试 + 事件路由）复现"按下点命中 ScrollContentPresenter、SelectionStart=End=0"并锁定三层修复。
+- **分支下拉框过滤残影（Push 窗口等）**：显式 `VirtualizingStackPanel`（WPF 迁移残留）在搜索过滤每次击键更换 ItemsSource 时存在容器回收缺陷——被过滤掉的选中 / 聚焦容器不被正常回收，残影叠在搜索结果上；移除并回归主题默认 StackPanel（分支列表量级数百项内全量物化无性能问题），Push / Pull / Track / 创建 Worktree / 工具栏引用下拉一并清理。新增 `PushWindowSearchGhostTests` 残影回归测试。
+- **下拉搜索框输入一个字符后焦点被抢、无法继续输入**：过滤刷新（ItemsSource 被替换）触发 ComboBox 内部 TryFocusSelectedItem 把焦点投回选中项容器，搜索框失焦；ComboBoxSearch 行为在过滤后把焦点归还搜索框。新增 `ComboBoxSearchFocusTests` 回归测试锁定"过滤后焦点必须在搜索框上"。
+- **主菜单弹层位置微调**：菜单栏下拉弹层相对按钮再左移 8px、上移 10px，视觉对齐 WPF 原版。
+- **测试覆盖：自动检查更新弹窗模态关闭**：新增 `UpdateAvailableWindowModalCloseTests`，按生产时序复现（后台线程 Dispatcher.Invoke 经模态 ShowDialog shim 打开 UpdateAvailableWindow），在模态 frame 内点 Footer Cancel（"稍后"）→ 断言窗口关闭且模态调用返回；补齐既有 UpdateAvailableWindowTests 仅覆盖非模态 `window.Show()` 路径、从未覆盖模态 shim 的盲区。
+
+### 平台覆盖
+
+| 平台 | RID | 产物 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.2.0-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.2.0-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.2.0-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.2.0-macos-arm64.zip` |
+
 ## v4.1.6
 
 > 完善远程交互与合并冲突相关的用户手册；删除远端弹窗补全 Git 命令预览；用户手册新增二分查找、快速启动、文件树导出与外部比对、Git Mm 空提交、子仓标签拖拽等此前未覆盖的功能章节；应用版本号升至 4.1.6。

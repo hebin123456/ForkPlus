@@ -51,6 +51,8 @@ namespace ForkPlus
 
 		public event EventHandler<EventArgs<RevisionListOrientation>> RevisionListOrientatioChanged;
 
+		public event EventHandler<EventArgs<TabBarLayout>> TabBarLayoutChanged;
+
 		public event EventHandler ShellChanged;
 
 		public event EventHandler<EventArgs<FileListMode>> FileListModeChanged;
@@ -149,6 +151,11 @@ namespace ForkPlus
 		public void RaiseRevisionListOrientatioChanged(object sender, RevisionListOrientation newValue)
 		{
 			this.RevisionListOrientatioChanged?.Invoke(this, new EventArgs<RevisionListOrientation>(newValue));
+		}
+
+		public void RaiseTabBarLayoutChanged(object sender, TabBarLayout newValue)
+		{
+			this.TabBarLayoutChanged?.Invoke(this, new EventArgs<TabBarLayout>(newValue));
 		}
 
 		public void RaiseShellChanged(object sender)

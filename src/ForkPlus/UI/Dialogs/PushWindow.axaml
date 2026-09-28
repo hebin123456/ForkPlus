@@ -1,4 +1,4 @@
-<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow" xmlns="https://github.com/avaloniaui">
+<dialogs:ForkPlusDialogWindow Width="490" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.PushWindow" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns="https://github.com/avaloniaui">
   <dialogs:ForkPlusDialogWindow.Resources>
     <ResourceDictionary>
       <ControlTheme x:Key="RemoteBranchesComboBoxItemStyle" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
@@ -51,12 +51,12 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="LocalBranchesComboBox_SelectionChanged" x:Name="LocalBranchesComboBox">
-        <ComboBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <VirtualizingStackPanel />
-          </ItemsPanelTemplate>
-        </ComboBox.ItemsPanel>
+      <!-- 2026-09-28 残影修复：移除显式 VirtualizingStackPanel（WPF 迁移残留），回归主题默认
+           StackPanel。VSP 在 ComboBox 弹层里有容器回收缺陷（同 v3.13 主题修复，见
+           Theme/Styles/Combobox.axaml 注释）：搜索过滤每次击键换 ItemsSource 时，被过滤掉的
+           选中/聚焦容器可能不被正常回收（残影叠在搜索结果上）。分支列表量级（数百项内）
+           StackPanel 全量物化无性能问题。 -->
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="LocalBranchesComboBox_SelectionChanged" controls:ComboBoxSearch.IsEnabled="True" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">
@@ -93,12 +93,7 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="To:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox" ItemContainerTheme="{DynamicResource RemoteBranchesComboBoxItemStyle}">
-        <ComboBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <VirtualizingStackPanel />
-          </ItemsPanelTemplate>
-        </ComboBox.ItemsPanel>
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" controls:ComboBoxSearch.IsEnabled="True" x:Name="RemoteBranchesComboBox" ItemContainerTheme="{DynamicResource RemoteBranchesComboBoxItemStyle}">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

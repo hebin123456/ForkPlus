@@ -259,6 +259,9 @@ namespace ForkPlus.UI
 			// 一致的二级菜单——非纯色主题直列、"Solid Colors"三级菜单装纯色主题、"Custom Colors..."
 			// 单项打开自定义颜色对话框。用户在菜单栏也能选到全部 22 套预设皮肤 + 自定义颜色。
 			yield return CreateThemeMenuItem();
+			// v4.x：切换主题下方新增"标签布局"二级菜单（顶部/左侧/右侧），与工具栏 Appearance
+			// 下拉的"Tab Layout"组控制同一设置（ForkPlusSettings.TabBarLayout）。
+			yield return CreateTabLayoutMenuItem();
 			yield return new Separator();
 			yield return commands.IncreaseLayoutScale.CreateMenuItem(delegate { commands.IncreaseLayoutScale.Execute(); });
 			yield return commands.DecreaseLayoutScale.CreateMenuItem(delegate { commands.DecreaseLayoutScale.Execute(); });
@@ -323,6 +326,30 @@ namespace ForkPlus.UI
 			};
 			themeParent.Items.Add(customColorsItem);
 			return themeParent;
+		}
+
+		/// <summary>构建"标签布局"二级菜单（顶部/左侧/右侧），结构与工具栏 Appearance 下拉一致。</summary>
+		private static MenuItem CreateTabLayoutMenuItem()
+		{
+			MainWindowCommands commands = MainWindow.Commands;
+			string language = ForkPlusSettings.Default.UiLanguage;
+			MenuItem tabLayoutParent = new MenuItem
+			{
+				Header = PreferencesLocalization.Translate("Tab Layout", language)
+			};
+			foreach (TabBarLayout tabLayout in new TabBarLayout[] { TabBarLayout.Top, TabBarLayout.Left, TabBarLayout.Right })
+			{
+				TabBarLayout layoutCopy = tabLayout;
+				MenuItem item = commands.SwitchTabBarLayout.CreateMenuItem(
+					PreferencesLocalization.Translate(layoutCopy.LocalizeKey(), language), delegate
+				{
+					commands.SwitchTabBarLayout.Execute(layoutCopy);
+				});
+				item.IsChecked = ForkPlusSettings.Default.TabBarLayout == layoutCopy;
+				item.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
+				tabLayoutParent.Items.Add(item);
+			}
+			return tabLayoutParent;
 		}
 
 		private static IEnumerable<Control> CreateDevelopMenuItems()

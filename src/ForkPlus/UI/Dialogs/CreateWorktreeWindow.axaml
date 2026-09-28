@@ -20,12 +20,8 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Start from:" FontSize="13" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="LocalBranchesComboBox">
-        <ComboBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <VirtualizingStackPanel />
-          </ItemsPanelTemplate>
-        </ComboBox.ItemsPanel>
+      <!-- 2026-09-28 残影修复：移除显式 VSP（同 PushWindow 注释），回归主题默认 StackPanel -->
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" controls:ComboBoxSearch.IsEnabled="True" x:Name="LocalBranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

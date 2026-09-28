@@ -1073,6 +1073,15 @@ namespace ForkPlus.Settings
 
 		private RevisionListOrientation _revisionListOrientation;
 
+		private TabBarLayout _tabBarLayout;
+
+		// 垂直标签条宽度（像素）。仅 TabBarLayout 为 Left/Right 时生效，拖拽 GridSplitter 实时更新。
+		private double _tabStripWidth = 220.0;
+
+		// 垂直标签条是否处于收拢态（仅剩展开按钮）。仅 TabBarLayout 为 Left/Right 时生效；
+		// 收拢期间 TabStripWidth 保持收拢前的值，展开时原样恢复。
+		private bool _tabStripCollapsed;
+
 		private RevisionSortOrder _revisionSortOrder;
 
 		private FileListMode _fileListMode;
@@ -2341,6 +2350,46 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>主窗口仓库标签条布局（顶部/左侧/右侧）。缺省 Top（水平，旧版行为）。</summary>
+		public TabBarLayout TabBarLayout
+		{
+			get
+			{
+				return _tabBarLayout;
+			}
+			set
+			{
+				_tabBarLayout = value;
+			}
+		}
+
+		/// <summary>垂直标签条宽度（像素），范围 [120, 600]。</summary>
+		public double TabStripWidth
+		{
+			get
+			{
+				return _tabStripWidth;
+			}
+			set
+			{
+				// 解码端旧值兜底 + 运行期防呆：越界宽度会破坏布局（过窄遮标题、过宽挤内容）。
+				_tabStripWidth = Math.Min(600.0, Math.Max(120.0, value));
+			}
+		}
+
+		/// <summary>垂直标签条是否收拢（仅剩展开按钮）。缺省 false（展开）。</summary>
+		public bool TabStripCollapsed
+		{
+			get
+			{
+				return _tabStripCollapsed;
+			}
+			set
+			{
+				_tabStripCollapsed = value;
+			}
+		}
+
 		public RevisionSortOrder RevisionSortOrder
 		{
 			get
@@ -2845,6 +2894,12 @@ namespace ForkPlus.Settings
 				}
 			}
 			RevisionListOrientation revisionListOrientation = (RevisionListOrientation)(json["RevisionListOrientation"]?.Value<int>() ?? 1);
+			// 主窗口标签条布局：旧 settings.json 缺失时默认 0 = Top（保持水平标签不变）。
+			TabBarLayout tabBarLayout = (TabBarLayout)(json["TabBarLayout"]?.Value<int>() ?? 0);
+			// 垂直标签条宽度：缺省 220，越界值由属性 setter 钳制。
+			double tabStripWidth = json["TabStripWidth"]?.Value<double>() ?? 220.0;
+			// 垂直标签条收拢态：旧 settings.json 缺失时默认 false（展开）。
+			bool tabStripCollapsed = json["TabStripCollapsed"]?.Value<bool>() ?? false;
 			// 是否启用自定义颜色覆盖。旧 settings.json 缺失时默认 false（使用主题原色）。
 			bool useCustomColors = json["UseCustomColors"]?.Value<bool>() ?? false;
 			MergerLayoutOrientation mergerLayoutOrientation = (MergerLayoutOrientation)(json["MergerLayoutOrientation"]?.Value<int>() ?? 0);
@@ -2973,6 +3028,9 @@ namespace ForkPlus.Settings
 				CustomColors = customColors,
 				UseCustomColors = useCustomColors,
 				RevisionListOrientation = revisionListOrientation,
+				TabBarLayout = tabBarLayout,
+				TabStripWidth = tabStripWidth,
+				TabStripCollapsed = tabStripCollapsed,
 				MergerLayoutOrientation = mergerLayoutOrientation,
 				LastUpdateCheck = lastUpdateCheck,
 				CheckForUpdatesAutomatically = checkForUpdatesAutomatically,
@@ -3511,6 +3569,18 @@ namespace ForkPlus.Settings
 			{
 				"RevisionListOrientation",
 				new JValue((long)target.RevisionListOrientation)
+				},
+				{
+					"TabBarLayout",
+					new JValue((long)target.TabBarLayout)
+				},
+				{
+					"TabStripWidth",
+					new JValue(target.TabStripWidth)
+				},
+				{
+					"TabStripCollapsed",
+					new JValue(target.TabStripCollapsed)
 				},
 				{
 					"MergerLayoutOrientation",

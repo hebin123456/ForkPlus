@@ -46,12 +46,8 @@
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="GitPointView" />
       <TextBlock Grid.Row="1" Grid.Column="0" Text="Track:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" x:Name="RemoteBranchesComboBox" ItemContainerTheme="{DynamicResource RemoteBranchesComboBoxItemStyle}">
-        <ComboBox.ItemsPanel>
-          <ItemsPanelTemplate>
-            <VirtualizingStackPanel />
-          </ItemsPanelTemplate>
-        </ComboBox.ItemsPanel>
+      <!-- 2026-09-28 残影修复：移除显式 VSP（同 PushWindow 注释），回归主题默认 StackPanel -->
+      <ComboBox Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemoteBranchesComboBox_SelectionChanged" controls:ComboBoxSearch.IsEnabled="True" x:Name="RemoteBranchesComboBox" ItemContainerTheme="{DynamicResource RemoteBranchesComboBoxItemStyle}">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

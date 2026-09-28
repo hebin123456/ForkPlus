@@ -86,6 +86,15 @@ namespace ForkPlus.UI
 
 		public TabManager TabManager { get; }
 
+		/// <summary>
+		/// 应用主窗口标签条布局（顶部/左侧/右侧）。v4.x：由 SwitchTabBarLayoutCommand 调用，
+		/// 启动时的初值由 ClosableTabControl 构造函数直接读设置，不经此处。
+		/// </summary>
+		public void ApplyTabBarLayout()
+		{
+			TabControl.ApplyTabBarLayout(ForkPlusSettings.Default.TabBarLayout);
+		}
+
 		public JobQueue JobQueue { get; }
 
 		public MainWindow()

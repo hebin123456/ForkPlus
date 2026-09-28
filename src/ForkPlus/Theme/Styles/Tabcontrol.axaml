@@ -203,6 +203,40 @@
     <Style Selector="^:pressed /template/ Path#plus">
         <Setter Value="{DynamicResource CloseButton.Pressed.Foreground}" Property="Fill" />
     </Style></ControlTheme>
+  <!-- v4.x：垂直标签条收拢/展开切换按钮主题。结构同 AddButtonStyle（透明底 + 悬停高亮），
+       但 glyph 为描边箭头 Path#chevron。方向由 ClosableTabControl 在按钮上维护 point-right
+       class 切换（左侧布局展开 ◶ / 收拢 ◷…默认 = 朝左，point-right = 朝右；
+       几何资源 TabStripChevronLeft/Right 见上方）——与 AddButtonStyle 的
+       ^:pointerover /template/ Path#plus 同款机制，不依赖嵌套模板代码查找。 -->
+  <StreamGeometry x:Key="TabStripChevronLeft">M 7.6,2.6 L 4.2,6 L 7.6,9.4</StreamGeometry>
+  <StreamGeometry x:Key="TabStripChevronRight">M 4.4,2.6 L 7.8,6 L 4.4,9.4</StreamGeometry>
+  <ControlTheme x:Key="TabStripToggleStyle" TargetType="Button">
+    <Setter Property="Background" Value="{DynamicResource AddButtonBackground}" />
+    <Setter Property="BorderBrush" Value="#00FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" x:Name="border">
+            <Path x:Name="chevron" Width="12" Height="12" Stretch="None" Data="{DynamicResource TabStripChevronLeft}" Stroke="{DynamicResource CloseButton.MouseOver.Foreground}" StrokeThickness="1.6" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style Selector="^:pointerover">
+        <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <Style Selector="^:pressed">
+        <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Background}" Property="Background" />
+        <Setter Value="{DynamicResource ClosableTabItem.MouseOver.Border}" Property="BorderBrush" />
+    </Style>
+    <!-- 代码维护的 class：朝右箭头（默认朝左）。后写者赢。 -->
+    <Style Selector="^.point-right /template/ Path#chevron">
+      <Setter Property="Data" Value="{DynamicResource TabStripChevronRight}" />
+    </Style>
+  </ControlTheme>
   <!-- 为避免隐式 Theme 查找失败，提供具名 key + x:Type 别名两种访问方式。 -->
   <ControlTheme x:Key="ClosableTabControlTheme" TargetType="controls:ClosableTabControl">
     <Setter Property="BorderThickness" Value="0,0,0,0" />
@@ -236,6 +270,87 @@
          原 WPF UniformGrid IsItemsHost=True 上的 Background -->
     <Style Selector="^ /template/ ItemsPresenter > UniformGrid">
       <Setter Property="Background" Value="{DynamicResource ClosableTabItem.Static.Background}" />
+    </Style>
+    <!-- v4.x：垂直标签条（VSCode 风格）。ClosableTabControl.ApplyTabBarLayout 附加 tabbar-left /
+         tabbar-right class 命中以下模板（默认模板 = 顶部水平，保持原样）。结构：
+         标签条（固定宽度，PART_TabStripHost，"+"按钮沉底，可滚动）+ GridSplitter（拖拽调宽，
+         宽度经 SizeChanged 写回 ForkPlusSettings.TabStripWidth）+ 内容区。 -->
+    <Style Selector="^.tabbar-left">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="controls:ClosableTabControl">
+            <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" MinWidth="120" MaxWidth="600" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <DockPanel Grid.Column="0" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="PART_TabStripHost">
+                <!-- Width/Height 必须显式给：DockPanel 底部停靠测量时约束是"整条剩余高度"，
+                     AddButtonStyle 的 Path Stretch=Uniform 会随可用空间无限膨胀（水平模板里
+                     是 24px 列宽兜住的，垂直模板没有列宽约束 → 出现巨大加号）。 -->
+                <Button DockPanel.Dock="Bottom" Width="18" Height="18" x:Name="PART_Add" Theme="{DynamicResource AddButtonStyle}" HorizontalAlignment="Left" Margin="2,1,1,1" />
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                  <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </ScrollViewer>
+              </DockPanel>
+              <GridSplitter Grid.Column="1" Theme="{DynamicResource VerticalGridSplitter}" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+              <Border Grid.Column="2" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
+                <ContentPresenter x:Name="PART_SelectedContentHost" />
+              </Border>
+              <!-- v4.x：收拢/展开切换按钮，悬浮在分隔线上（垂直居中）。负边距让布局占位仅 2px，
+                   视觉横跨分隔线两侧、不挤占标签条与内容区；声明在最后 = 绘制在两侧面板之上。
+                   箭头方向 = 按钮上的 point-right class（ClosableTabControl 维护）。
+                   Focusable=False：不抢标签切换的键盘焦点。 -->
+              <Button Grid.Column="1" Width="18" Height="18" Margin="-8,0" VerticalAlignment="Center" HorizontalAlignment="Center" Focusable="False" x:Name="PART_TabStripToggle" Theme="{DynamicResource TabStripToggleStyle}" />
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style Selector="^.tabbar-right">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="controls:ClosableTabControl">
+            <Grid Background="{DynamicResource ClosableTabItem.Static.Background}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="220" MinWidth="120" MaxWidth="600" />
+              </Grid.ColumnDefinitions>
+              <Border Grid.Column="0" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" x:Name="Border">
+                <ContentPresenter x:Name="PART_SelectedContentHost" />
+              </Border>
+              <GridSplitter Grid.Column="1" Theme="{DynamicResource VerticalGridSplitter}" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+              <DockPanel Grid.Column="2" Background="{DynamicResource ClosableTabItem.Static.Background}" x:Name="PART_TabStripHost">
+                <!-- 同 tabbar-left：显式 Width/Height 防止 Uniform Path 随停靠测量空间膨胀。 -->
+                <Button DockPanel.Dock="Bottom" Width="18" Height="18" x:Name="PART_Add" Theme="{DynamicResource AddButtonStyle}" HorizontalAlignment="Left" Margin="2,1,1,1" />
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                  <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </ScrollViewer>
+              </DockPanel>
+              <!-- 同 tabbar-left：切换按钮悬浮在分隔线上（GridSplitter 与按钮同处 column 1，
+                   按钮后声明 = 绘制在两侧面板之上）。 -->
+              <Button Grid.Column="1" Width="18" Height="18" Margin="-8,0" VerticalAlignment="Center" HorizontalAlignment="Center" Focusable="False" x:Name="PART_TabStripToggle" Theme="{DynamicResource TabStripToggleStyle}" />
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <!-- v4.x：垂直标签条收拢态（ClosableTabControl 附加 tabbar-collapsed class）。
+         收拢 = 标签条列宽压到 0（宽度由代码管理，因列 MinWidth=120 需同步放开），
+         隐藏"+"按钮/标签列表/拖拽条；分隔列只剩切换按钮（边距归零 → 18px 展开条）。 -->
+    <Style Selector="^.tabbar-collapsed /template/ Button#PART_Add">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^.tabbar-collapsed /template/ ScrollViewer">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^.tabbar-collapsed /template/ GridSplitter">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^.tabbar-collapsed /template/ Button#PART_TabStripToggle">
+      <Setter Property="Margin" Value="0" />
     </Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:ClosableTabControl}" TargetType="controls:ClosableTabControl" BasedOn="{StaticResource ClosableTabControlTheme}" />
@@ -319,6 +434,35 @@
     </Style>
     <Style Selector="^:disabled">
         <Setter Value="#FF6D6D6D" Property="Foreground" />
+    </Style>
+    <!-- v4.x：垂直标签条下的标签样式（ClosableTabControl.ApplyTabBarLayout 给每个
+         ClosableTabItem 附加 "vertical" class）。水平模板的视觉是"上翘圆角 + 底部分隔线 +
+         顶部条形高亮"，垂直模式改为整行卡片：圆角四角、分隔线转横向下边框、去掉顶部高亮条，
+         行高放开（MinHeight）随内容，Padding 加左右留白（颜色点/标题/关闭按钮横排一行）。 -->
+    <Style Selector="^.vertical">
+        <!-- 修复（2026-09-28）：Height 是 double，"Auto" 是 GridLength 语法（AVLN1000），自动高度用 NaN。 -->
+        <Setter Property="Height" Value="NaN" />
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="Padding" Value="6,3" />
+    </Style>
+    <Style Selector="^.vertical /template/ Border#TopBorder">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="^.vertical /template/ Border#Bd">
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="^.vertical /template/ Border#TabSeparatorBorder">
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Margin" Value="4,0,4,0" />
+    </Style>
+    <Style Selector="^.vertical:selected /template/ Border#Bd">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="^.vertical[IsSelected=false]:pointerover /template/ Border#Bd">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="BorderThickness" Value="1,1,1,1" />
     </Style>
     <!--
       WPF migration note: ControlTemplate 内 MultiDataTrigger（VM 属性条件）需人工改写。

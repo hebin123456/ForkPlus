@@ -128,6 +128,10 @@
     "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.": "When enabled, this credential is used silently without prompting; turn it off to forget the password and be asked again.",
     "Username for '{0}':": "Username for '{0}':",
     "Password for '{0}':": "Password for '{0}':",
-    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)"
+    "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)": "Use the remembered password silently without this dialog (re-enable prompting in Preferences > Credentials)",
+    "Tab Layout": "Tab Layout",
+    "Top": "Top",
+    "Left": "Left",
+    "Right": "Right"
   }
 }

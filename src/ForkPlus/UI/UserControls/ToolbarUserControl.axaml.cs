@@ -37,8 +37,19 @@ namespace ForkPlus.UI.UserControls
 			global::Avalonia.Controls.ToolTip.SetTip(PushToolbarButton,Preferences.PreferencesLocalization.Current("Push") + Environment.NewLine + Preferences.PreferencesLocalization.Current("Hold Ctrl for Quick Push"));
 			WeakEventManager<NotificationCenter, EventArgs<ClosableTabItem>>.AddHandler(NotificationCenter.Current, "ActiveTabChanged", ActiveTabChanged);
 		WeakEventManager<NotificationCenter, EventArgs>.AddHandler(NotificationCenter.Current, "ShellChanged", ShellChanged);
-		// 主题切换或自定义颜色变化时重建外观菜单，同步各 MenuItem 的 IsChecked 状态。
-		WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+			// 主题切换或自定义颜色变化时重建外观菜单，同步各 MenuItem 的 IsChecked 状态。
+			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
+		// v4.x：标签条布局切换后重建外观菜单，同步"标签布局"组勾选状态（同主题切换模式）。
+		WeakEventManager<NotificationCenter, EventArgs<TabBarLayout>>.AddHandler(NotificationCenter.Current, "TabBarLayoutChanged", TabBarLayoutChanged);
+	}
+
+	private void TabBarLayoutChanged(object sender, EventArgs<TabBarLayout> args)
+	{
+		// 布局切换后重建外观菜单，让 IsChecked 状态即时同步。
+		if (AppearanceToolbarDropdownButton?.ContextMenu != null)
+		{
+			InitializeAppearanceToolBarButtonContextMenu();
+		}
 	}
 
 	private void ApplicationThemeChanged(object sender, EventArgs<ThemeType> args)
@@ -604,12 +615,28 @@ namespace ForkPlus.UI.UserControls
 		};
 		contextMenu.Items.Add(customColorsItem);
 			// WPF 版用负 Margin 让分隔线“向左延伸”；Avalonia 下会被菜单边框裁剪导致看不到。
-			// 这里用普通 Separator，保证三段分组（Theme / Language / Commit List Layout）有清晰分隔。
+			// 这里用普通 Separator，保证各分组（Theme / Language / Tab Layout / Commit List Layout）有清晰分隔。
 			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Language", language)));
 			foreach (Preferences.PreferencesLocalization.LanguageOption languageOption in Preferences.PreferencesLocalization.GetLanguages())
 			{
 				AddLanguageMenuItem(contextMenu.Items, languageOption.Code, languageOption.DisplayName);
+			}
+			contextMenu.Items.Add(new Separator());
+			// v4.x："标签布局"组（主窗口仓库标签条 顶部/左侧/右侧），置于 Language 与
+			// Commit List Layout 两组之间。勾选态由设置驱动，切换后经 TabBarLayoutChanged
+			// 事件重建本菜单同步。
+			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Tab Layout", language)));
+			foreach (TabBarLayout tabLayout in new TabBarLayout[] { TabBarLayout.Top, TabBarLayout.Left, TabBarLayout.Right })
+			{
+				TabBarLayout layoutCopy = tabLayout;
+				MenuItem layoutItem = MainWindow.Commands.SwitchApplicationTheme.CreateMenuItem(Preferences.PreferencesLocalization.Translate(layoutCopy.LocalizeKey(), language), delegate
+				{
+					MainWindow.Commands.SwitchTabBarLayout.Execute(layoutCopy);
+				});
+				layoutItem.IsChecked = ForkPlusSettings.Default.TabBarLayout == layoutCopy;
+				layoutItem.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
+				contextMenu.Items.Add(layoutItem);
 			}
 			contextMenu.Items.Add(new Separator());
 			contextMenu.Items.Add(new HeaderMenuItem(Preferences.PreferencesLocalization.Translate("Commit List Layout", language)));

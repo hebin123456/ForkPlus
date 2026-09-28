@@ -88,6 +88,8 @@ namespace ForkPlus.UI
 
 		private SwitchRevisionListOrientationCommand _switchRevisionListOrientation;
 
+		private SwitchTabBarLayoutCommand _switchTabBarLayout;
+
 		private OpenRepositoryInShellToolCommand _openRepositoryInShellTool;
 
 		private OpenRepositoryInDefaultShellToolCommand _openRepositoryInDefaultShellTool;
@@ -222,6 +224,9 @@ namespace ForkPlus.UI
 		public SwitchWorkspaceCommand SwitchWorkspace => CommandContainer.Lazy(ref _switchWorkspace);
 
 		public SwitchRevisionListOrientationCommand SwitchRevisionListOrientation => CommandContainer.Lazy(ref _switchRevisionListOrientation);
+
+		/// <summary>切换主窗口仓库标签条布局（顶部/左侧/右侧）。v4.x 新增。</summary>
+		public SwitchTabBarLayoutCommand SwitchTabBarLayout => CommandContainer.Lazy(ref _switchTabBarLayout);
 
 		public OpenRepositoryInShellToolCommand OpenRepositoryInShellTool => CommandContainer.Lazy(ref _openRepositoryInShellTool);
 

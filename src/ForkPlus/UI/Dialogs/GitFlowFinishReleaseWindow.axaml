@@ -21,7 +21,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Release:" />
-      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="BranchesComboBox_SelectionChanged" x:Name="BranchesComboBox">
+      <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="BranchesComboBox_SelectionChanged" controls:ComboBoxSearch.IsEnabled="True" x:Name="BranchesComboBox">
         <ComboBox.ItemTemplate>
           <DataTemplate>
             <StackPanel Orientation="Horizontal">

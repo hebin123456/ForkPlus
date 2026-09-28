@@ -104,8 +104,9 @@
         <ContentPresenter Content="{TemplateBinding Icon}" HorizontalAlignment="Center" Height="16" Width="16" Margin="3" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource MainMenu.Static.Foreground}" x:Name="Icon" IsVisible="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource NullToVisibility}}" />
         <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding Foreground}" FlowDirection="LeftToRight" Margin="3" VerticalAlignment="Center" x:Name="GlyphPanel" IsVisible="False" />
         <ContentPresenter ContentTemplate="{TemplateBinding HeaderTemplate}" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource MenuHeaderTextConverter}}" Grid.Column="1" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" x:Name="ContentPresenter" />
-        <!-- Match WPF: the popup's top-left is aligned to the menu header's bottom-left. -->
-        <Popup Focusable="False" Placement="AnchorAndGravity" PlacementAnchor="BottomLeft" PlacementGravity="BottomRight" HorizontalOffset="-2" VerticalOffset="2" x:Name="PART_Popup">
+        <!-- Match WPF: the popup's top-left is aligned to the menu header's bottom-left.
+             视觉微调：相对菜单栏按钮再左移 8px、上移 10px。 -->
+        <Popup Focusable="False" Placement="AnchorAndGravity" PlacementAnchor="BottomLeft" PlacementGravity="BottomRight" HorizontalOffset="-10" VerticalOffset="-8" x:Name="PART_Popup">
           <Popup.IsOpen>
             <Binding Path="IsSubMenuOpen"><Binding.RelativeSource><RelativeSource Mode="TemplatedParent" /></Binding.RelativeSource></Binding>
           </Popup.IsOpen>

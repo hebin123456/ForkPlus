@@ -119,6 +119,13 @@ namespace ForkPlus.UI.Controls
 				base.Theme = tabTheme;
 			}
 
+			// v4.x：标签条为垂直布局（左侧/右侧）时，新标签页也要带上 "vertical" class，
+			// 命中 Tabcontrol.axaml 里的垂直标签样式（已有标签由 ClosableTabControl.ApplyTabBarLayout 同步）。
+			if (ForkPlusSettings.Default.TabBarLayout != TabBarLayout.Top)
+			{
+				Classes.Add("vertical");
+			}
+
 			// 修复（2026-09-10，坑2"press 记录失效→拖拽发不起"）：WPF 原版是 PreviewMouseDown/
 			// PreviewMouseMove（Tunnel 阶段，先于 TabItem 基类选中处理），迁移时被搬成了
 			// base.PointerPressed +=（Bubble 实例订阅）——Avalonia 12 的 TabItem class handler

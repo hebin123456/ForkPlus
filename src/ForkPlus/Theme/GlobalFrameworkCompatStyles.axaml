@@ -34,9 +34,32 @@
        本样式给全应用 SelectableTextBlock（提交tab 的 Subject/Description、作者、
        SHA 等处的可选中文本）统一补齐选区画笔，复用项目既定的固定选区蓝
        TextBox.Selection.*（全皮肤一致 #236BD2 + 白字，见 Brushes.axaml 注释），
-       使"拖选→复制"有可见高亮，切实可复制。 -->
-  <Style Selector="SelectableTextBlock">
+       使"拖选→复制"有可见高亮，切实可复制。
+       修复（2026-09-28 补第二刀，同一 bug 的另一半根因——"仍然选不中"）：
+       9/19 只补了高亮画笔，没修命中测试。Avalonia 的命中测试基于渲染内容：
+       Background=null 的 TextBlock 只有字形像素可命中（RenderDataStream.HitTest
+       OnDrawGlyphRun），行间留白/字后空白/控件边距全部穿透——点击落到下层
+       ScrollContentPresenter（有背景，整块可命中）被吃掉，拖选起点根本到不了
+       SelectableTextBlock，OnPointerPressed 不触发，选择从未启动（实证：
+       RevisionSummaryDragSelectionTests 走真实输入管线复现，hit=ScrollContentPresenter，
+       SelectionStart=End=0）。WPF 原版 TextEditor 反射 hack 是整个 TextBlock 区域可
+       点可选，迁移后退化。Background=Transparent（FillRectangle 有 brush 即命中）
+       让整个控件区域参与命中测试，从任意位置都能启动拖选——Avalonia 社区对该
+       问题的标准解法。透明填充不可见，无视觉副作用；空白区域从穿透变命中仅
+       影响点击落点归属（聚焦文本块），无既有场景依赖穿透。
+       修复（2026-09-28 第三刀——前两刀从未生效的元凶）：选择器必须用 :is()。
+       Avalonia 类型选择器是**精确类型匹配**（TypeNameAndClassSelector.OfType →
+       IsConcreteType=true → controlType != TargetType 即不匹配，源码实证），
+       与 WPF"类型选择器匹配派生类"语义不同。应用里全部可选中文本是
+       ForkPlus.UI.Controls.SelectableTextBlock（继承 Avalonia.Controls.
+       SelectableTextBlock 的派生类），9/19 写的 Selector="SelectableTextBlock"
+       解析为 Avalonia 基类类型 → 派生类永远不匹配 → SelectionBrush 从未生效
+       （实证：RevisionSummaryDragSelectionTests 探针控件 Background/SelectionBrush
+       均为 null）。:is() 走 IsAssignableFrom（TypeNameAndClassSelector.Is），
+       基类+派生类全部匹配。这是本样式 9/19 以来始终空转的根因。 -->
+  <Style Selector=":is(SelectableTextBlock)">
     <Setter Property="SelectionBrush" Value="{DynamicResource TextBox.Selection.Background}" />
     <Setter Property="SelectionForegroundBrush" Value="{DynamicResource TextBox.Selection.Foreground}" />
+    <Setter Property="Background" Value="Transparent" />
   </Style>
 </Styles>

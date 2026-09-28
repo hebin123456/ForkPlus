@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
   <ControlTheme x:Key="ComboboxShadowBorderStyle" TargetType="Border">
     <Setter Property="Background" Value="#00FFFFFF" />
     <!-- v4.0.12（"下拉框比上面矩形左偏移几个像素"）：原 Padding "8,0,8,8" 与三个弹层模板的
@@ -153,24 +153,33 @@
             <Border.Width>
               <Binding Path="Bounds.Width" RelativeSource="{RelativeSource TemplatedParent}" />
             </Border.Width>
-            <ScrollViewer Background="#00FFFFFF" Margin="2" x:Name="DropDownScrollViewer">
-              <Grid Background="#00FFFFFF" x:Name="grid">
-                <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0" Background="#00FFFFFF" x:Name="canvas">
-                  <Rectangle x:Name="opaqueRect">
-                    <Rectangle.Fill>
-                      <Binding ElementName="dropDownBorder" Path="Background" />
-                    </Rectangle.Fill>
-                    <Rectangle.Height>
-                      <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
-                    </Rectangle.Height>
-                    <Rectangle.Width>
-                      <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
-                    </Rectangle.Width>
-                  </Rectangle>
-                </Canvas>
-                <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
-              </Grid>
-            </ScrollViewer>
+            <!-- 分支下拉框搜索过滤（2026-09-28）：PART_SearchBox 默认隐藏，ComboBox 挂
+                 controls:ComboBoxSearch.IsEnabled="True" 时附加行为加上 .searchable 类，
+                 下方 ControlTheme 嵌套样式把它显示出来（搜索/过滤/还原逻辑全在
+                 ComboBoxSearch 附加行为里）。Placeholder 英文兜底，翻译由行为在模板
+                 应用后用 PreferencesLocalization.Current("Search") 覆盖（ApplyCurrent
+                 递归翻译发生在模板实例化之前，够不到弹层内的模板部件）。 -->
+            <DockPanel Background="#00FFFFFF" LastChildFill="True">
+              <controls:PlaceholderTextBox DockPanel.Dock="Top" Margin="4,4,4,2" Placeholder="Search" Icon="{DynamicResource SearchOnIcon}" Theme="{DynamicResource SearchPanelPlaceholderTextBox}" IsVisible="False" x:Name="PART_SearchBox" />
+              <ScrollViewer Background="#00FFFFFF" Margin="2,0,2,2" x:Name="DropDownScrollViewer">
+                <Grid Background="#00FFFFFF" x:Name="grid">
+                  <Canvas HorizontalAlignment="Left" Height="0" VerticalAlignment="Top" Width="0" Background="#00FFFFFF" x:Name="canvas">
+                    <Rectangle x:Name="opaqueRect">
+                      <Rectangle.Fill>
+                        <Binding ElementName="dropDownBorder" Path="Background" />
+                      </Rectangle.Fill>
+                      <Rectangle.Height>
+                        <Binding ElementName="dropDownBorder" Path="Bounds.Height" />
+                      </Rectangle.Height>
+                      <Rectangle.Width>
+                        <Binding ElementName="dropDownBorder" Path="Bounds.Width" />
+                      </Rectangle.Width>
+                    </Rectangle>
+                  </Canvas>
+                  <ItemsPresenter x:Name="ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+                </Grid>
+              </ScrollViewer>
+            </DockPanel>
           </Border>
         </Border>
       </Popup>
@@ -302,9 +311,14 @@
       </Setter.Value>
     </Setter>
     <Setter Property="Template" Value="{StaticResource ComboBoxTemplate}" />
-    
-  
-</ControlTheme>
+
+    <!-- 分支下拉框搜索过滤（2026-09-28）：.searchable 类由 ComboBoxSearch 附加行为维护
+        （controls:ComboBoxSearch.IsEnabled="True"），仅显示弹层内 PART_SearchBox；
+         过滤逻辑/焦点/键盘全在附加行为内。 -->
+    <Style Selector="^.searchable /template/ controls|PlaceholderTextBox#PART_SearchBox">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+  </ControlTheme>
   <ControlTheme x:Key="InteractiveRebaseToggleButton" TargetType="ToggleButton">
     
     <Setter Property="Margin" Value="0,2,0,2" />
