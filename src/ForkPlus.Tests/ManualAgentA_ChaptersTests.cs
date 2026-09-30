@@ -694,6 +694,18 @@ namespace ForkPlus.Tests
 							}), "old/new 双图装配后 ViewModeButtonsContainer 应可见");
 							ManualScreenshotHelper.Snap(window, "01-image-side-by-side", "07-binary-diff");
 
+							// v4.3.1：滚轮放大后工具条出现「还原大小 (N%)」按钮（各视图共享同一缩放状态）
+							ImageZoomState zoomState = binaryDiff.SrcFileContentUserControl.ZoomState;
+							Assert.NotNull(zoomState);
+							zoomState.Set(2.0, 0.5, 0.5);
+							Dispatcher.UIThread.RunJobs();
+							Assert.True(binaryDiff.ResetZoomButton.IsVisible, "缩放后应显示「还原大小」按钮");
+							ManualScreenshotHelper.Snap(window, "09-image-zoom-reset", "07-binary-diff");
+							UiClick.Click(binaryDiff.ResetZoomButton);
+							Dispatcher.UIThread.RunJobs();
+							Assert.True(zoomState.IsDefault, "点击「还原大小」后应回到初始缩放状态");
+							Assert.False(binaryDiff.ResetZoomButton.IsVisible, "还原后应隐藏「还原大小」按钮");
+
 							// Swipe
 							binaryDiff.SwipeRadioButton.IsChecked = true;
 							Dispatcher.UIThread.RunJobs();
@@ -782,10 +794,15 @@ namespace ForkPlus.Tests
 						BinaryDiffUserControl bigDiff = OpenCommitViewAndWaitBinaryDiff(bigRepo, "data.bin", out var window);
 						try
 						{
-							bigDiff.HexRadioButton.IsChecked = true;
-							Dispatcher.UIThread.RunJobs();
+							// 激活提交视图时可能已自动加载过一次同一文件，选中后又触发一次 diff
+							// 加载；这一次在途刷新会重建子视图并把视图模式重置回并排。等待 Hex
+							// 视图出现的过程中持续重申 Hex 选中，避免刚设置就被这次刷新覆盖。
 							Assert.True(UiClick.WaitFor(delegate
 							{
+								if (!bigDiff.HexRadioButton.IsChecked.GetValueOrDefault())
+								{
+									bigDiff.HexRadioButton.IsChecked = true;
+								}
 								return bigDiff.HexDiffViewContainer.IsVisible
 									&& UiClick.FindAll<HexEditor>(window).Count >= 2;
 							}), "大文件 Hex 视图应装配双 HexEditor");

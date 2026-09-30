@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 7 章 · 二进制与图片 Diff</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.3.0</p>
+  <p>ForkPlus 用户手册 · 版本 v4.3.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -57,31 +57,40 @@
   <p><strong>十六进制</strong>模式用双 Hex 编辑器展示图片文件的原始字节（左右分栏、逐字节对齐），供需要从二进制层面审查图片数据的场景使用。</p>
   <figure>
     <img src="screenshots/07-binary-diff/05-image-hex.png" alt="图片 Hex 视图" loading="lazy">
-    <figcaption>图 7-5　图片的十六进制视图：双 Hex 编辑器逐字节对比</figcaption>
+    <figcaption>图 7-6　图片的十六进制视图：双 Hex 编辑器逐字节对比</figcaption>
+  </figure>
+
+  <h2>放大查看：滚轮缩放与拖动平移</h2>
+  <p>图片较小、细节看不清时，不必再截图放大——上述<strong>并排 / 滑动 / 洋葱皮</strong>三种模式都可以直接在图片区域用<strong>鼠标滚轮放大缩小</strong>。放大到超出可视区域后，<strong>按住左键拖动即可平移查看</strong>（光标变为四向移动样式），平移被限制在图片边界内，不会拖出空白留白；未放大到超出可视区域时拖动不生效。</p>
+  <p>并排左右两栏、以及切换模式后的各视图<strong>共用同一套缩放与位置</strong>：一处缩放，各视图同步；一处拖动，两栏同步平移。两张图片尺寸不一致时按<strong>中心点对齐</strong>——同一图像位置始终位于左右对应的屏幕位置上，方便逐像素比对。</p>
+  <p>只要缩放比例不再是 100%，模式按钮右侧就会出现「<strong>还原大小 (N%)</strong>」按钮，N 为当前缩放百分比；点击即回到贴合视图的 100% 初始状态（并排、滑动、洋葱皮同步还原）。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/09-image-zoom-reset.png" alt="图片放大后显示还原大小按钮" loading="lazy">
+    <figcaption>图 7-5　滚轮放大后工具条出现「还原大小 (200%)」按钮，点击回到初始缩放</figcaption>
   </figure>
 
   <h2>非图片二进制的简略卡片视图</h2>
   <p>对于非图片的二进制文件（如 <code>.bin</code>），ForkPlus 提供<strong>简略卡片视图</strong>：左右两个卡片分别显示「旧」「新」版本的文件图标与字节大小（如 256 B → 512 B），不尝试解析内容，仅直观告知文件变化与体积变化。此时模式按钮只保留 <strong>并排 / 十六进制</strong> 两项（滑动 / 洋葱皮自动隐藏）。</p>
   <figure>
     <img src="screenshots/07-binary-diff/06-binary-card-view.png" alt="二进制简略卡片视图" loading="lazy">
-    <figcaption>图 7-6　二进制简略卡片视图：仅显示旧/新文件图标与字节大小（此例 256 B → 512 B）</figcaption>
+    <figcaption>图 7-7　二进制简略卡片视图：仅显示旧/新文件图标与字节大小（此例 256 B → 512 B）</figcaption>
   </figure>
 
   <h3>Hex 视图</h3>
   <p>点击「十六进制」把二进制文件切到 Hex 视图，以字节（十六进制）形式逐行对比新旧内容，左右双编辑器对齐，可精确查看每个字节的变化。</p>
   <figure>
     <img src="screenshots/07-binary-diff/07-binary-hex-view.png" alt="二进制 Hex 视图" loading="lazy">
-    <figcaption>图 7-7　二进制文件的 Hex 视图：左右双栏逐字节对比</figcaption>
+    <figcaption>图 7-8　二进制文件的 Hex 视图：左右双栏逐字节对比</figcaption>
   </figure>
 
   <h2>大文件 Diff</h2>
   <p>对于体积较大的二进制文件，Hex 视图首屏只渲染开头一段字节，并提供「加载更多」分页加载机制，按需读取后续内容，避免一次载入大文件造成卡顿。</p>
   <figure>
     <img src="screenshots/07-binary-diff/08-large-binary-hex.png" alt="大文件 Hex 视图" loading="lazy">
-    <figcaption>图 7-8　大文件 Hex 视图：首屏仅渲染开头字节，滚动时按需加载更多</figcaption>
+    <figcaption>图 7-9　大文件 Hex 视图：首屏仅渲染开头字节，滚动时按需加载更多</figcaption>
   </figure>
 
-  <div class="tip"><strong>小贴士：</strong>处理图片改动时，先用「并排」看整体、再用「滑动」或「洋葱皮」定位具体差异区域；若怀疑文件结构异常，切到「十六进制」核实原始字节。</div>
+  <div class="tip"><strong>小贴士：</strong>处理图片改动时，先用「并排」看整体、再用「滑动」或「洋葱皮」定位具体差异区域；细节看不清就直接<strong>滚轮放大 + 拖动平移</strong>（左右同步、中心点对齐），看完点「还原大小」回到全貌；若怀疑文件结构异常，切到「十六进制」核实原始字节。</div>
 </main>
 <footer class="manual-footer">
   ForkPlus 用户手册 · 第 7 章 · 二进制与图片 Diff
