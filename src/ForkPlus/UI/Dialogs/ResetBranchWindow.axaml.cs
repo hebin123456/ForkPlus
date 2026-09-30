@@ -74,6 +74,7 @@ namespace ForkPlus.UI.Dialogs
 		HardResetTypeText.Text = PreferencesLocalization.Current("Hard");
 		HardResetDescriptionText.Text = PreferencesLocalization.Current("Discard all local changes");
 		_repositoryUserControl = repositoryUserControl;
+			LoseCommitsPreviewSection.RepositoryUserControl = _repositoryUserControl;
 			_branch = activeBranch;
 			_destination = destination;
 			if (activeBranch != null)
@@ -93,6 +94,44 @@ namespace ForkPlus.UI.Dialogs
 			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 _destination 尚未赋值，
 			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
 			RefreshCommandPreview();
+			// WS2.3：重置丢失预览——<目标>..<当前分支尖> 范围内当前侧独有的提交（重置后将从
+			// 分支尖丢失）。构造期同步计算（本地 rev-list/log 很快）；任何失败静默隐藏，
+			// 绝不让窗口构造抛异常（此时窗口尚未 Show）。目标 ref 固定于构造参数，无后续
+			// 刷新链；ResetTypeCombobox 的选择变化不影响丢失集合（soft/mixed/hard 均移动分支引用）。
+			try
+			{
+				RefreshLoseCommitsPreview();
+			}
+			catch
+			{
+				// 预览失败：保持隐藏即可
+			}
+		}
+
+		// WS2.3：计算并填充丢失预览。to 侧：有活跃分支用分支 ref（无则 HEAD——分离头指针
+		// 场景重置 HEAD 同样可能丢弃当前 HEAD 可达而目标不可达的提交）。
+		private void RefreshLoseCommitsPreview()
+		{
+			GitModule gitModule = _repositoryUserControl?.GitModule;
+			if (gitModule == null || _destination == null)
+			{
+				return;
+			}
+			string from = _destination.Sha.ToString();
+			if (string.IsNullOrEmpty(from))
+			{
+				return;
+			}
+			string to = (_branch != null && !string.IsNullOrEmpty(_branch.FullReference)) ? _branch.FullReference : "HEAD";
+			GitCommandResult<GetCommitsBetweenGitCommand.CommitsBetweenResult> result = new GetCommitsBetweenGitCommand().Execute(gitModule, from, to);
+			if (!result.Succeeded || result.Result.Count <= 0)
+			{
+				return;
+			}
+			string summary = PreferencesLocalization.FormatCurrent("Resetting will lose {0} commits", result.Result.Count);
+			LoseCommitsPreviewSection.SetCommits(summary,
+				result.Result.Commits.Map((GetCommitsBetweenGitCommand.CommitPreview x) => new CommitsPreviewSection.Item(x.Sha, x.Subject, x.FullSha)));
+			LoseCommitsPreviewSection.IsVisible = true;
 		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
@@ -116,6 +155,12 @@ namespace ForkPlus.UI.Dialogs
 		{
 			GitModule gitModule = _repositoryUserControl.GitModule;
 			if (gitModule == null)
+			{
+				return;
+			}
+			// WS2.4：目标分支受保护 → 提交前拦截（DisableEditableControls 之前，取消时控件仍可用）。
+			// 分离头指针（_branch == null）无分支名可匹配，不拦截。
+			if (_branch != null && !ProtectedBranchConfirmWindow.Confirm(this, gitModule.Settings.ProtectedBranches, new string[1] { _branch.Name }))
 			{
 				return;
 			}

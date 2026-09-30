@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.Undo;
 using Xunit;
@@ -143,6 +144,205 @@ namespace ForkPlus.Tests
 				ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(i), "op");
 				Assert.Equal("HEAD@{" + i + "}", item.IndexDisplay);
 			}
+		}
+
+		// ===== WS9 时间线升级：索引命中 / 首末条时间线标记 / 相对时间 / 悬停提示 =====
+
+		[Fact]
+		public void TwoArgConstructor_DefaultsToPlainMidTimelineItem()
+		{
+			// 既有两参构造保持 v3.4.0 语义：未命中索引的中间时间线条目（上下线均画）
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0), "op");
+			Assert.False(item.IsIndexedOperation);
+			Assert.False(item.IsFirst);
+			Assert.False(item.IsLast);
+			Assert.True(item.TimelineShowTopLine);
+			Assert.True(item.TimelineShowBottomLine);
+		}
+
+		[Fact]
+		public void TimelineFlags_FirstItem_HidesTopLineOnly()
+		{
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0), "op", isFirst: true);
+			Assert.True(item.TimelineShowBottomLine);
+			Assert.False(item.TimelineShowTopLine);
+		}
+
+		[Fact]
+		public void TimelineFlags_LastItem_HidesBottomLineOnly()
+		{
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(3), "op", isLast: true);
+			Assert.True(item.TimelineShowTopLine);
+			Assert.False(item.TimelineShowBottomLine);
+		}
+
+		[Fact]
+		public void TimelineFlags_IndexedOperation_DoesNotAffectLines()
+		{
+			// 命中只改变节点颜色/加粗，不影响竖线
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0), "Commit 'fix'", isIndexedOperation: true);
+			Assert.True(item.IsIndexedOperation);
+			Assert.True(item.TimelineShowTopLine);
+			Assert.True(item.TimelineShowBottomLine);
+		}
+
+		[Fact]
+		public void RawReflogSubject_PassedThrough()
+		{
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0, reflogSubject: "reset: moving to HEAD~1"), "Reset 'main'");
+			Assert.Equal("reset: moving to HEAD~1", item.RawReflogSubject);
+		}
+
+		[Fact]
+		public void RawReflogSubject_Null_NormalizedToEmpty()
+		{
+			ReflogEntry entry = MakeReflogEntry(0);
+			entry.ReflogSubject = null;
+			ReflogViewItem item = new ReflogViewItem(entry, "op");
+			Assert.Equal("", item.RawReflogSubject);
+		}
+
+		[Fact]
+		public void RelativeTimeDisplay_NullTimestamp_ReturnsEmpty()
+		{
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0, timestampUtc: null), "op");
+			Assert.Equal("", item.RelativeTimeDisplay);
+		}
+
+		[Fact]
+		public void RelativeTimeDisplay_RecentTimestamp_UsesRelativeFormat()
+		{
+			// 3 小时前：ToRelativeString 输出 "3 hours ago" / "3 小时前" / "3 小時前"，
+			// 与语言无关的共同结构是含数量 "3" 且不等于绝对时间格式
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0, timestampUtc: DateTime.UtcNow.AddHours(-3)), "op");
+			string relative = item.RelativeTimeDisplay;
+			Assert.NotEqual("", relative);
+			Assert.NotEqual(item.TimeDisplay, relative);
+			Assert.Contains("3", relative);
+		}
+
+		[Fact]
+		public void RelativeTimeDisplay_FutureTimestamp_FallsBackToAbsolute()
+		{
+			// 时钟偏斜（未来时间戳）：ToRelativeString 会算出负数，回退绝对时间
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0, timestampUtc: DateTime.UtcNow.AddHours(2)), "op");
+			Assert.Equal(item.TimeDisplay, item.RelativeTimeDisplay);
+		}
+
+		[Fact]
+		public void TooltipText_PlainItem_OperationAndAbsoluteTime()
+		{
+			DateTime utc = new DateTime(2026, 7, 19, 2, 0, 0, DateTimeKind.Utc);
+			ReflogViewItem item = new ReflogViewItem(MakeReflogEntry(0, timestampUtc: utc), "op");
+			Assert.Equal("op\n" + item.TimeDisplay, item.TooltipText);
+		}
+
+		[Fact]
+		public void TooltipText_IndexedItem_IncludesRawReflogSubjectAndAbsoluteTime()
+		{
+			DateTime utc = new DateTime(2026, 7, 19, 2, 0, 0, DateTimeKind.Utc);
+			ReflogViewItem item = new ReflogViewItem(
+				MakeReflogEntry(0, reflogSubject: "commit: fix: bug", timestampUtc: utc),
+				"Commit 'fix: bug'",
+				isIndexedOperation: true);
+			Assert.Equal("Commit 'fix: bug'\ncommit: fix: bug\n" + item.TimeDisplay, item.TooltipText);
+		}
+
+		// ===== WS9：BuildViewItems 的 sha 命中 → 操作名装配（纯逻辑，UI 与测试共用路径） =====
+
+		[Fact]
+		public void BuildViewItems_IndexHit_UsesFriendlyNameAndIndexedFlag()
+		{
+			List<ReflogEntry> reflog = new List<ReflogEntry>
+			{
+				MakeReflogEntry(0),
+				MakeReflogEntry(1)
+			};
+			Dictionary<string, UndoIndexEntry> index = new Dictionary<string, UndoIndexEntry>
+			{
+				{ SampleSha, new UndoIndexEntry(SampleSha, "Commit 'fix'", DateTime.UtcNow) }
+			};
+
+			List<ReflogViewItem> items = ReflogWindow.BuildViewItems(reflog, index);
+
+			Assert.Equal(2, items.Count);
+			foreach (ReflogViewItem item in items)
+			{
+				Assert.True(item.IsIndexedOperation, "sha 命中索引的条目应标记为已索引");
+				Assert.Equal("Commit 'fix'", item.OperationName);
+			}
+		}
+
+		[Fact]
+		public void BuildViewItems_IndexMiss_FallsBackToRawReflogSubject()
+		{
+			List<ReflogEntry> reflog = new List<ReflogEntry>
+			{
+				MakeReflogEntry(0, sha: "aaaa000000000000000000000000000000000001", reflogSubject: "commit: one"),
+				MakeReflogEntry(1, sha: "bbbb000000000000000000000000000000000002", reflogSubject: "reset: moving to HEAD~1")
+			};
+			Dictionary<string, UndoIndexEntry> index = new Dictionary<string, UndoIndexEntry>
+			{
+				// 索引里只有无关 sha：两条都未命中
+				{ "cccc000000000000000000000000000000000003", new UndoIndexEntry("cccc000000000000000000000000000000000003", "other op", DateTime.UtcNow) }
+			};
+
+			List<ReflogViewItem> items = ReflogWindow.BuildViewItems(reflog, index);
+
+			Assert.Equal(2, items.Count);
+			Assert.False(items[0].IsIndexedOperation);
+			Assert.Equal("commit: one", items[0].OperationName);
+			Assert.False(items[1].IsIndexedOperation);
+			Assert.Equal("reset: moving to HEAD~1", items[1].OperationName);
+		}
+
+		[Fact]
+		public void BuildViewItems_EmptyOperationNameInIndex_TreatedAsMiss()
+		{
+			// 索引条目存在但操作名为空：视为未命中，降级到原生 subject
+			List<ReflogEntry> reflog = new List<ReflogEntry> { MakeReflogEntry(0) };
+			Dictionary<string, UndoIndexEntry> index = new Dictionary<string, UndoIndexEntry>
+			{
+				{ SampleSha, new UndoIndexEntry(SampleSha, "", DateTime.UtcNow) }
+			};
+
+			List<ReflogViewItem> items = ReflogWindow.BuildViewItems(reflog, index);
+
+			Assert.Single(items);
+			Assert.False(items[0].IsIndexedOperation);
+			Assert.Equal("commit: fix", items[0].OperationName);
+		}
+
+		[Fact]
+		public void BuildViewItems_NullIndex_AllPlain()
+		{
+			List<ReflogEntry> reflog = new List<ReflogEntry> { MakeReflogEntry(0) };
+
+			List<ReflogViewItem> items = ReflogWindow.BuildViewItems(reflog, null);
+
+			Assert.Single(items);
+			Assert.False(items[0].IsIndexedOperation);
+			Assert.Equal("commit: fix", items[0].OperationName);
+		}
+
+		[Fact]
+		public void BuildViewItems_SetsFirstAndLastTimelineFlags()
+		{
+			List<ReflogEntry> reflog = new List<ReflogEntry>
+			{
+				MakeReflogEntry(0),
+				MakeReflogEntry(1),
+				MakeReflogEntry(2)
+			};
+
+			List<ReflogViewItem> items = ReflogWindow.BuildViewItems(reflog, new Dictionary<string, UndoIndexEntry>());
+
+			Assert.True(items[0].IsFirst);
+			Assert.False(items[0].IsLast);
+			Assert.False(items[1].IsFirst);
+			Assert.False(items[1].IsLast);
+			Assert.False(items[2].IsFirst);
+			Assert.True(items[2].IsLast);
 		}
 	}
 }

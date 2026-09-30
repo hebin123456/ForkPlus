@@ -72,7 +72,11 @@ namespace ForkPlus.UI.Commands
 			}
 			if (hashSet2.Count > 0)
 			{
-				if (new MessageBoxWindow("Discard changes", "Do you want to discard all your changes in the selected files?", CreateButtonTitle(changedFiles), "Cancel", showCancelButton: true, 550.0).ShowDialog().GetValueOrDefault())
+				// WS2.3：MessageBox 确认替换为自定义对话框（分组列出将丢弃的子仓/普通文件）。
+				// 确认语义不变：确认后执行原丢弃逻辑，取消则不动作。按钮文案仍按原始
+				// changedFiles 的去重路径数计算（与原 MessageBox 一致，含目录条目）。
+				DiscardChangesWindow discardChangesWindow = new DiscardChangesWindow(hashSet2.ToArray(), hashSet.ToArray(), CreateButtonTitle(changedFiles));
+				if (discardChangesWindow.ShowDialog().GetValueOrDefault())
 				{
 					DiscardFiles(commitUserControl, repositoryUserControl, hashSet2.ToArray(), hashSet.ToArray());
 				}

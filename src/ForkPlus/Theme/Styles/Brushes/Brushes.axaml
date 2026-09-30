@@ -146,6 +146,10 @@
   <SolidColorBrush x:Key="ToolbarBackgroundBrush" Color="{DynamicResource Toolbar.BackgroundColor}" />
   <SolidColorBrush x:Key="ToolbarBorderBrush" Color="{DynamicResource Toolbar.BorderColor}" />
   <SolidColorBrush x:Key="Toolbar.PullPushBadgeBrush" Color="{DynamicResource Toolbar.PullPushBadgeColor}" />
+  <!-- WS2.5：分叉态（既领先又落后）Pull/Push 徽章的独立警示色，值取自各主题
+       Colors.*.axaml 的 Toolbar.PullPushBadgeDivergedColor（浅色 #E67E22 / 深色 #D97706）。
+       引用处（ToolbarUserControl 徽章样式）用 DynamicResource，换肤即时生效。 -->
+  <SolidColorBrush x:Key="Toolbar.PullPushBadgeDivergedBrush" Color="{DynamicResource Toolbar.PullPushBadgeDivergedColor}" />
   <SolidColorBrush x:Key="Window.BackgroundBrush" Color="{DynamicResource Window.BackgroundColor}" />
   <SolidColorBrush x:Key="Window.BorderBrush" Color="{DynamicResource Window.BorderColor}" />
   <SolidColorBrush x:Key="Window.ButtonsRegionBrush" Color="{DynamicResource Window.ButtonsRegionBackgroundColor}" />

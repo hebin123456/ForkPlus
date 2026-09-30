@@ -120,7 +120,9 @@
           <TextBlock Grid.Row="2" Grid.Column="0" Margin="18,4,0,0" FontSize="13" Text="Public Key:" />
           <TextBox Text="" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="14,4,0,0" FontSize="13" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" x:Name="SshKeyPublicKeyTextBox" />
           <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" FontSize="13" Margin="14,2,0,0">
-            <HyperlinkButton NavigateUri="dummy" Theme="{StaticResource BlueUnderlineHyperlinkStyle}">
+            <!-- 修复（2026-09-30，"Copy to clipboard 点了没反应"）：WPF Hyperlink RequestNavigate="CopyPublicKey_RequestNavigate"
+                 迁移成 HyperlinkButton NavigateUri="dummy"（launcher 打不开相对地址）且处理器被孤儿化。改回 Click 接线复制公钥。 -->
+            <HyperlinkButton Theme="{StaticResource BlueUnderlineHyperlinkStyle}" Click="CopyPublicKeyHyperlinkButton_Click">
               <TextBlock HorizontalAlignment="Center" Text="Copy to clipboard" Margin="0" />
             </HyperlinkButton>
           </TextBlock>

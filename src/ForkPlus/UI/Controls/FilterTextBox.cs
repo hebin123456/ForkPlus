@@ -113,6 +113,17 @@ namespace ForkPlus.UI.Controls
 
 		public FilterTextBox()
 		{
+			// 修复（2026-09-29，"侧边栏过滤框等未设置提示文本的输入框里显示一个死问号图标（且无悬浮提示）"）：
+			// WPF 原版有 "Hint 为 Null → 折叠问号 TextBlock" 的 Trigger，迁移到 Avalonia 时被丢弃
+			// （见 Placeholdertextbox.axaml 中被注释掉的 Trigger），导致未设置 Hint 的实例
+			// （侧边栏过滤框、StageFileUserControl 过滤框等）常驻死问号。仿照 :noicon 伪类模式
+			// 维护 :nohint 伪类，由主题样式折叠问号；设置过 Hint 的实例（Issues/PullRequests 页）
+			// 不受影响。
+			PseudoClasses.Set(":nohint", string.IsNullOrEmpty(Hint));
+			HintProperty.Changed.AddClassHandler<FilterTextBox>(delegate(FilterTextBox control, global::Avalonia.AvaloniaPropertyChangedEventArgs e)
+			{
+				control.PseudoClasses.Set(":nohint", string.IsNullOrEmpty((string)e.NewValue));
+			});
 			base.AddHandler(global::Avalonia.Input.InputElement.KeyDownEvent,delegate(object s, KeyEventArgs e)
 			{
 				if (e.Key == Key.Down)

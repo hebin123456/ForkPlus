@@ -14,6 +14,7 @@ using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Input;
+using Avalonia.VisualTree;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 
@@ -41,6 +42,12 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			_controlViewModels = observableCollection;
 			ControlsListBox.ItemsSource = _controlViewModels;
+			// 修复（2026-09-30，"自定义命令 UI 控件列表无法拖拽排序"）：WPF 原版靠 ItemContainerStyle 里的
+			// EventSetter Drop="ListBoxItem_Drop" 接线，迁移时 EventSetter 被删且未在 code-behind 补上
+			// （axaml 第 27 行注释声称已接线，实际没有）——ListBoxItem_Drop 无人订阅，拖到落点也不重排。
+			// 改为列表级 AddHandler（Drop 自行容器冒泡上来，行容器从 e.Source 解析，
+			// 与 InteractiveRebaseWindow / RevisionListViewUserControl 同款做法）。
+			ControlsListBox.AddHandler(global::Avalonia.Input.DragDrop.DropEvent, ListBoxItem_Drop);
 			CustomCommandUIControlViewModel customCommandUIControlViewModel = _controlViewModels.FirstOrDefault();
 			if (customCommandUIControlViewModel != null)
 			{
@@ -173,12 +180,16 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		private void ListBoxItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is DragAndDropListBoxItem { DataContext: var dataContext } dragAndDropListBoxItem))
-			{
-				return;
-			}
-			CustomCommandUIControlViewModel targetItem = dataContext as CustomCommandUIControlViewModel;
-			if (targetItem == null || !(e.WpfData().GetData(typeof(object[])) is object[] array) || array.Length != 1)
+			// 修复（2026-09-30）：本 handler 由 ControlsListBox 列表级 AddHandler 接线（sender=列表），
+			// 行容器改由 e.Source 沿可视树向上解析；payload 由 typeof(object[]) 改为字符串 key 读取
+			// （WpfDataObject.GetData(Type) 对非 string 恒为 null），两侧统一走
+			// DragAndDropListBoxItem.DragItemsFormat 进程内直通表。
+			DragAndDropListBoxItem dragAndDropListBoxItem = e.Source as DragAndDropListBoxItem
+				?? (e.Source as global::Avalonia.Visual)?.GetParent<DragAndDropListBoxItem>();
+			if (dragAndDropListBoxItem == null
+				|| !(dragAndDropListBoxItem.DataContext is CustomCommandUIControlViewModel targetItem)
+				|| !(e.WpfData().GetData(DragAndDropListBoxItem.DragItemsFormat) is object[] array)
+				|| array.Length != 1)
 			{
 				return;
 			}

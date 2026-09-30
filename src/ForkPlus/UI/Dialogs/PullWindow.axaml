@@ -20,6 +20,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Remote:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <ComboBox Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" SelectionChanged="RemotesComboBox_SelectionChanged" x:Name="RemotesComboBox">
@@ -60,6 +61,9 @@
       <controls:GitPointView Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" x:Name="DestinationGitPointView" />
       <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" Content="Rebase instead of merge" ToolTip.Tip="--rebase" IsCheckedChanged="CheckBox_Changed" x:Name="RebaseCheckBox" />
       <CheckBox Grid.Column="1" Grid.Row="4" Margin="8,4,0,0" HorizontalAlignment="Left" Content="Stash and reapply local changes" IsCheckedChanged="CheckBox_Changed" x:Name="StashAndReapplyCheckBox" />
+      <!-- v3.13.0（WS5）：拉取预览。选定远程分支后显示“将拉取 N 个提交”+ 可展开的
+           远程独有提交列表（&lt;本地基线&gt;..&lt;远程分支&gt;，默认收起）。0 提交或查询失败时隐藏。 -->
+      <controls:CommitsPreviewSection Grid.Column="1" Grid.Row="5" Margin="8,8,0,0" x:Name="PullPreviewSection" IsVisible="False" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

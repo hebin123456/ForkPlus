@@ -20,7 +20,8 @@
         <RowDefinition Height="85" />
         <RowDefinition Height="17" />
       </Grid.RowDefinitions>
-      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" x:Name="ToolsListBox">
+      <!-- 修复（2026-09-30，"右键外部工具列表弹空菜单"）：WPF ContextMenuOpening="ToolsListBox_ContextMenuOpening" 接线迁移时丢失，补 ContextRequested -->
+      <ListBox VerticalAlignment="Stretch" BorderBrush="{DynamicResource BorderBrush}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="ToolsListBox_SelectionChanged" ContextRequested="ToolsListBox_ContextMenuOpening" x:Name="ToolsListBox">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

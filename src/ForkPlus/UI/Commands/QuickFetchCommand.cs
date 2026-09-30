@@ -20,6 +20,7 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl, GitModule gitModule)
 		{
+			try { System.IO.File.AppendAllText(System.IO.Path.GetTempPath() + "fp-qf-debug.log", "Execute: data=" + (repositoryUserControl?.RepositoryData != null) + "\n"); } catch { }
 			RepositoryData repositoryData = repositoryUserControl.RepositoryData;
 			if (repositoryData != null)
 			{
@@ -48,12 +49,16 @@ namespace ForkPlus.UI.Commands
 			// 与 AutomaticBackgroundFetchManager 的 FindJob 防护同款。
 			if (repositoryUserControl.JobQueue.FindJob(name) != null)
 			{
+				try { System.IO.File.AppendAllText(System.IO.Path.GetTempPath() + "fp-qf-debug.log", "SKIP: job '" + name + "' already in queue\n"); } catch { }
 				Log.Info("Skip QuickFetch for '" + remote.Name + "' because a fetch job is already running");
 				return;
 			}
+			try { System.IO.File.AppendAllText(System.IO.Path.GetTempPath() + "fp-qf-debug.log", "QUEUED: '" + name + "'\n"); } catch { }
 			repositoryUserControl.JobQueue.Add(name, delegate(JobMonitor monitor)
 			{
+				try { System.IO.File.AppendAllText(System.IO.Path.GetTempPath() + "fp-qf-debug.log", "JobStart: " + name + "\n"); } catch { }
 				GitCommandResult fetchResult = new FetchGitCommand().Execute(gitModule, remote, fetchAllRemotes, monitor, noPrompt: false, fetchAllTags);
+				try { System.IO.File.AppendAllText(System.IO.Path.GetTempPath() + "fp-qf-debug.log", "JobDone: succ=" + fetchResult.Succeeded + " err=" + (fetchResult.Succeeded ? "" : fetchResult.Error.FriendlyDescription) + "\n"); } catch { }
 				repositoryUserControl.Dispatcher.Post(delegate
 				{
 					if (!fetchResult.Succeeded && !monitor.IsCanceled)

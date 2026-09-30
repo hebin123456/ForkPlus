@@ -37,6 +37,11 @@ namespace ForkPlus.Git
 			return source;
 		}
 
+		// 修复（2026-09-29，"变更文件树/列表里冲突文件显示普通铅笔（编辑）图标而非冲突标识"）：
+		// GetIconKey 对 Unmerged 返回的是 IconKeys.Warning，但下面三个 switch 里没有任何
+		// Warning 分支 → 全部落入 _ => EditIcon（铅笔）；原有的 StatusUnmerged 分支永远匹配不到。
+		// 补上 Warning => UnmergedIcon（Assets/Warning.png），使文件树/列表/冲突视图的
+		// Unmerged 均显示冲突警告标识。
 		public static global::Avalonia.Media.IImage GetImageSource(this ChangeType changeType)
 		{
 			return changeType.GetIconKey() switch
@@ -47,6 +52,7 @@ namespace ForkPlus.Git
 				IconKeys.StatusRename => RenamedIcon,
 				IconKeys.StatusTypeChanged => TypeChangedIcon,
 				IconKeys.StatusUnmerged => UnmergedIcon,
+				IconKeys.Warning => UnmergedIcon,
 				_ => EditIcon,
 			};
 		}
@@ -61,6 +67,7 @@ namespace ForkPlus.Git
 				IconKeys.StatusRename => RenamedIcon,
 				IconKeys.StatusTypeChanged => TypeChangedIcon,
 				IconKeys.StatusUnmerged => UnmergedIcon,
+				IconKeys.Warning => UnmergedIcon,
 				_ => EditIcon,
 			};
 		}
@@ -71,6 +78,7 @@ namespace ForkPlus.Git
 			{
 				IconKeys.StatusAdd => AddIcon,
 				IconKeys.StatusUnmerged => UnmergedIcon,
+				IconKeys.Warning => UnmergedIcon,
 				_ => EditIcon,
 			};
 		}

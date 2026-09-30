@@ -55,6 +55,11 @@ namespace ForkPlus
 
 		private string[] _hiddenReferences;
 
+		// WS2.4：受保护分支（短名，如 "main"）。删除/重置/强推命中时弹确认框。
+		private static readonly string ProtectedBranchesKey = "protectedBranches";
+
+		private string[] _protectedBranches;
+
 		private static readonly string SignOffKey = "signOff";
 
 		private bool _signOff;
@@ -242,6 +247,19 @@ namespace ForkPlus
 			set
 			{
 				_hiddenReferences = value;
+			}
+		}
+
+		// WS2.4：受保护分支列表（短名精确匹配，忽略大小写；兼容 refs/heads/ 前缀条目）。默认空。
+		public string[] ProtectedBranches
+		{
+			get
+			{
+				return _protectedBranches;
+			}
+			set
+			{
+				_protectedBranches = value;
 			}
 		}
 
@@ -520,6 +538,7 @@ namespace ForkPlus
 			string[] pinnedReferences = JsonHelper.DecodeStringArray(json[PinnedReferencesKey] as JArray) ?? JsonHelper.DecodeStringArray(json[StarredReferencesKey] as JArray) ?? new string[0];
 			string[] filterReferences = JsonHelper.DecodeStringArray(json[FilterReferencesKey] as JArray) ?? new string[0];
 			string[] hiddenReferences = JsonHelper.DecodeStringArray(json[HiddenReferencesKey] as JArray) ?? new string[0];
+			string[] protectedBranches = JsonHelper.DecodeStringArray(json[ProtectedBranchesKey] as JArray) ?? new string[0];
 			bool signOff = json[SignOffKey]?.Value<bool>() ?? false;
 			ExpandedTreeViewElement[] expandedSidebarItems = ExpandedTreeViewElement.Coder.DecodeExpandedTreeViewElementArray(json[ExpandedSidebarItemsKey] as JArray) ?? ExpandedTreeViewElement.Coder.Decode(json[ExpandedSidebarItemsKey] as JObject)?.Children;
 			bool showBugtrackerLinks = json[ShowBugtrackerLinksKey]?.Value<bool>() ?? true;
@@ -551,6 +570,7 @@ namespace ForkPlus
 				PinnedReferences = pinnedReferences,
 				FilterReferences = filterReferences,
 				HiddenReferences = hiddenReferences,
+				ProtectedBranches = protectedBranches,
 				SignOff = signOff,
 				ExpandedSidebarItems = expandedSidebarItems,
 				ShowBugtrackerLinks = showBugtrackerLinks,
@@ -609,10 +629,14 @@ namespace ForkPlus
 					FilterReferencesKey,
 					JsonHelper.EncodeStringArray(target.FilterReferences)
 				},
-				{
-					HiddenReferencesKey,
-					JsonHelper.EncodeStringArray(target.HiddenReferences)
-				},
+			{
+				HiddenReferencesKey,
+				JsonHelper.EncodeStringArray(target.HiddenReferences)
+			},
+			{
+				ProtectedBranchesKey,
+				JsonHelper.EncodeStringArray(target.ProtectedBranches)
+			},
 				{
 					SignOffKey,
 					new JValue(target.SignOff)

@@ -31,6 +31,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
+using ForkPlus.UI.WpfCompat;
 using Xunit;
 
 namespace ForkPlus.Tests
@@ -442,19 +443,161 @@ namespace ForkPlus.Tests
 
 						ScreenshotHelper.Snap(window, "02-gitmm-subrepo-tab-reordered", ModuleDir);
 
-						// 收尾取走看门狗捕获的 git-mm missing 警告（预期弹窗，防遗留到下个用例）
-						HeadlessAppBootstrap.TakeCapturedErrorDialogs();
-					}
-					finally
-					{
-						E2eMainWindowHarness.CloseRepositoryTab(window, ws);
-					}
-				});
-			}
-			finally
-			{
-				TestRepoFactory.Cleanup(ws);
-			}
+					// 收尾取走看门狗捕获的 git-mm missing 警告（预期弹窗，防遗留到下个用例）
+					HeadlessAppBootstrap.TakeCapturedErrorDialogs();
+				}
+				finally
+				{
+					E2eMainWindowHarness.CloseRepositoryTab(window, ws);
+				}
+			});
+		}
+		finally
+		{
+			TestRepoFactory.Cleanup(ws);
 		}
 	}
+
+	// ============================ 3) 交互式变基 todo 列表拖拽排序（WS3） ============================
+
+	/// <summary>构造与 InteractiveRebaseWindow._todoList 同款的 RevisionEntry 数据
+	///（RevisionEntry(int, InteractiveRebaseTodoListItem)，Sha 需 40 位十六进制）。</summary>
+	private static System.Collections.ObjectModel.ObservableCollection<ForkPlus.UI.Dialogs.RevisionEntry> CreateIrTodoListEntries(int count)
+	{
+		System.Collections.ObjectModel.ObservableCollection<ForkPlus.UI.Dialogs.RevisionEntry> list = new System.Collections.ObjectModel.ObservableCollection<ForkPlus.UI.Dialogs.RevisionEntry>();
+		for (int i = 0; i < count; i++)
+		{
+			ForkPlus.Git.Sha.TryParse((i + 1).ToString("x40"), out var sha);
+			ForkPlus.Git.Commands.InteractiveRebaseTodoListItem todo = new ForkPlus.Git.Commands.InteractiveRebaseTodoListItem(
+				sha, ForkPlus.Git.InteractiveRebaseAction.Pick, new ForkPlus.Git.UserIdentity("tester", "tester@forkplus.local"),
+				DateTime.Now, "ir-row-" + i + " subject\n", new ForkPlus.Git.LocalBranch[0]);
+			list.Add(new ForkPlus.UI.Dialogs.RevisionEntry(i, todo));
+		}
+		return list;
+	}
+
+	/// <summary>
+	/// WS3 回归："交互式变基列表无法拖拽排序"。被测链路为生产控件的真实管线：
+	/// MultiselectionListViewItem（生产行容器：press 记录/阈值判断/首次手势经
+	/// DragDropLauncher.DoDragDrop(press,...) 发起 + 字符串 key payload）
+	/// → 代理拖拽会话 → DragEnter/DragOver（生产 OnDragEnter：DropPlaceAdorner +
+	/// DropPosition 上/下半判定）→ Drop → 列表级 handler（与生产
+	/// InteractiveRebaseWindow.RevisionListViewItem_Drop 同款 e.Source 解析 + 字符串 key
+	/// 读取）→ 生产重排算法 InteractiveRebaseWindow.MoveTodoListItems（internal 直调，
+	/// InternalsVisibleTo）。窗口本体依赖 git rebase -i 进程 + RI IPC（headless 不可构造），
+	/// 窗口私有的 UpdateTodoList/选中/滚动收尾不在本用例范围。
+	/// </summary>
+	[Fact]
+	public void IrTodoList_DragReorder_FirstGestureMovesRow()
+	{
+		HeadlessAppBootstrap.Run(delegate
+		{
+				var window = new global::Avalonia.Controls.Window { Width = 520, Height = 360 };
+				var list = new ForkPlus.UI.Dialogs.MultiselectionListView { SelectionMode = SelectionMode.Toggle };
+				// 生产同款 Theme（InteractiveRebaseWindow.axaml：Theme={DynamicResource ListViewWithGridViewStyle}）：
+				// MultiselectionListView 无全局默认 ControlTheme，裸构造不设 Theme 则模板永不实例化、
+				// 行容器永不实化（实证：list.Bounds 正常但视觉树为空）。
+				if (global::Avalonia.Application.Current != null
+					&& global::Avalonia.Application.Current.TryGetResource("ListViewWithGridViewStyle", global::Avalonia.Application.Current.ActualThemeVariant, out var listViewTheme))
+				{
+					list.Theme = listViewTheme as global::Avalonia.Styling.ControlTheme;
+				}
+				var items = CreateIrTodoListEntries(3);
+				list.ItemsSource = items;
+			// 与生产 RevisionListViewItem_Drop 同款注册：列表级 AddHandler（Drop 自行容器
+			// 冒泡上来），行容器从 e.Source 沿可视树解析。
+			ForkPlus.UI.Dialogs.MultiselectionListViewItem droppedOnItem = null;
+			ForkPlus.UI.Dialogs.RevisionEntry[] droppedPayload = null;
+			list.AddHandler(DragDrop.DropEvent, delegate (object s, DragEventArgs e)
+			{
+				ForkPlus.UI.Dialogs.MultiselectionListViewItem item = e.Source as ForkPlus.UI.Dialogs.MultiselectionListViewItem
+					?? (e.Source as global::Avalonia.Visual)?.GetVisualAncestors().OfType<ForkPlus.UI.Dialogs.MultiselectionListViewItem>().FirstOrDefault();
+				ForkPlus.UI.Dialogs.RevisionEntry[] payload = e.WpfData().GetData(ForkPlus.UI.Dialogs.MultiselectionListViewItem.DragItemsFormat) as ForkPlus.UI.Dialogs.RevisionEntry[];
+				if (item != null
+					&& item.DataContext is ForkPlus.UI.Dialogs.RevisionEntry target
+					&& payload != null && payload.Length > 0 && !payload.Contains(target))
+				{
+					droppedOnItem = item;
+					droppedPayload = payload;
+					ForkPlus.UI.Dialogs.InteractiveRebaseWindow.MoveTodoListItems(items, target, item.DropPosition, payload);
+				}
+			});
+			window.Content = list;
+			window.Show();
+			Dispatcher.UIThread.RunJobs();
+			// 预热 AdornerLayer：首次 GetAdornerLayer 会把 window.Content 包进 Grid（兼容层机制），
+			// 若发生在手势中途会改变可视树/布局；提前触发并排空，保证取点与 hit-test 几何同帧。
+			AdornerLayer.GetAdornerLayer(list);
+			Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+			Dispatcher.UIThread.RunJobs();
+
+			// 行容器实化 + 布局稳定门（E2e29 CI 红灯教训：取点坐标与 hit-test 几何须同帧）
+			ForkPlus.UI.Dialogs.MultiselectionListViewItem[] rows = null;
+		bool rowsMaterialized = UiClick.WaitFor(delegate
+		{
+			Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(2);
+			Dispatcher.UIThread.RunJobs();
+			rows = list.GetVisualDescendants().OfType<ForkPlus.UI.Dialogs.MultiselectionListViewItem>()
+				.OrderBy(delegate (ForkPlus.UI.Dialogs.MultiselectionListViewItem r) { return r.Bounds.Top; }).ToArray();
+			return rows.Length == 3 && rows.All(delegate (ForkPlus.UI.Dialogs.MultiselectionListViewItem r) { return r.Bounds.Width > 0 && r.Bounds.Height > 0; });
+		});
+		Assert.True(rowsMaterialized, "应生成 3 个非零布局的 MultiselectionListViewItem 行容器");
+			bool hadPrev = false;
+			global::Avalonia.Rect prev = default(global::Avalonia.Rect);
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				global::Avalonia.Rect now = new global::Avalonia.Rect(rows[0].Bounds.TopLeft, new global::Avalonia.Point(rows[2].Bounds.Right, rows[2].Bounds.Bottom));
+				bool stable = hadPrev && now == prev;
+				prev = now;
+				hadPrev = true;
+				return stable;
+			}), "取点前行布局应稳定（两帧一致）");
+
+			Point? pressAt = PointIn(rows[0], window, 0.5, 0.5);
+			// 落点取第 3 行下半（Y=0.8）→ 生产 GetDropPositoion 应判 DropPosition.Bottom（插到该行之后）
+			Point? dropAt = PointIn(rows[2], window, 0.5, 0.8);
+			Assert.True(pressAt.HasValue && dropAt.HasValue, "行容器应可换算窗口坐标（rows[0]=" + rows[0].Bounds + " rows[2]=" + rows[2].Bounds + "）");
+
+			// 手势前捕获被拖行/目标行引用（重排后 items[0]/items[2] 指向会变化，断言用原引用）
+			ForkPlus.UI.Dialogs.RevisionEntry draggedEntry = items[0];
+			ForkPlus.UI.Dialogs.RevisionEntry targetEntry = items[2];
+
+			int sessionsBefore = HeadlessInProcessDragSource.Instance.SessionsStarted;
+			int dragEventsBefore = HeadlessInProcessDragSource.Instance.DragEventsRaised;
+			var gesture = new DragGesture();
+			gesture.Press(rows[0], window, pressAt.Value);
+			Assert.True(HeadlessInProcessDragSource.Instance.SessionsStarted == sessionsBefore,
+				"press 阶段不应发起拖拽会话（阈值判断内不发起；" + HeadlessInProcessDragSource.Instance.Diag + "）");
+			// 中途点距按下点 > 4px 两档拖拽阈值（SystemParameters.Minimum*DragDistance）
+			Point midAt = new Point(pressAt.Value.X + 30.0, pressAt.Value.Y + 9.0);
+			gesture.Move(rows[0], window, midAt);
+			Assert.True(HeadlessInProcessDragSource.Instance.SessionsStarted > sessionsBefore,
+				"move 超阈值后应于首次手势发起拖拽会话（MultiselectionListViewItem.OnPointerMoved → DragDropLauncher.DoDragDrop(press,...)；" + HeadlessInProcessDragSource.Instance.Diag + "）");
+			gesture.Move(rows[0], window, dropAt.Value);
+			Assert.True(HeadlessInProcessDragSource.Instance.DragEventsRaised > dragEventsBefore,
+				"落点应收到 DragEnter/DragOver（行级 AddHandler 接线 + AllowDrop 生效；" + HeadlessInProcessDragSource.Instance.Diag + "）");
+			gesture.Release(rows[0], window, dropAt.Value);
+			Dispatcher.UIThread.RunJobs();
+
+			Assert.True(HeadlessInProcessDragSource.Instance.DropsRaised > 0,
+				"release 后应触发 Drop（" + HeadlessInProcessDragSource.Instance.Diag + "）");
+			Assert.True(droppedOnItem != null, "列表级 Drop handler 应经 e.Source 解析出行容器");
+			Assert.True(droppedPayload != null && droppedPayload.Length == 1 && ReferenceEquals(droppedPayload[0], draggedEntry),
+				"payload 应按字符串 key（" + ForkPlus.UI.Dialogs.MultiselectionListViewItem.DragItemsFormat + "）往返拿回被拖行原对象");
+			Assert.True(droppedOnItem != null && droppedOnItem.DataContext == targetEntry,
+				"Drop 落点应为第 3 行（实际 DataContext=" + (droppedOnItem?.DataContext as ForkPlus.UI.Dialogs.RevisionEntry)?.Subject + "）");
+			Assert.True(droppedOnItem != null && droppedOnItem.DropPosition == global::ForkPlus.UI.Dialogs.DropPosition.Bottom,
+				"落点在行下半应判 DropPosition.Bottom（实际=" + droppedOnItem?.DropPosition + "）");
+
+			string[] subjects = items.Select(delegate (ForkPlus.UI.Dialogs.RevisionEntry x) { return x.Subject; }).ToArray();
+			Assert.True(subjects.Length == 3 && subjects[0] == "ir-row-1 subject" && subjects[1] == "ir-row-2 subject" && subjects[2] == "ir-row-0 subject",
+				"首行拖到第三行下半后顺序应为 [row-1, row-2, row-0]（实际：[" + string.Join(", ", subjects) + "）");
+			Assert.False(HeadlessInProcessDragSource.Instance.IsActive, "拖拽会话应已结束");
+
+			ScreenshotHelper.Snap(window, "03-ir-todo-list-reordered", ModuleDir);
+			window.Close();
+			Dispatcher.UIThread.RunJobs();
+		});
+	}
+}
 }

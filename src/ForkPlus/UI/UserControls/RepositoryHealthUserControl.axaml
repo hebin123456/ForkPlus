@@ -1,0 +1,127 @@
+<UserControl xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.RepositoryHealthUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid>
+    <!-- 分析完成后装配的折叠式分区内容；加载期间隐藏，仅显示 LoadingTextBlock。
+         修复（2026-09-30，"各区块宽度太窄"）：原为 StackPanel——垂直 StackPanel 以无限宽
+         测量子项，Expander/列表只收缩到内容宽。改用 Grid（7 行 Auto）：Grid 以自身宽
+         约束子项，HorizontalAlignment 默认 Stretch → 各分区占满父容器 100% 宽。 -->
+    <Grid x:Name="ContentContainer" MinWidth="760" Margin="30,15,20,15" IsVisible="False" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <!-- ============ 概览条（常驻，不折叠） ============ -->
+      <TextBlock Grid.Row="0" Text="Overview" FontSize="16" FontWeight="Medium" Margin="10,0,0,8" />
+      <WrapPanel Grid.Row="1" Margin="10,0,0,0">
+        <StackPanel Margin="0,0,36,8">
+          <TextBlock Text=".git size" Foreground="{DynamicResource SecondaryLabelBrush}" />
+          <TextBlock x:Name="GitSizeValueText" FontSize="15" FontWeight="Medium" Margin="0,3,0,0" />
+        </StackPanel>
+        <StackPanel Margin="0,0,36,8">
+          <TextBlock Text="Packed objects" Foreground="{DynamicResource SecondaryLabelBrush}" />
+          <TextBlock x:Name="PackedObjectsValueText" FontSize="15" FontWeight="Medium" Margin="0,3,0,0" />
+        </StackPanel>
+        <StackPanel Margin="0,0,36,8">
+          <TextBlock Text="Loose objects" Foreground="{DynamicResource SecondaryLabelBrush}" />
+          <TextBlock x:Name="LooseObjectsValueText" FontSize="15" FontWeight="Medium" Margin="0,3,0,0" />
+        </StackPanel>
+        <StackPanel Margin="0,0,36,8">
+          <TextBlock Text="Attention items" Foreground="{DynamicResource SecondaryLabelBrush}" />
+          <TextBlock x:Name="AttentionItemsValueText" FontSize="15" FontWeight="Medium" Margin="0,3,0,0" />
+        </StackPanel>
+      </WrapPanel>
+
+      <!-- ============ 陈旧分支（默认展开） ============ -->
+      <Expander Grid.Row="2" HorizontalAlignment="Stretch" Margin="0,20,0,0" IsExpanded="True" Header="Stale branches" x:Name="StaleBranchSection">
+        <Grid Margin="10,6,0,0" RowDefinitions="Auto,Auto,Auto">
+          <TextBlock Grid.Row="0" x:Name="StaleEmptyText" Text="No stale branches" IsVisible="False" Margin="0,4,0,4" />
+          <ItemsControl Grid.Row="1" x:Name="StaleBranchList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,3" ColumnDefinitions="Auto,*,Auto">
+                  <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                  <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding DetailText}" Foreground="{Binding DetailBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button Grid.Row="2" x:Name="StaleDeleteButton" Content="Delete selected branches" HorizontalAlignment="Left" Margin="0,10,0,0" Click="StaleDeleteButton_Click" />
+        </Grid>
+      </Expander>
+
+      <!-- ============ 已合并分支（默认展开） ============ -->
+      <Expander Grid.Row="3" HorizontalAlignment="Stretch" Margin="0,20,0,0" IsExpanded="True" Header="Merged branches" x:Name="MergedBranchSection">
+        <Grid Margin="10,6,0,0" RowDefinitions="Auto,Auto,Auto">
+          <TextBlock Grid.Row="0" x:Name="MergedEmptyText" Text="No merged branches" IsVisible="False" Margin="0,4,0,4" />
+          <ItemsControl Grid.Row="1" x:Name="MergedBranchList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,3" ColumnDefinitions="Auto,*,Auto">
+                  <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                  <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding DetailText}" Foreground="{Binding DetailBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Button Grid.Row="2" x:Name="MergedDeleteButton" Content="Delete selected branches" HorizontalAlignment="Left" Margin="0,10,0,0" Click="MergedDeleteButton_Click" />
+        </Grid>
+      </Expander>
+
+      <!-- ============ 分叉分支（默认折叠） ============ -->
+      <Expander Grid.Row="4" HorizontalAlignment="Stretch" Margin="0,20,0,0" IsExpanded="False" Header="Diverged branches" x:Name="DivergedBranchSection">
+        <Grid Margin="10,6,0,0" RowDefinitions="Auto,Auto">
+          <TextBlock Grid.Row="0" x:Name="DivergedEmptyText" Text="No diverged branches" IsVisible="False" Margin="0,4,0,4" />
+          <ItemsControl Grid.Row="1" x:Name="DivergedBranchList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,3" ColumnDefinitions="Auto,*,Auto">
+                  <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding DetailText}" Foreground="{Binding DetailBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Expander>
+
+      <!-- ============ 大文件 Top10（默认折叠，只读） ============ -->
+      <Expander Grid.Row="5" HorizontalAlignment="Stretch" Margin="0,20,0,0" IsExpanded="False" Header="Largest files" x:Name="LargestFilesSection">
+        <Grid Margin="10,6,0,0" RowDefinitions="Auto">
+          <ItemsControl Grid.Row="0" x:Name="LargestFilesList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,3" ColumnDefinitions="*,Auto">
+                  <Grid.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Copy Path" Click="BigBlobCopyPath_Click" />
+                      <MenuItem Header="View file history" Click="BigBlobViewHistory_Click" />
+                    </ContextMenu>
+                  </Grid.ContextMenu>
+                  <TextBlock Grid.Column="0" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding SizeText}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Expander>
+
+      <!-- ============ 体积明细（默认折叠） ============ -->
+      <Expander Grid.Row="6" HorizontalAlignment="Stretch" Margin="0,20,0,0" IsExpanded="False" Header="Size breakdown" x:Name="SizeBreakdownSection">
+        <Grid Margin="10,6,0,0" RowDefinitions="Auto">
+          <ItemsControl Grid.Row="0" x:Name="SizeBreakdownList">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid Margin="0,3" ColumnDefinitions="*,Auto,Auto">
+                  <TextBlock Grid.Column="0" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding ShareText}" Foreground="{DynamicResource SecondaryLabelBrush}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="{Binding SizeText}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Expander>
+    </Grid>
+
+    <!-- 加载态：正在分析 -->
+    <TextBlock x:Name="LoadingTextBlock" Text="Analyzing repository health..." Margin="30,15,20,15" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Top" />
+  </Grid>
+</UserControl>

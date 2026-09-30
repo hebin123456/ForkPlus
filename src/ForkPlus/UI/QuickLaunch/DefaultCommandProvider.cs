@@ -159,6 +159,7 @@ namespace ForkPlus.UI.QuickLaunch
 				list.AddRange(DecreaseLayoutScaleCommand.PublicCommands);
 				list.AddRange(IncreaseLayoutScaleCommand.PublicCommands);
 				list.AddRange(NewTabCommand.PublicCommands);
+				list.AddRange(ShowRepositoryHealthWindowCommand.PublicCommands);
 				list.AddRange(ShowBenchmarkWindowCommand.PublicCommands);
 				list.AddRange(ShowRepositorySettingsWindowCommand.PublicCommands);
 				list.AddRange(ShowRepositoryStatisticsWindowCommand.PublicCommands);

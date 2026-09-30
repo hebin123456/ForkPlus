@@ -133,6 +133,7 @@
   <Color x:Key="Toolbar.BorderColor">#F3F3F3</Color>
   <Color x:Key="Toolbar.ForegroundColor">#808080</Color>
   <Color x:Key="Toolbar.PullPushBadgeColor">#A0A0A0</Color>
+  <Color x:Key="Toolbar.PullPushBadgeDivergedColor">#E67E22</Color>
   <Color x:Key="Window.BackgroundColor">#EEE8D5</Color>
   <Color x:Key="Window.BorderColor">#3BACED</Color>
   <Color x:Key="Window.ButtonsRegionBackgroundColor">#FDF6E3</Color>

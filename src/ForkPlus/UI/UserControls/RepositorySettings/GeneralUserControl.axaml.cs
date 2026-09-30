@@ -166,6 +166,39 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 			}
 		}
 
+		// WS2.4：受保护分支编辑。每行一个分支名：去空白、去空行、忽略大小写去重后
+		// 持久化到 RepositorySettings.ProtectedBranches（同 TabWidth 的即存即走链路）。
+		private void ProtectedBranchesTextBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (!_updateInProgress && _gitModule != null)
+			{
+				_gitModule.Settings.ProtectedBranches = ParseProtectedBranches(ProtectedBranchesTextBox.Text);
+				_gitModule.Settings.Save();
+			}
+		}
+
+		/// <summary>按行拆分受保护分支输入：去首尾空白、去空行、忽略大小写去重（保持首次出现顺序）。</summary>
+		internal static string[] ParseProtectedBranches(string text)
+		{
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				return new string[0];
+			}
+			string[] lines = text.Split(new char[2] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			List<string> result = new List<string>(lines.Length);
+			HashSet<string> seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			string[] array = lines;
+			foreach (string line in array)
+			{
+				string trimmed = line.Trim();
+				if (trimmed.Length > 0 && seen.Add(trimmed))
+				{
+					result.Add(trimmed);
+				}
+			}
+			return result.ToArray();
+		}
+
 		private void Refresh()
 		{
 			RepositoryData repositoryData = MainWindow.ActiveRepositoryUserControl.RepositoryData;
@@ -217,11 +250,13 @@ namespace ForkPlus.UI.UserControls.RepositorySettings
 					selectedItem = localBranchItem2;
 				}
 			}
-			MainBranchComboBox.ItemsSource = list;
-			MainBranchComboBox.SelectedItem = selectedItem;
-			NoFastForwardCheckBox.IsChecked = _gitModule.Settings.LeanBranchingNoFastForward;
-			TabWidthTextBox.Text = _gitModule.Settings.TabWidth.ToString();
-			_updateInProgress = false;
+		MainBranchComboBox.ItemsSource = list;
+		MainBranchComboBox.SelectedItem = selectedItem;
+		NoFastForwardCheckBox.IsChecked = _gitModule.Settings.LeanBranchingNoFastForward;
+		TabWidthTextBox.Text = _gitModule.Settings.TabWidth.ToString();
+		// WS2.4：受保护分支回填（每行一个）
+		ProtectedBranchesTextBox.Text = string.Join(Environment.NewLine, _gitModule.Settings.ProtectedBranches ?? new string[0]);
+		_updateInProgress = false;
 		}
 
 		private static string Translate(string text)

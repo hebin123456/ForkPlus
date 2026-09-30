@@ -43,7 +43,8 @@
           <RowDefinition Height="17" />
         </Grid.RowDefinitions>
         <Grid.Children>
-          <ListBox VerticalAlignment="Stretch" x:Name="SrcDirsListBox">
+          <!-- 修复（2026-09-30，"右键源代码目录列表弹空菜单"）：WPF ContextMenuOpening="SrcDirsListBox_ContextMenuOpening" 接线迁移时丢失，补 ContextRequested -->
+          <ListBox VerticalAlignment="Stretch" x:Name="SrcDirsListBox" ContextRequested="SrcDirsListBox_ContextMenuOpening">
             <ListBox.BorderBrush>
               <DynamicResource ResourceKey="BorderBrush" />
             </ListBox.BorderBrush>

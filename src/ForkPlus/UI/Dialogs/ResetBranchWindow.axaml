@@ -18,6 +18,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Row="0" Grid.Column="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <controls:GitPointView Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" x:Name="ActiveBranchGitPointView" />
@@ -61,6 +62,9 @@
           </DockPanel>
         </ComboBoxItem>
       </ComboBox>
+      <!-- WS2.3：重置丢失预览。目标..当前分支尖 范围内当前侧独有的提交（重置后将从分支
+           尖丢失）。0 条或查询失败时整块隐藏（构造期同步计算 + try/catch 兜底）。 -->
+      <controls:CommitsPreviewSection Grid.Row="3" Grid.Column="1" Margin="8,10,0,0" x:Name="LoseCommitsPreviewSection" IsVisible="False" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

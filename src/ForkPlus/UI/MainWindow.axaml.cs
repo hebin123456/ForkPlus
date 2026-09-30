@@ -291,23 +291,6 @@ namespace ForkPlus.UI
 		}
 		}
 
-		protected override void OnKeyUp(KeyEventArgs e)
-		{
-			if (e.Key == Key.F && KeyboardHelper.IsCtrlDown && KeyboardHelper.IsAltDown && KeyboardHelper.IsShiftDown)
-			{
-				e.Handled = true;
-				RepositoryUserControl activeRepositoryUserControl = TabManager.ActiveRepositoryUserControl;
-				if (activeRepositoryUserControl != null)
-				{
-					Commands.QuickFetch.Execute(activeRepositoryUserControl, activeRepositoryUserControl.GitModule);
-				}
-			}
-			else
-			{
-				base.OnKeyUp(e);
-			}
-		}
-
 		protected override void OnKeyDown(KeyEventArgs e)
 		{
 			if (e.Key == Key.O && Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.LeftAlt))
@@ -444,6 +427,10 @@ namespace ForkPlus.UI
 			{
 				Commands.CloseActiveTab.Execute();
 			}));
+			this.AddCommandBinding(Commands.ReopenClosedTab.CreateShortcutCommandBinding(delegate
+			{
+				Commands.ReopenClosedTab.Execute();
+			}));
 			this.AddCommandBinding(Commands.NewTab.CreateShortcutCommandBinding(delegate
 			{
 				Commands.NewTab.Execute();
@@ -490,6 +477,16 @@ namespace ForkPlus.UI
 				if (activeRepositoryUserControl6 != null)
 				{
 					Commands.ShowFetchWindow.Execute(activeRepositoryUserControl6, activeRepositoryUserControl6.GitModule);
+				}
+			}));
+			// WS8：QuickFetch Ctrl+Alt+Shift+F 归一为命令绑定（原先在 OnKeyUp 手工处理，
+			// Execute 语义与手工分支完全一致：取活动仓库 → QuickFetch.Execute(repo, repo.GitModule)）。
+			this.AddCommandBinding(Commands.QuickFetch.CreateShortcutCommandBinding(delegate
+			{
+				RepositoryUserControl activeRepositoryUserControlForQuickFetch = TabManager.ActiveRepositoryUserControl;
+				if (activeRepositoryUserControlForQuickFetch != null)
+				{
+					Commands.QuickFetch.Execute(activeRepositoryUserControlForQuickFetch, activeRepositoryUserControlForQuickFetch.GitModule);
 				}
 			}));
 			this.AddCommandBinding(Commands.ShowQuickLaunchWindow.CreateShortcutCommandBinding(delegate

@@ -791,9 +791,17 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		/// <summary>提交列表拖拽 payload 的字符串格式 key（进程内直通表）。
+		/// WS3 同步：WPF DataObject 以 typeof(DecoratedRevision[]) 作 key；Avalonia 兼容层
+		/// WpfDataObject.GetData(Type) 对非 string 一律返回 null，自定义对象必须走字符串 key。
+		/// 发起侧（DragAndDropListViewItem.OnPointerMoved）需以 WpfDataObject.SetData 写入
+		/// 同名 key（该侧修复属另一工作项，当前仍裸传数组被 ToString，本读取侧行为与原先
+		/// 一致地拿到 null 短路，先行对齐读取契约）。</summary>
+		private const string RevisionRowsDragFormat = "ForkPlusRevisionRows";
+
 		private void RevisionListViewItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.WpfData().GetData(typeof(DecoratedRevision[])) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
+			if (!(sender is DragAndDropListViewItem { DataContext: DecoratedRevision dataContext } dragAndDropListViewItem) || !(e.WpfData().GetData(RevisionRowsDragFormat) is DecoratedRevision[] array) || array.Length == 0 || array.Contains(dataContext))
 			{
 				e.Handled = true;
 				return;

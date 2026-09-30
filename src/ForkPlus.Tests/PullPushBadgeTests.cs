@@ -54,10 +54,83 @@ namespace ForkPlus.Tests
 				Assert.True(pullBadge.IsVisible);
 				Assert.True(pushBadge.IsVisible);
 
-				window.Close();
-				return diag;
-			}).GetAwaiter().GetResult();
-			System.IO.File.WriteAllText("/tmp/pull_push_badge.txt", report);
-		}
+			window.Close();
+			return diag;
+		}).GetAwaiter().GetResult();
+		System.IO.File.WriteAllText("/tmp/pull_push_badge.txt", report);
 	}
+
+	// WS2.5（2026-09-29，分叉徽章）：Ahead>0 且 Behind>0（分叉态）与普通态区分——
+	// 独立警示色画刷（Toolbar.PullPushBadgeDivergedBrush，diverged 类激活）+ 专属 tooltip
+	//（Diverged from remote: {0} ahead, {1} behind）；普通态各徽章简化文案。
+	// 画刷断言用"同一控件先后两态的解析色不同/复原"作相对比较，不硬编码主题色值
+	//（headless 默认主题不定，普通态灰色浅/深主题取值不同）。
+	[Fact]
+	public void Badges_DivergedState_UsesWarningBrushAndTooltip()
+	{
+		HeadlessAppBootstrap.EnsureStarted();
+		Dispatcher.UIThread.InvokeAsync(delegate
+		{
+			var toolbar = new ToolbarUserControl();
+			var window = new Window { Width = 1000, Height = 60, Content = toolbar };
+			window.Show();
+			Dispatcher.UIThread.RunJobs();
+
+			Border pullBadge = toolbar.GetVisualDescendants().OfType<Border>()
+				.First((Border b) => b.Name == "PullBadge");
+			Border pushBadge = toolbar.GetVisualDescendants().OfType<Border>()
+				.First((Border b) => b.Name == "PushBadge");
+
+			// ===== 1) 普通态（behind 5 / ahead 0）：仅 PullBadge 显示、无 diverged 类 =====
+			toolbar.RefreshPullPushBadges(new UpstreamStatus(5, 0));
+			Dispatcher.UIThread.RunJobs();
+			Assert.True(pullBadge.IsVisible, "落后 5 时 PullBadge 应显示");
+			Assert.False(pushBadge.IsVisible, "ahead 0 时 PushBadge 应隐藏");
+			Assert.False(pullBadge.Classes.Contains("diverged"), "普通态不应有 diverged 类");
+			Color normalColor = ((ISolidColorBrush)pullBadge.Background).Color;
+			Assert.NotEqual(Colors.Transparent, normalColor);
+			string normalTip = global::Avalonia.Controls.ToolTip.GetTip(pullBadge) as string;
+			Assert.NotNull(normalTip);
+			Assert.Contains("5", normalTip);
+
+			// ===== 2) 分叉态（behind 3 / ahead 2）：两徽章 diverged 类 + 警示色 + 分叉 tooltip =====
+			toolbar.RefreshPullPushBadges(new UpstreamStatus(3, 2));
+			Dispatcher.UIThread.RunJobs();
+			Assert.True(pullBadge.IsVisible);
+			Assert.True(pushBadge.IsVisible);
+			Assert.Equal("3", toolbar.PullBadgeText.Text);
+			Assert.Equal("2", toolbar.PushBadgeText.Text);
+			Assert.True(pullBadge.Classes.Contains("diverged"), "分叉态 PullBadge 应有 diverged 类");
+			Assert.True(pushBadge.Classes.Contains("diverged"), "分叉态 PushBadge 应有 diverged 类");
+			ISolidColorBrush divergedBrush = pullBadge.Background as ISolidColorBrush;
+			Assert.NotNull(divergedBrush);
+			Assert.NotEqual(Colors.Transparent, divergedBrush.Color);
+			Assert.True(!normalColor.Equals(divergedBrush.Color), "分叉态警示色应区别于普通态徽章色");
+			Assert.Equal(divergedBrush.Color, ((ISolidColorBrush)pushBadge.Background).Color);
+			string pullTip = global::Avalonia.Controls.ToolTip.GetTip(pullBadge) as string;
+			string pushTip = global::Avalonia.Controls.ToolTip.GetTip(pushBadge) as string;
+			Assert.NotNull(pullTip);
+			Assert.Contains("2", pullTip); // ahead
+			Assert.Contains("3", pullTip); // behind
+			Assert.Equal(pullTip, pushTip); // 分叉态两徽章同一分叉文案
+
+			// ===== 3) 回到普通态：警示色复原（换状态不清漏 diverged 类）=====
+			toolbar.RefreshPullPushBadges(new UpstreamStatus(5, 0));
+			Dispatcher.UIThread.RunJobs();
+			Assert.False(pullBadge.Classes.Contains("diverged"), "回到普通态应移除 diverged 类");
+			Assert.Equal(normalColor, ((ISolidColorBrush)pullBadge.Background).Color);
+			Assert.False(pushBadge.IsVisible);
+
+			// ===== 4) 无上游（invalid）：两徽章隐藏、tooltip 清空 =====
+			toolbar.RefreshPullPushBadges(null);
+			Dispatcher.UIThread.RunJobs();
+			Assert.False(pullBadge.IsVisible);
+			Assert.False(pushBadge.IsVisible);
+			Assert.Null(global::Avalonia.Controls.ToolTip.GetTip(pullBadge));
+			Assert.Null(global::Avalonia.Controls.ToolTip.GetTip(pushBadge));
+
+			window.Close();
+		}).GetAwaiter().GetResult();
+	}
+}
 }

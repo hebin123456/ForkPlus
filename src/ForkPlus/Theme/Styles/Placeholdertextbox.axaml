@@ -355,9 +355,16 @@
         <Setter Value="{DynamicResource TextBox.Static.Background}" Property="Background" />
         <Setter Value="{DynamicResource BorderBrush}" Property="BorderBrush" />
     </Style>
+    <!-- 修复（2026-09-29，"未设置提示文本的过滤框显示死问号且无悬浮提示"）：
+         还原下方注释保留的 WPF Trigger（Hint 为 Null 时折叠 HintTextBlock）。
+         FilterTextBox.cs 中按 Hint 是否为空维护 :nohint 伪类，此处据此隐藏问号；
+         设置了 Hint 的实例（Issues/PullRequests 页）问号与 tooltip 均保留。 -->
+    <Style Selector="^:nohint /template/ TextBlock#HintTextBlock">
+        <Setter Property="IsVisible" Value="False" />
+    </Style>
     <!--
-      WPF migration note: 条件(controls:FilterTextBox.Hint=) 的部分条件/Setter 无选择器等价物（无伪类/匹配器、SourceName≠TargetName 或部件未找到），已注释保留待人工处理。
-      原始片段：
+      WPF migration note: 条件(controls:FilterTextBox.Hint=) 的部分条件/Setter 已由上方
+      ^:nohint 样式还原（Hint 为 Null → HintTextBlock 折叠），原始片段注释保留备查：
       <Trigger Property="controls:FilterTextBox.Hint" xmlns="https://github.com/avaloniaui">
                     <Trigger.Value>
                       <x:Null xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" />

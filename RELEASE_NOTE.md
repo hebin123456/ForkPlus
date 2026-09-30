@@ -2,6 +2,38 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.2.1
+
+> 新增仓库健康检查窗口（分支/提交/大文件多分区概览，删除分支带二次确认与受保护分支拦截）；提交预览区重做（折叠头与摘要行左对齐、SHA 与提交说明同行对齐、SHA 可点击打开变更详情面板）；Reflog 表头对齐与跳转确认弹窗压窗修复；丢弃更改改用专用确认窗口；新增"重开已关闭标签页"（Ctrl+Shift+T）。应用版本号升至 4.2.1。
+
+### 新增
+
+- **仓库健康检查窗口（Repository Health）**：菜单位于"基准测试"之上（QuickLaunch 同步顺序）。独立窗口定宽 900，内容分区（已合并分支、未推送提交、分支独有提交、仓库大文件等）以 Expander 折叠展示，横向 100% 铺满窗口（根因：Avalonia Fluent Expander 默认 ControlTheme 设 `HorizontalAlignment="Left"` 且 MinHeight=48，分区收缩成"又大又窄"——5 个分区显式 Stretch + 分区 Grid 化后铺满）。支持勾选批量清理：删除分支前弹二次确认（列所选分支名，超 15 个截断），受保护分支（RepositorySettings.ProtectedBranches，源大小写不敏感、容忍 `refs/heads/` 前缀与通配）经专用确认窗口拦截。新增 Git 命令层：`GetMergedBranchesGitCommand` / `GetBranchUnpushedCommitsGitCommand` / `GetBranchUniqueCommitsGitCommand` / `GetBiggestBlobsGitCommand`；删除分支二次确认文案随 8 语言发布。
+- **丢弃更改专用确认窗口（DiscardChangesWindow）**：丢弃更改（含子模块）由原 MessageBox 确认升级为专用窗口——子模块与普通文件分组列表、路径列表带滚动、超 200 条截断显示 "and {0} more"，确认后走原执行链路；行为与原 MessageBox 一致（确认才丢弃，取消不动）。
+- **重开已关闭标签页（Reopen Closed Tab，Ctrl+Shift+T）**：浏览器/IDE 习惯键位，按最近关闭顺序重开仓库标签（TabManager 维护已关闭标签路径栈）；原"新建标签"的 Ctrl+Shift+T 键位改至 Ctrl+Shift+G。
+
+### 修复
+
+- **提交预览区 v3（Pull 拉取预览 / Push 强推覆盖预览 / Reset 丢失提交预览三处共用）**：折叠头"Show commits"与摘要行同左缘（原套用 DiffListExpanderStyle，其头模板固定 [33px 箭头列 + 10px 边距]，相对摘要行右移 43px 显靠右——改为局部扁平折叠头，透明底无边框、内容 x=0 起步）；展开行 SHA 与提交说明同行对齐（原 SHA 用 Consolas、说明用 UI 字体，两字体行高/基线不同导致同行歪斜——改同字体同字号后垂直居中即对齐）；列表限高 220 滚动，宿主弹窗不再被长列表撑高。测试钩子（CommitsExpander / CommitsItemsControl / SummaryTextBlock）保持不变。
+- **预览行 SHA 改超链接，点击打开变更详情**：显示用短 SHA（%h），样式为链接（强调色 + 下划线 + 手型）；`GetCommitsBetweenGitCommand` 同时取 `%H` 完整 SHA 随行携带，点击经 ShowRevisionInSeparateWindowCommand 打开 RevisionDetailsWindow 变更详情面板；完整 SHA 缺失（如测试自构造）或宿主未注入仓库控件时点击不动作。
+- **Reflog 表头与列表行对齐**：Reflog 窗口表头列随列表行容器几何实时校准（LayoutUpdated 比对已实现行原点/宽度，差值回写表头 Margin），滚动条出现/消失不再错位。
+- **Reflog"跳转到此提交"确认弹窗压窗**：从非模态 Reflog 窗口弹确认框时，确认框显式归属 Reflog 窗口（`SetOwnerCompat`）；此前 ForkPlusDialogWindow 构造默认把 owner 登记为主窗口，确认关闭后主窗口跳到最前把 Reflog 窗口压到下面。
+- **健康检查删除分支二次确认的弹窗归属**：同款 owner 修复，确认框归属健康检查窗口而非主窗口。
+- **健康检查删除分支后三区联动刷新**：删除成功后按分支引用从陈旧/已合并/分叉三区同步移除（陈旧区含全部本地分支、与另两区天然重叠，原先只清当前分区会"这边删了那边还在"），并同步概览关注项计数、空态文案与删除按钮可见性。不走删除后立即重算（RepositoryData 快照由仓库监听异步刷新，立即重算会读到旧引用反而把已删分支渲染回来），窗口重开时自然全量重算。
+
+### 测试
+
+- 新增：RepositoryHealthWindowTests（窗口定宽/分区铺满收敛断言）、RepositoryHealthDeleteConfirmTests（删除二次确认取消不删）、ReflogTimelineWindowTests（含表头对齐断言）、ReflogJumpDialogModalCloseTests（跳转确认弹窗关闭不压窗）、CommitsPreviewSectionTests（命令层 FullSha=rev-parse 断言 + Pull/Push 预览 UI）、ResetBranchLoseCommitsPreviewTests、DiscardChangesWindowTests、ProtectedBranchesTests、GetBiggestBlobsGitCommandTests、KeyboardShortcutsWindowReflectionTests 等。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.2.1-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.2.1-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.2.1-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.2.1-macos-arm64.zip` |
+
 ## v4.2.0
 
 > 主窗口仓库标签条布局支持顶部/左侧/右侧三种摆放（VSCode 式垂直标签，可拖拽调宽、可收拢，设置持久化）；Push / Pull / Track / Git Flow 等分支下拉框弹层新增搜索框，输入即过滤、键盘可导航；修复提交详情文本无法拖选复制、分支下拉框过滤残影与搜索框焦点被抢；主菜单弹层位置微调；应用版本号升至 4.2.0。

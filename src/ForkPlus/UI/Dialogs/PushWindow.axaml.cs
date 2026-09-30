@@ -11,6 +11,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
+using ForkPlus.UI.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -146,6 +147,12 @@ namespace ForkPlus.UI.Dialogs
 		[Null]
 		private GetUnpushedCommitsGitCommand.UnpushedCommit[] _unpushedCommits;
 
+		// v3.13.0（WS2.2）：强推覆盖预览。当前选中分支→目标远程分支的远程独有提交
+		// （<localSha>..<remoteSha>，这些提交会被 force 覆盖丢失）。null 表示不可用
+		// （无目标远程分支/未加载/查询失败）。
+		[Null]
+		private GetCommitsBetweenGitCommand.CommitsBetweenResult _remoteOnlyCommits;
+
 		private RemoteItem[] RemoteItems { get; set; }
 
 		[Null]
@@ -219,6 +226,7 @@ namespace ForkPlus.UI.Dialogs
 			_localBranchToSelect = localBranch;
 			_customRefspec = null;
 			InitializeComponent();
+			ForcePushPreviewSection.RepositoryUserControl = _repositoryUserControl;
 			// 注意：此处不能调用 PreferencesLocalization.Apply——基类 ForkPlusDialogWindow
 			// 在 Loaded 时已自动本地化。构造函数里 RefreshUnpushedCommits() 会同步/异步
 			// 改写 SquashCheckBox.Content（"Squash {N} unpushed commits" 带数量变体），
@@ -269,6 +277,12 @@ namespace ForkPlus.UI.Dialogs
 			{
 				track = CreateTrackingReferenceCheckBox.IsChecked.GetValueOrDefault(true);
 			}
+			// WS2.4：强推且推送的本地分支受保护 → 提交前拦截（入队执行前弹确认，
+			// 取消则直接返回，窗口保持打开、控件可用）。
+			if (force && gitModule != null && !ProtectedBranchConfirmWindow.Confirm(this, gitModule.Settings.ProtectedBranches, new string[1] { localBranch.Name }))
+			{
+				return;
+			}
 			string jobTitle = (squash ? string.Format(Translate("Squash and push '{0}' to '{1}'"), localBranch.Name, remote.Name) : string.Format(Translate("Push '{0}' to '{1}'"), localBranch.Name, remote.Name));
 			_repositoryUserControl.JobQueue.Add(jobTitle, delegate(JobMonitor monitor)
 			{
@@ -303,6 +317,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			ForcePushWarningImage.Hide();
 		}
+		UpdateForcePushPreview();
 		RefreshCommandPreview();
 	}
 
@@ -379,6 +394,67 @@ namespace ForkPlus.UI.Dialogs
 				}
 			});
 		}, JobFlags.Hidden);
+	}
+
+	// v3.13.0（WS2.2）：后台查询当前选中分支→目标远程分支的远程独有提交（JobQueue 模式
+	// 同 RefreshUnpushedCommits）。供强推覆盖预览（UpdateForcePushPreview）。
+	// 默认选中项是 "default (origin/xxx)" 伪项（RemoteBranch=null，目标=分支 upstream），
+	// 必须解析成真实远程分支，否则最常见的"按 upstream 推送"场景永不显示覆盖预览。
+	private RemoteBranch GetRemoteBranchForOverwritePreview(LocalBranch localBranch)
+	{
+		RemoteBranchItem remoteBranchItem = RemoteBranchesComboBox.SelectedItem as RemoteBranchItem;
+		if (remoteBranchItem == null || localBranch == null || _customRefspec != null)
+		{
+			return null;
+		}
+		return remoteBranchItem.RemoteBranch ?? ((remoteBranchItem.ItemType == RemoteBranchItemType.Custom) ? FindUpstream(_allRemoteBranches, localBranch) : null);
+	}
+
+	private void RefreshRemoteOnlyCommits()
+	{
+		_remoteOnlyCommits = null;
+		UpdateForcePushPreview();
+		LocalBranch localBranch = LocalBranchesComboBox.SelectedItem as LocalBranch;
+		RemoteBranch remoteBranch = GetRemoteBranchForOverwritePreview(localBranch);
+		GitModule gitModule = _repositoryUserControl?.GitModule;
+		if (localBranch == null || remoteBranch == null || gitModule == null)
+		{
+			return;
+		}
+		string from = localBranch.Sha.ToString();
+		string to = remoteBranch.Sha.ToString();
+		_repositoryUserControl.JobQueue.Add(Translate("Get commits to overwrite"), delegate
+		{
+			GitCommandResult<GetCommitsBetweenGitCommand.CommitsBetweenResult> result = new GetCommitsBetweenGitCommand().Execute(gitModule, from, to);
+			base.Dispatcher.Post(delegate
+			{
+				if (LocalBranchesComboBox.SelectedItem == localBranch && GetRemoteBranchForOverwritePreview(LocalBranchesComboBox.SelectedItem as LocalBranch)?.FullReference == remoteBranch.FullReference)
+				{
+					_remoteOnlyCommits = (result.Succeeded ? result.Result : null);
+					if (!result.Succeeded)
+					{
+						Log.Error(result.Error.FriendlyDescription);
+					}
+					UpdateForcePushPreview();
+				}
+			});
+		}, JobFlags.Hidden);
+	}
+
+	// v3.13.0（WS2.2）：force 打开且远程领先本地（存在将被覆盖的远程提交）时显示
+	// “将覆盖 N 个远程提交”+ CommitsPreviewSection（Expander 默认收起）；否则隐藏。
+	private void UpdateForcePushPreview()
+	{
+		int num = _remoteOnlyCommits?.Count ?? 0;
+		if (ForcePushCheckBox.IsChecked.GetValueOrDefault() && num > 0)
+		{
+			ForcePushPreviewSection.SetCommits(string.Format(Translate("Will overwrite {0} remote commits"), num), _remoteOnlyCommits.Commits.Map((GetCommitsBetweenGitCommand.CommitPreview x) => new CommitsPreviewSection.Item(x.Sha, x.Subject, x.FullSha)));
+			ForcePushPreviewSection.Show();
+		}
+		else
+		{
+			ForcePushPreviewSection.Collapse();
+		}
 	}
 
 	private void UpdateSquashUi()
@@ -490,6 +566,7 @@ namespace ForkPlus.UI.Dialogs
 			RefreshRemoteBranches();
 			UpdateSubmitButton();
 			RefreshUnpushedCommits();
+			RefreshRemoteOnlyCommits();
 		}
 		RefreshCommandPreview();
 	}
@@ -585,6 +662,7 @@ namespace ForkPlus.UI.Dialogs
 		}
 		UpdateSubmitButton();
 		RefreshCommandPreview();
+		RefreshRemoteOnlyCommits();
 	}
 
 		private void RefreshRemoteBranches()
@@ -726,10 +804,10 @@ namespace ForkPlus.UI.Dialogs
 						SetStatus(ForkPlusDialogStatus.Warning, string.Format(Translate("Submodule '{0}' contains unpushed changes"), unpushedSubmodulesResponse.Result.FirstItem()));
 					}
 				});
-			}, JobFlags.Hidden);
-		}
+		}, JobFlags.Hidden);
+	}
 
-		private void Refresh()
+	private void Refresh()
 		{
 			RepositoryData repositoryData = _repositoryUserControl.RepositoryData;
 			if (repositoryData == null)

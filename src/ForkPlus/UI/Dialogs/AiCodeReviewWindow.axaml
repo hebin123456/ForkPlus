@@ -37,7 +37,8 @@
           <ColumnDefinition Width="5" />
           <ColumnDefinition Width="*" MinWidth="200" />
         </Grid.ColumnDefinitions>
-        <fuu:FileListUserControl Grid.Column="0" EnableMultiSelection="True" x:Name="FileReviewFileListUserControl">
+        <!-- 修复（2026-09-30，"右键 AI 评审文件列表弹空菜单"）：WPF ContextMenuOpening 接线迁移时丢失，补 ContextRequested -->
+        <fuu:FileListUserControl Grid.Column="0" EnableMultiSelection="True" x:Name="FileReviewFileListUserControl" ContextRequested="FileReviewFileListUserControl_ContextMenuOpening">
           <fuu:FileListUserControl.ContextMenu>
             <ContextMenu />
           </fuu:FileListUserControl.ContextMenu>

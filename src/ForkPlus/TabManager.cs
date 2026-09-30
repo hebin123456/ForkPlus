@@ -21,6 +21,13 @@ namespace ForkPlus
 
 		private bool _tabRestoreInprogress;
 
+		// v4.2.1：已关闭标签路径栈（"重开已关闭标签" Ctrl+Shift+T 的数据源）。
+		// 仅记录可复开路径（普通仓库 / git mm 工作区，规范经 PathHelper.Normalize），
+		// RepositoryManager 欢迎页不入栈；同路径重复关闭只保留最新一次；上限 20 丢最旧。
+		private readonly List<string> _closedTabPaths = new List<string>();
+
+		private const int MaxClosedTabPaths = 20;
+
 		[Null]
 		public ClosableTabItem ActiveTab => _tabControl.SelectedTab;
 
@@ -67,6 +74,7 @@ namespace ForkPlus
 			_tabControl = tabControl;
 			tabControl.AddButtonClicked = (EventHandler)Delegate.Combine(tabControl.AddButtonClicked, new EventHandler(TabControl_AddClicked));
 			tabControl.TabItemRemoved = (EventHandler)Delegate.Combine(tabControl.TabItemRemoved, new EventHandler(TabControl_ItemRemoved));
+			tabControl.TabItemClosed = (EventHandler<EventArgs<ClosableTabItem>>)Delegate.Combine(tabControl.TabItemClosed, new EventHandler<EventArgs<ClosableTabItem>>(TabControl_TabItemClosed));
 			tabControl.SelectedTabItemChanged = (EventHandler<EventArgs<ClosableTabItem>>)Delegate.Combine(tabControl.SelectedTabItemChanged, new EventHandler<EventArgs<ClosableTabItem>>(TabControl_SelectedTabItemChanged));
 		}
 
@@ -332,6 +340,59 @@ namespace ForkPlus
 			RefreshTabTitles();
 			SaveSession();
 			ForkPlusSettings.Default.Save();
+		}
+
+		/// <summary>重开最近关闭的仓库标签（Ctrl+Shift+T）。栈空时静默返回；
+		/// 路径已失效（目录被删等导致打开失败）时跳过并继续弹更早的。</summary>
+		public void ReopenClosedTab()
+		{
+			while (_closedTabPaths.Count > 0)
+			{
+				string path = _closedTabPaths[_closedTabPaths.Count - 1];
+				_closedTabPaths.RemoveAt(_closedTabPaths.Count - 1);
+				if (OpenRepository(path))
+				{
+					return;
+				}
+			}
+		}
+
+		private void TabControl_TabItemClosed(object sender, EventArgs<ClosableTabItem> e)
+		{
+			string path = GetReopenablePath(e.Value);
+			if (path == null)
+			{
+				return;
+			}
+			_closedTabPaths.RemoveAll(delegate(string existing)
+			{
+				return string.Compare(existing, path, StringComparison.OrdinalIgnoreCase) == 0;
+			});
+			_closedTabPaths.Add(path);
+			while (_closedTabPaths.Count > MaxClosedTabPaths)
+			{
+				_closedTabPaths.RemoveAt(0);
+			}
+		}
+
+		[Null]
+		private static string GetReopenablePath(ClosableTabItem item)
+		{
+			if (item == null)
+			{
+				return null;
+			}
+			if (item.Mode == TabItemMode.Repository)
+			{
+				string path = item.RepositoryUserControl?.GitModule?.Path;
+				return string.IsNullOrWhiteSpace(path) ? null : PathHelper.Normalize(path);
+			}
+			if (item.Mode == TabItemMode.GitMm)
+			{
+				string path = item.GitMmUserControl?.WorkspacePath;
+				return string.IsNullOrWhiteSpace(path) ? null : PathHelper.Normalize(path);
+			}
+			return null;
 		}
 
 		private ClosableTabItem CreateNewTab(TabItemMode tabItemMode, GitModule gitModule, [Null] GitModule nextTo = null)

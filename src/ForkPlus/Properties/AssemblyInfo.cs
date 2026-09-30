@@ -15,27 +15,26 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-17，v4.1.4）：FileDiff 行间距收紧 + 行密度对齐 WPF 3.13.2 +
-//   FileDiff 大区域从下往上拖选（准备暂存）界面失控弹跳/首次拖选冻结——
-//   v4.1.2 为修左右行对齐（CJK 行高差）装的行高同步器把含中文文件的全部行槽抬到
-//   CJK 自然行高（根因：全局回退 Noto Sans CJK SC 垂直度量 1.448em，Win DWrite
-//   实测 1.619em，CJK 行自然高超默认行槽），行间距过宽。行间距两步修复：
-//   1) 内嵌 CJK 子集字体度量收紧到 1.16em（hhea/OS/2 win/typo 三处一致），
-//      CJK 自然高 15.08px@13px；
-//   2) CodeEditor/HexEditor 置 LineHeightFactor=1.0——AvaloniaEdit 默认 1.16 把
-//      行槽放大 16%（同视口 43 行 → 36 行的差距来源），置 1.0 后行槽 = 自然行高，
-//      行密度与 WPF 3.13.2 一致；CJK 15.08px ≤ 新行槽（ASCII 自然高 ≈ 15.22px@Win/
-//      15.13px@Linux），含中文行不再超槽。左右行对齐与行号基线对齐保持不变（守卫
-//      测试 SideBySideRegressionTests 四条防线）。拖选修复（CodeEditor 层）：
-//   SelectionMouseHandler 置 e.Handled=true 导致抑制处理器从未触发 → 拖选期间
-//   caret 跟随的"居中跳变"逐事件上弹到文档顶部；AdornerLayer 首建重建窗口内容树
-//   时指针捕获被挪到祖先元素 → 首次拖选冻结。详见 RELEASE_NOTE v4.1.4。
-//   上一个正式版 v4.1.2 为凭据链路系列修复 + FileDiff SideBySide 严格对齐系列。
+// 版本号说明（2026-09-30，v4.2.1）：本版为仓库健康检查 + 提交预览/Reflog 系列体验修复——
+//   1) 仓库健康检查窗口（菜单位于基准测试之上）：定宽 900、内容分区 100% 宽铺满
+//      （根因：Fluent Expander 默认 ControlTheme 设 HorizontalAlignment=Left 且 MinHeight=48，
+//      分区收缩成"又大又窄"，5 个 Expander 显式 Stretch + 分区 Grid 化后铺满）、
+//      删除分支二次确认 + 受保护分支确认（RepositorySettings.ProtectedBranches 模式匹配）+
+//      删除后陈旧/已合并/分叉三区联动刷新（原先只清当前分区，重叠分支在其他分区残留）。
+//   2) 提交预览区 v3（Pull 拉取 / Push 强推覆盖 / Reset 丢失提交三处共用）：折叠头与摘要行
+//      同左缘（原 DiffListExpanderStyle 头模板固定缩进 43px 显靠右）、sha 与 subject 同字体
+//      对齐（原 Consolas/UI 字体基线差致歪斜）、sha 改超链接点击打开 RevisionDetailsWindow
+//      变更详情面板（完整 SHA 由 GetCommitsBetweenGitCommand 以 %H 随行携带）。
+//   3) Reflog 窗口：表头随列表行几何校准对齐；"跳转到此提交"确认弹窗显式 SetOwnerCompat
+//      归属宿主（原 ForkPlusDialogWindow 构造默认登记 MainWindow，关闭时主窗口压到 Reflog 上面）。
+//   4) 丢弃更改专用确认窗口（DiscardChangesWindow，WS2.3）、重开已关闭标签页
+//      （ReopenClosedTabCommand，Ctrl+Shift+T；原 New Tag 快捷键改 Ctrl+Shift+G）。
+//   详见 RELEASE_NOTE v4.2.1。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
-//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.1.4"；
-//   程序集标识与文件版本同为 4.1.4（.0）。
-[assembly: AssemblyFileVersion("4.2.0")]
-[assembly: AssemblyInformationalVersion("4.2.0")]
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.2.1"；
+//   程序集标识与文件版本同为 4.2.1（.0）。
+[assembly: AssemblyFileVersion("4.2.1")]
+[assembly: AssemblyInformationalVersion("4.2.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("4.2.0.0")]
+[assembly: AssemblyVersion("4.2.1.0")]

@@ -127,6 +127,12 @@ namespace ForkPlus.UI.Dialogs
 			InteractiveRebaseComboBoxItemsSource = InteractiveRebaseComboBoxItems;
 			RevisionListView.ItemsSource = _todoList;
 			RevisionListView.DataContext = this;
+			// 修复（WS3"交互式变基列表无法拖拽排序"）：WPF 原版靠 ItemContainerStyle 里的
+			// EventSetter Drop="RevisionListViewItem_Drop" 接线，迁移时 EventSetter 被删且
+			// 未在 code-behind 补上——RevisionListViewItem_Drop 无人订阅，拖到落点也不重排。
+			// 改为列表级 AddHandler（Drop 自行容器冒泡上来，行容器从 e.Source 解析，
+			// 与 RevisionListViewUserControl.RevisionListView_Drop 同款做法）。
+			RevisionListView.AddHandler(global::Avalonia.Input.DragDrop.DropEvent, RevisionListViewItem_Drop);
 			RevisionDetails.Initialize(repositoryUserControl, RevisionDetailsUserControlMode.InteractiveRebase);
 			RevisionListFallbackUserControl.Show();
 			RevisionListFallbackUserControl.FallbackMessage = Translate("Loading...");
@@ -941,41 +947,71 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevisionListViewItem_Drop(object sender, DragEventArgs e)
 		{
-			if (!(sender is MultiselectionListViewItem { DataContext: RevisionEntry dataContext } multiselectionListViewItem) || !(e.WpfData().GetData(typeof(RevisionEntry[])) is RevisionEntry[] array) || array.Length == 0 || array.Contains(dataContext))
+			// 修复（WS3）：本 handler 由 RevisionListView 列表级 AddHandler 接线（sender=列表），
+			// 行容器改由 e.Source 沿可视树向上解析；payload 由 typeof(RevisionEntry[]) 改为
+			// 字符串 key 读取——Avalonia 兼容层 WpfDataObject.GetData(Type) 对非 string 恒为
+			// null，且发起侧原先把数组 ToString 成类型名，两侧双断点；现两侧统一走
+			// MultiselectionListViewItem.DragItemsFormat 字符串 key（进程内直通表）。
+			MultiselectionListViewItem multiselectionListViewItem = e.Source as MultiselectionListViewItem
+				?? (e.Source as global::Avalonia.Visual)?.GetParent<MultiselectionListViewItem>();
+			if (multiselectionListViewItem == null
+				|| !(multiselectionListViewItem.DataContext is RevisionEntry dataContext)
+				|| !(e.WpfData().GetData(MultiselectionListViewItem.DragItemsFormat) is RevisionEntry[] array)
+				|| array.Length == 0
+				|| array.Contains(dataContext))
 			{
 				return;
 			}
-			List<RevisionEntry> list = new List<RevisionEntry>(array.Length);
-			int num = -1;
-			for (int i = 0; i < _todoList.Count; i++)
+			RevisionEntry[] movedItems = MoveTodoListItems(_todoList, dataContext, multiselectionListViewItem.DropPosition, array);
+			if (movedItems.Length == 0)
 			{
-				RevisionEntry revisionItem = _todoList[i];
-				if (revisionItem == dataContext)
+				return;
+			}
+			RevisionListView.SelectedItems.Clear();
+			RevisionEntry[] array2 = movedItems;
+			for (int i = 0; i < array2.Length; i++)
+			{
+				RevisionListView.SelectedItems.Add(array2[i]);
+			}
+			UpdateTodoList();
+			RevisionListView.ScrollIntoView(movedItems[0]);
+			RevisionListView.FocusSelectedItem();
+		}
+
+		/// <summary>
+		/// WS3：自 WPF 原版 RevisionListViewItem_Drop 抽出的纯重排逻辑（内部静态，供回归测试直调；
+		/// 窗口本体依赖 git rebase -i 进程 + RI IPC，headless 下不可构造）。把 movingItems 移到
+		/// target 的上/下方（dropPosition），其余行保持相对顺序；返回按 todo 顺序排列的被移动行。
+		/// </summary>
+		internal static RevisionEntry[] MoveTodoListItems(IList<RevisionEntry> todoList, RevisionEntry target, DropPosition dropPosition, RevisionEntry[] movingItems)
+		{
+			List<RevisionEntry> list = new List<RevisionEntry>(movingItems.Length);
+			int num = -1;
+			for (int i = 0; i < todoList.Count; i++)
+			{
+				RevisionEntry revisionItem = todoList[i];
+				if (revisionItem == target)
 				{
 					num = i;
 				}
-				if (array.ContainsItem((RevisionEntry x) => x == revisionItem))
+				if (movingItems.ContainsItem((RevisionEntry x) => x == revisionItem))
 				{
-					_todoList.RemoveAt(i);
+					todoList.RemoveAt(i);
 					list.Add(revisionItem);
 					i--;
 				}
 			}
 			int num2 = num;
-			if (multiselectionListViewItem.DropPosition == DropPosition.Bottom && num < _todoList.Count)
+			if (dropPosition == DropPosition.Bottom && num < todoList.Count)
 			{
 				num2 = num + 1;
 			}
-			RevisionListView.SelectedItems.Clear();
 			foreach (RevisionEntry item in list)
 			{
-				_todoList.Insert(num2, item);
-				RevisionListView.SelectedItems.Add(item);
+				todoList.Insert(num2, item);
 				num2++;
 			}
-			UpdateTodoList();
-			RevisionListView.ScrollIntoView(list[0]);
-			RevisionListView.FocusSelectedItem();
+			return list.ToArray();
 		}
 
 	}

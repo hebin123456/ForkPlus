@@ -62,6 +62,10 @@ namespace ForkPlus.UI.Controls
 
 		public EventHandler TabItemRemoved;
 
+		// v4.2.1：标签关闭时携带被关项逐个触发（"重开已关闭标签"栈的数据源）；
+		// 与 TabItemRemoved（整体通知，不带载荷）并存，RemoveAllTabs 逐项触发本事件。
+		public EventHandler<EventArgs<ClosableTabItem>> TabItemClosed;
+
 		public EventHandler<EventArgs<ClosableTabItem>> SelectedTabItemChanged;
 
 		// Migration note：WPF 模板里 UniformGrid IsItemsHost=True Rows=1（Avalonia Panel.IsItemsHost setter 为
@@ -180,6 +184,7 @@ namespace ForkPlus.UI.Controls
 				}
 			}
 			base.Items.Remove(tab);
+			TabItemClosed?.Invoke(this, new EventArgs<ClosableTabItem>(tab));
 			TabItemRemoved?.Invoke(this, null);
 			if (base.Items.Count == 0)
 			{
@@ -206,6 +211,7 @@ namespace ForkPlus.UI.Controls
 				if (exceptItem != closableTabItem2)
 				{
 					base.Items.Remove(closableTabItem2);
+					TabItemClosed?.Invoke(this, new EventArgs<ClosableTabItem>(closableTabItem2));
 				}
 			}
 			if (closableTabItem != null)

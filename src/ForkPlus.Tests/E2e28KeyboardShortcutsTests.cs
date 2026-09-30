@@ -7,8 +7,8 @@
 //
 // 覆盖口径（golden 清单由反射 dump 生成：MAIN 39 手势 / REPO 18 / COMMIT 8 / REPOMANAGER 3）：
 //   MAIN（MainWindowCommands，39 手势）—— window 级绑定，全窗口生效
-//     （其中 QuickFetch Ctrl+Shift+Alt+F 与 OpenRepositoryInFileExplorer Ctrl+Alt+O
-//      迁移期走 MainWindow.OnKeyUp/OnKeyDown 手工处理，不走 CommandRouter）
+//     （其中 OpenRepositoryInFileExplorer Ctrl+Alt+O 迁移期走 MainWindow.OnKeyDown
+//      手工处理，不走 CommandRouter；QuickFetch Ctrl+Shift+Alt+F 已归一为命令绑定）
 //   REPO（RepositoryUserControlCommands，18）—— RevisionList/Sidebar/详情区/文件树/StageFile 作用域
 //   COMMIT（CommitUserControlCommands，8）  —— CommitUserControl/StageFileUserControl 作用域
 //   REPOMANAGER（RepositoryManagerUserControlCommands，3）—— 仓库管理 tab 树作用域
@@ -100,24 +100,6 @@ namespace ForkPlus.Tests
 				focused = window;
 			}
 			PressKey(focused, key, modifiers);
-		}
-
-		/// <summary>模拟 KeyUp 阶段的手工快捷键（迁移期路径：QuickFetch Ctrl+Shift+Alt+F 不走
-		/// CommandRouter，由 MainWindow.OnKeyUp 读 KeyboardHelper 修饰键状态处理）。
-		/// 路由顺序与生产一致：Tunnel 阶段 Keyboard shim tracker 先把事件 KeyModifiers 记入
-		/// 全局状态（_lastModifiers=Ctrl|Shift|Alt），冒泡到 MainWindow.OnKeyUp 时
-		/// IsCtrlDown/IsShiftDown/IsAltDown 均已为真；收尾复位防跨用例污染。</summary>
-		private static void PressKeyUp(InputElement target, Key key, KeyModifiers modifiers = KeyModifiers.None)
-		{
-			ResetKeyboardModifiers(target);
-			target.RaiseEvent(new KeyEventArgs
-			{
-				RoutedEvent = InputElement.KeyUpEvent,
-				Key = key,
-				KeyModifiers = modifiers
-			});
-			Dispatcher.UIThread.RunJobs();
-			ResetKeyboardModifiers(target);
 		}
 
 		// ============================ 基建：模态弹窗看门狗 ============================
@@ -542,19 +524,21 @@ namespace ForkPlus.Tests
 								// 主窗口不注册（只绑定在修订列表/文件历史等作用域，见 ②），跳过 window 级断言
 								continue;
 							}
-							if (name == "QuickFetch" || name == "OpenRepositoryInFileExplorer")
+							if (name == "OpenRepositoryInFileExplorer")
 							{
-								// 迁移期特殊路径：不走 CommandRouter——QuickFetch 在 MainWindow.OnKeyUp、
-								// OpenRepositoryInFileExplorer 在 MainWindow.OnKeyDown 手工处理
-								//（读 KeyboardHelper 全局修饰键状态），行为验证见 ManualHandler 用例
+								// 迁移期特殊路径：不走 CommandRouter——OpenRepositoryInFileExplorer 在
+								// MainWindow.OnKeyDown 手工处理（读 KeyboardHelper 全局修饰键状态），
+								// 行为验证见 ManualHandler 用例。QuickFetch 已归一为命令绑定
+								//（WS8），手势必须出现在 window 级注册集合里（下方 Assert.Contains）。
 								continue;
 							}
 							Assert.Contains((typeof(MainWindow).FullName, gesture.Key, gesture.KeyModifiers), registeredSet);
 							windowLevelCount++;
 						}
 					}
-					Assert.True(windowLevelCount >= 30,
-						"主窗口级手势应 >= 30 个（39 golden 扣除 Ctrl+C 两项及 2 个手工处理项），实际 " + windowLevelCount);
+					Assert.True(windowLevelCount >= 31,
+						"主窗口级手势应 >= 31 个（39 golden 扣除 Ctrl+C 两项及 1 个手工处理项 OpenRepositoryInFileExplorer；"
+						+ "QuickFetch 已归一为命令绑定，计入本断言），实际 " + windowLevelCount);
 
 						// ===== ② REPO/COMMIT/REPOMANAGER 容器：至少注册到某个宿主 =====
 						var scoped = new List<(string, KeyGesture, KeyGesture)>();
@@ -947,29 +931,30 @@ namespace ForkPlus.Tests
 
 						string originalContent = File.ReadAllText(Path.Combine(repo, "a.txt"));
 
-						// ===== 1) Delete → Discard 确认弹窗（模态，看门狗自动取消关闭）=====
-						stage.UnstagedFilesFileListUserControl.SelectFile("a.txt");
-						Dispatcher.UIThread.RunJobs();
-						MessageBoxWindow discardDialog = null;
-						using (var watchdog = ModalDialogWatchdog.WaitForAndClose<MessageBoxWindow>(window))
-						{
-							PressKey(stage.UnstagedFilesFileListUserControl, Key.Delete);
-							discardDialog = watchdog.SeenWindow as MessageBoxWindow;
-						}
-						Assert.True(discardDialog != null, "Delete 应弹出 discard 确认框");
-						// 看门狗直接 Close 等价于取消：文件内容不变（未确认 discard）
-						Assert.True(originalContent == File.ReadAllText(Path.Combine(repo, "a.txt")),
-							"确认框取消（窗口直接关闭）不应丢弃修改");
+					// ===== 1) Delete → Discard 确认弹窗（模态，看门狗自动取消关闭）=====
+					stage.UnstagedFilesFileListUserControl.SelectFile("a.txt");
+					Dispatcher.UIThread.RunJobs();
+					// WS2.3：MessageBoxWindow → DiscardChangesWindow（含丢失内容预览的专用确认窗）
+					ForkPlus.UI.Dialogs.DiscardChangesWindow discardDialog = null;
+					using (var watchdog = ModalDialogWatchdog.WaitForAndClose<ForkPlus.UI.Dialogs.DiscardChangesWindow>(window))
+					{
+						PressKey(stage.UnstagedFilesFileListUserControl, Key.Delete);
+						discardDialog = watchdog.SeenWindow as ForkPlus.UI.Dialogs.DiscardChangesWindow;
+					}
+					Assert.True(discardDialog != null, "Delete 应弹出 discard 确认框");
+					// 看门狗直接 Close 等价于取消：文件内容不变（未确认 discard）
+					Assert.True(originalContent == File.ReadAllText(Path.Combine(repo, "a.txt")),
+						"确认框取消（窗口直接关闭）不应丢弃修改");
 
-						// ===== 2) Ctrl+Shift+D（secondary）→ 同一确认弹窗 =====
-						stage.UnstagedFilesFileListUserControl.SelectFile("a.txt");
-						Dispatcher.UIThread.RunJobs();
-						MessageBoxWindow discardDialog2 = null;
-						using (var watchdog = ModalDialogWatchdog.WaitForAndClose<MessageBoxWindow>(window))
-						{
-							PressKey(stage.UnstagedFilesFileListUserControl, Key.D, KeyModifiers.Control | KeyModifiers.Shift);
-							discardDialog2 = watchdog.SeenWindow as MessageBoxWindow;
-						}
+					// ===== 2) Ctrl+Shift+D（secondary）→ 同一确认弹窗 =====
+					stage.UnstagedFilesFileListUserControl.SelectFile("a.txt");
+					Dispatcher.UIThread.RunJobs();
+					ForkPlus.UI.Dialogs.DiscardChangesWindow discardDialog2 = null;
+					using (var watchdog = ModalDialogWatchdog.WaitForAndClose<ForkPlus.UI.Dialogs.DiscardChangesWindow>(window))
+					{
+						PressKey(stage.UnstagedFilesFileListUserControl, Key.D, KeyModifiers.Control | KeyModifiers.Shift);
+						discardDialog2 = watchdog.SeenWindow as ForkPlus.UI.Dialogs.DiscardChangesWindow;
+					}
 						Assert.True(discardDialog2 != null, "Ctrl+Shift+D 应弹出 discard 确认框");
 						Assert.True(originalContent == File.ReadAllText(Path.Combine(repo, "a.txt")),
 							"Ctrl+Shift+D 确认框取消后文件内容同样不应变化");
@@ -1209,7 +1194,8 @@ namespace ForkPlus.Tests
 						}
 
 						AssertOpens<CreateBranchWindow>(Key.B, "Ctrl+Shift+B 应打开 CreateBranchWindow");
-						AssertOpens<CreateTagWindow>(Key.T, "Ctrl+Shift+T 应打开 CreateTagWindow");
+						// WS1a：New Tag 手势 T→G（Ctrl+Shift+T 已被 ReopenClosedTab 占用）
+					AssertOpens<CreateTagWindow>(Key.G, "Ctrl+Shift+G 应打开 CreateTagWindow");
 						AssertOpens<FetchWindow>(Key.F, "Ctrl+Shift+F 应打开 FetchWindow");
 						AssertOpens<PullWindow>(Key.L, "Ctrl+Shift+L 应打开 PullWindow");
 						AssertOpens<PushWindow>(Key.P, "Ctrl+Shift+P 应打开 PushWindow");
@@ -1229,7 +1215,7 @@ namespace ForkPlus.Tests
 			}
 		}
 
-		// ============================ 11) 快捷操作：QuickFetch（OnKeyUp 手工）/ QuickPull ============================
+		// ============================ 11) 快捷操作：QuickFetch（命令绑定）/ QuickPull ============================
 
 		[Fact]
 		public void QuickOps_QuickFetch_CtrlShiftAltF_QuickPull_CtrlShiftAltL()
@@ -1251,19 +1237,19 @@ namespace ForkPlus.Tests
 					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(work, out var window);
 					try
 					{
-						// ===== 1) Ctrl+Shift+Alt+F → QuickFetch：迁移期手工路径（MainWindow.OnKeyUp，
-						//      不走 CommandRouter）。KeyUp 路由：Tunnel 阶段 Keyboard shim 先记录
-						//      修饰键，冒泡到 MainWindow.OnKeyUp 时 IsCtrlDown/IsAltDown/IsShiftDown 均真 =====
-						using (var guard = AnyDialogWatchdog.Arm(window))
-						{
-							PressKeyUp(window, Key.F, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift);
-							E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
+					// ===== 1) Ctrl+Shift+Alt+F → QuickFetch：WS8 归一后走 CommandRouter 命令绑定
+					//      （KeyDown 阶段，与 QuickPull/QuickPush 同路径；原先 OnKeyUp 手工分支已删除，
+					//       Execute 语义一致：活动仓库 → QuickFetch.Execute(repo, repo.GitModule)）=====
+					using (var guard = AnyDialogWatchdog.Arm(window))
+					{
+						PressKeyOnFocused(window, Key.F, KeyModifiers.Control | KeyModifiers.Alt | KeyModifiers.Shift);
+						E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
 							Assert.True(guard.ClosedWindow == null,
 								"QuickFetch 不应弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
-						Assert.True(UiClick.WaitFor(delegate { return Git(work, "rev-parse origin/main") == remoteMain; }),
-							"QuickFetch 后 origin/main 应前进到远端 main");
-						Assert.Equal(localMain, HeadSha(work)); // fetch 只更新远端跟踪 ref，本地 main 不动
+					Assert.True(UiClick.WaitFor(delegate { return Git(work, "rev-parse origin/main") == remoteMain; }, 45000),
+						"QuickFetch 后 origin/main 应前进到远端 main（45s——共享环境线程池可能被真实仓库刷新积压）");
+					Assert.Equal(localMain, HeadSha(work)); // fetch 只更新远端跟踪 ref，本地 main 不动
 
 						// ===== 2) Ctrl+Shift+Alt+L → QuickPull（CommandRouter 绑定）：上游存在 →
 						//      直接 fast-forward pull（无弹窗），本地 main 前进到远端 main =====
@@ -1274,8 +1260,8 @@ namespace ForkPlus.Tests
 							Assert.True(guard.ClosedWindow == null,
 								"QuickPull 不应弹窗: " + (guard.ClosedWindow != null ? guard.ClosedWindow.GetType().Name + " → " + guard.ClosedWindowText : "?"));
 						}
-						Assert.True(UiClick.WaitFor(delegate { return HeadSha(work) == remoteMain; }),
-							"QuickPull 应把本地 main 快进到远端 main");
+					Assert.True(UiClick.WaitFor(delegate { return HeadSha(work) == remoteMain; }, 45000),
+						"QuickPull 应把本地 main 快进到远端 main");
 						ScreenshotHelper.Snap(window, "10-quick-fetch-pull", ModuleDir);
 					}
 					finally

@@ -177,6 +177,63 @@ namespace ForkPlus.Tests
 
 		// ============================ 工具 ============================
 
+		/// <summary>v4.2.1：重开已关闭标签（Ctrl+Shift+T）——关仓库 tab 后路径入栈，
+		/// ReopenClosedTab 走生产入口 OpenRepository 复开并选中；栈空后再调用为无操作。</summary>
+		[Fact]
+		public void TabManager_ReopenClosedTab()
+		{
+			string repo = TestRepoFactory.CreateBasic();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+					// 关闭仓库标签（生产入口：仓库 tab 即当前选中）→ 路径进入已关闭栈
+					// 断言只相对测试仓库计数：工作区可能恢复出用户真实仓库 tab（共享机器环境），
+					// 不能假设"无任何仓库 tab"。
+					string myRepo = PathNorm(repo);
+					Func<int> countMine = delegate
+					{
+						return window.TabManager.RepositoryUserControls.Count(delegate (RepositoryUserControl r)
+						{
+							return PathNorm(r.GitModule.Path) == myRepo;
+						});
+					};
+					Assert.Equal(1, countMine());
+
+					// 关闭当前选中的仓库标签（即刚打开的测试仓库）→ 路径进入已关闭栈
+					window.TabManager.CloseActiveTab();
+					Dispatcher.UIThread.RunJobs();
+					E2eMainWindowHarness.WaitForRepositoryJobs(repoControl);
+					Assert.Equal(0, countMine());
+
+					// 重开最近关闭的标签：应复开同一仓库并选中
+					window.TabManager.ReopenClosedTab();
+					Dispatcher.UIThread.RunJobs();
+					RepositoryUserControl reopened = window.TabManager.ActiveRepositoryUserControl;
+					Assert.NotNull(reopened);
+					Assert.Equal(myRepo, PathNorm(reopened.GitModule.Path));
+					E2eMainWindowHarness.WaitForRepositoryJobs(reopened);
+
+					// 栈已弹空：再次调用应静默无操作（不重复开 tab）
+					window.TabManager.ReopenClosedTab();
+					Dispatcher.UIThread.RunJobs();
+					Assert.Equal(1, countMine());
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
 		private static string TreeText(Avalonia.Visual root)
 		{
 			var sb = new System.Text.StringBuilder();

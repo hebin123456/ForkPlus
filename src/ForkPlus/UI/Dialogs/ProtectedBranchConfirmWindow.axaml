@@ -1,0 +1,31 @@
+<!-- WS2.4：受保护分支操作确认对话框（删除本地/远程分支、重置分支、强推四处共用）。 -->
+<dialogs:ForkPlusDialogWindow Width="460" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.ProtectedBranchConfirmWindow" xmlns="https://github.com/avaloniaui">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,10,0,0">
+      <Border BorderThickness="1" BorderBrush="{DynamicResource TextBox.Static.Border}" Padding="6">
+        <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl x:Name="BranchesItemsControl">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal" Margin="0,1,0,1">
+                  <Image Source="{DynamicResource BranchIcon}" Height="16" Width="16" Margin="0,0,6,0" VerticalAlignment="Center" />
+                  <TextBlock FontSize="13" VerticalAlignment="Center" Text="{Binding}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+      <TextBlock Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="HintTextBlock" />
+    </StackPanel>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

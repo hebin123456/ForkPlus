@@ -1,4 +1,4 @@
-<ui:CustomWindow x:Class="ForkPlus.UI.Dialogs.ReflogWindow" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:undo="clr-namespace:ForkPlus.Undo" Title="Reflog" Height="500" Width="700" MinHeight="300" MinWidth="500" WindowStartupLocation="CenterOwner">
+<ui:CustomWindow x:Class="ForkPlus.UI.Dialogs.ReflogWindow" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:undo="clr-namespace:ForkPlus.Undo" Title="Reflog" Height="520" Width="760" MinHeight="300" MinWidth="500" WindowStartupLocation="CenterOwner">
   <Grid Margin="8">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -15,13 +15,14 @@
       <Button DockPanel.Dock="Right" x:Name="JumpButton" Click="JumpButton_Click" Padding="12,0" Margin="4,0,0,0" Content="Jump to..." IsEnabled="False" />
     </DockPanel>
 
-    <!-- 列头（Avalonia 无 WPF GridViewColumnHeader，手工实现） -->
-    <Grid Grid.Row="1" ColumnDefinitions="70,90,240,*,160" Margin="0,0,0,6">
-      <TextBlock Grid.Column="0" x:Name="IndexHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Index" />
-      <TextBlock Grid.Column="1" x:Name="ShaHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="SHA" />
-      <TextBlock Grid.Column="2" x:Name="OperationHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Operation" />
-      <TextBlock Grid.Column="3" x:Name="CommitSubjectHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Commit Subject" />
-      <TextBlock Grid.Column="4" x:Name="TimeHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Time" />
+    <!-- 列头（Avalonia 无 WPF GridViewColumnHeader，手工实现）。
+         WS9：最左 24px 为时间线节点列（无列头），其余五列沿用既有键。 -->
+    <Grid Grid.Row="1" x:Name="HeaderColumns" ColumnDefinitions="24,70,90,240,*,110" Margin="6,0,6,6">
+      <TextBlock Grid.Column="1" x:Name="IndexHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Index" />
+      <TextBlock Grid.Column="2" x:Name="ShaHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="SHA" />
+      <TextBlock Grid.Column="3" x:Name="OperationHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Operation" />
+      <TextBlock Grid.Column="4" x:Name="CommitSubjectHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Commit Subject" />
+      <TextBlock Grid.Column="5" x:Name="TimeHeader" FontWeight="Bold" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Time" />
     </Grid>
 
     <!-- reflog 列表 -->
@@ -43,18 +44,32 @@
 
       <ListBox.ItemTemplate>
         <DataTemplate>
-          <Grid ColumnDefinitions="70,90,240,*,160" VerticalAlignment="Center">
-            <TextBlock Grid.Column="0" Text="{Binding IndexDisplay}" />
-            <TextBlock Grid.Column="1" Text="{Binding ShaDisplay}" FontFamily="Consolas" />
-            <TextBlock Grid.Column="2" Text="{Binding OperationName}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="3" Text="{Binding CommitSubject}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="4" Text="{Binding TimeDisplay}" FontFamily="Consolas" />
+          <!-- WS9 时间线行：左列竖线 + 节点圆点（命中索引 = Accent 大节点，未命中 = 灰小节点）；
+               行内：友好操作名（命中加粗）/ HEAD@{N} / 短 SHA / 提交标题 / 相对时间，悬停提示含原始 reflog 消息与绝对时间 -->
+          <Grid ColumnDefinitions="24,70,90,240,*,110" VerticalAlignment="Center" ToolTip.Tip="{Binding TooltipText}">
+            <Canvas Grid.Column="0" Width="24" Height="24">
+              <Line IsVisible="{Binding TimelineShowTopLine}" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="12,0" EndPoint="12,12" />
+              <Line IsVisible="{Binding TimelineShowBottomLine}" Stroke="{DynamicResource ForegroundBrush.Gray}" StrokeThickness="1.4" StartPoint="12,12" EndPoint="12,24" />
+              <Ellipse Classes="timeline-node-indexed" Canvas.Left="8" Canvas.Top="8" Width="8" Height="8" IsVisible="{Binding IsIndexedOperation}" Fill="{DynamicResource AccentBrush}" />
+              <Ellipse Classes="timeline-node-plain" Canvas.Left="9" Canvas.Top="9" Width="6" Height="6" IsVisible="{Binding !IsIndexedOperation}" Fill="{DynamicResource ForegroundBrush.Gray}" />
+            </Canvas>
+            <TextBlock Grid.Column="1" Text="{Binding IndexDisplay}" />
+            <TextBlock Grid.Column="2" Text="{Binding ShaDisplay}" FontFamily="Consolas" />
+            <Panel Grid.Column="3">
+              <TextBlock IsVisible="{Binding IsIndexedOperation}" FontWeight="Bold" Text="{Binding OperationName}" TextTrimming="CharacterEllipsis" />
+              <TextBlock IsVisible="{Binding !IsIndexedOperation}" Text="{Binding OperationName}" TextTrimming="CharacterEllipsis" />
+            </Panel>
+            <TextBlock Grid.Column="4" Text="{Binding CommitSubject}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            <TextBlock Grid.Column="5" Text="{Binding RelativeTimeDisplay}" />
           </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
 
-    <!-- 状态栏 -->
-    <TextBlock Grid.Row="3" x:Name="StatusText" Margin="0,8,0,0" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Double-click an entry to jump to that state." />
+    <!-- 状态栏：左侧动态状态，右侧时间线节点图例 -->
+    <DockPanel Grid.Row="3" Margin="0,8,0,0" LastChildFill="False">
+      <TextBlock x:Name="StatusText" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Double-click an entry to jump to that state." />
+      <TextBlock DockPanel.Dock="Right" x:Name="TimelineLegendText" FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" Text="Accent dots are operations performed in ForkPlus; gray dots are other reflog entries." />
+    </DockPanel>
   </Grid>
 </ui:CustomWindow>

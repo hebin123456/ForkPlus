@@ -42,6 +42,9 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Text="User Information" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
     <CheckBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4,0,10" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Use global git credentials" IsCheckedChanged="UseGlobalGitCredentialsCheckBox_Changed" x:Name="UseGlobalGitCredentialsCheckBox" />
@@ -77,9 +80,16 @@
       </ComboBox.ItemTemplate>
     </ComboBox>
     <CheckBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3" Margin="0,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Content="No fast-forward on merge" IsCheckedChanged="NoFastForwardCheckBox_Changed" x:Name="NoFastForwardCheckBox" IsVisible="False" />
+    <!-- WS2.4：受保护分支设置。每行一个分支名（短名精确匹配，忽略大小写）；
+         删除/重置/强推命中时弹确认框。持久化走 RepositorySettings.ProtectedBranches。 -->
     <Separator Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
-    <TextBlock Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Text="Diff View" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
-    <TextBlock Grid.Column="0" Grid.Row="11" Text="Tab Width:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-    <TextBox Text="" Grid.Row="11" Grid.Column="1" Width="30" Margin="0,4,0,4" Padding="4,2,4,2" TextAlignment="Left" HorizontalAlignment="Left" TextChanged="TabWidthTextBox_TextChanged" x:Name="TabWidthTextBox" />
+    <TextBlock Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="3" Text="Protected branches" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
+    <TextBlock Grid.Column="0" Grid.Row="11" Text="Protected branches:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Top" HorizontalAlignment="Right" />
+    <TextBox Grid.Row="11" Grid.Column="1" Margin="0,4,0,4" Height="72" TextWrapping="NoWrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" TextChanged="ProtectedBranchesTextBox_TextChanged" x:Name="ProtectedBranchesTextBox" />
+    <TextBlock Grid.Row="12" Grid.Column="1" Margin="0,0,10,0" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryLabelBrush}" Text="One branch name per line. Deleting, resetting or force pushing a protected branch will ask for confirmation." x:Name="ProtectedBranchesHintTextBlock" />
+    <Separator Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,20,0,0" />
+    <TextBlock Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="3" Text="Diff View" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
+    <TextBlock Grid.Column="0" Grid.Row="15" Text="Tab Width:" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+    <TextBox Text="" Grid.Row="15" Grid.Column="1" Width="30" Margin="0,4,0,4" Padding="4,2,4,2" TextAlignment="Left" HorizontalAlignment="Left" TextChanged="TabWidthTextBox_TextChanged" x:Name="TabWidthTextBox" />
   </Grid>
 </UserControl>

@@ -1,0 +1,37 @@
+<!-- WS2.3：丢弃文件改动确认对话框（替代原 MessageBox）：分组列出将丢弃的
+     子仓/普通文件，超上限截断显示"…and {0} more"，长列表走 ScrollViewer。 -->
+<dialogs:ForkPlusDialogWindow Width="550" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.DiscardChangesWindow" xmlns="https://github.com/avaloniaui">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <ScrollViewer Grid.Row="1" Grid.Column="1" Margin="0,10,0,0" MaxHeight="260" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" x:Name="ListScrollViewer">
+      <StackPanel>
+        <TextBlock FontSize="13" FontWeight="Medium" x:Name="SubmodulesHeaderTextBlock" IsVisible="False" />
+        <ItemsControl Margin="0,2,0,0" x:Name="SubmodulesItemsControl" IsVisible="False">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <TextBlock FontFamily="Consolas" FontSize="12" Margin="0,1,0,1" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="SubmodulesOverflowTextBlock" IsVisible="False" />
+        <TextBlock Margin="0,8,0,0" FontSize="13" FontWeight="Medium" x:Name="FilesHeaderTextBlock" IsVisible="False" />
+        <ItemsControl Margin="0,2,0,0" x:Name="FilesItemsControl" IsVisible="False">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <TextBlock FontFamily="Consolas" FontSize="12" Margin="0,1,0,1" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Margin="0,2,0,0" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" x:Name="FilesOverflowTextBlock" IsVisible="False" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>

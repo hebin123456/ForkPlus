@@ -106,6 +106,20 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			SidebarTreeView.AllowDragDrop = true;
 			SidebarTreeView.RememberExpandedItems = true;
+			// 修复（2026-09-30，"子仓侧边栏的父仓名点击无反应"）：WPF 原版 RepositoryParentNameTextBlock
+			// 内嵌 Hyperlink，RequestNavigate="RepositoryParentNameTextBlock_RequestNavigate" 点击跳转父仓库；
+			// 迁移后为纯 TextBlock，处理器孤儿化。改为指针按下直接触发（仅在有父仓、文本非空时），
+			// 并给手型光标作可点击提示。
+			RepositoryParentNameTextBlock.PointerPressed += delegate(object s, global::Avalonia.Input.PointerPressedEventArgs e)
+			{
+				if (e.GetCurrentPoint(RepositoryParentNameTextBlock).Properties.IsLeftButtonPressed
+					&& RepositoryParentNameTextBlock.Text.Length > 0)
+				{
+					RepositoryParentNameTextBlock_RequestNavigate(RepositoryParentNameTextBlock, new RequestNavigateEventArgs());
+					e.Handled = true;
+				}
+			};
+			RepositoryParentNameTextBlock.Cursor = new global::Avalonia.Input.Cursor(global::Avalonia.Input.StandardCursorType.Hand);
 			_root = new FolderSidebarItem("", null, this);
 			_pinned = CreateSidebarGroupItem(SidebarGroupItem.Group.Pinned);
 			_branches = CreateSidebarGroupItem(SidebarGroupItem.Group.Branches);

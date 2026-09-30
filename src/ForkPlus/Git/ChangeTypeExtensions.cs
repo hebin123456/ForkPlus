@@ -36,8 +36,11 @@ namespace ForkPlus.Git
     StatusType.Modified => IconKeys.StatusEdit,
     StatusType.Ignored => IconKeys.StatusAdd,
     StatusType.Renamed => IconKeys.StatusRename,
-    StatusType.TypeChanged => IconKeys.StatusEdit,
-    StatusType.Unmerged => IconKeys.StatusEdit,
+     StatusType.TypeChanged => IconKeys.StatusEdit,
+     // 修复（2026-09-29，"变更文件树/列表里冲突文件显示普通铅笔（编辑）图标而非冲突标识"）：
+     // 原来映射到 StatusEdit（铅笔），与 ChangeType.Unmerged => IconKeys.Warning 不一致，
+     // 且 BridgeExtensions 的图标桥接里没有 StatusEdit→Warning 的路径 → 冲突状态一律显示铅笔。
+     StatusType.Unmerged => IconKeys.Warning,
     StatusType.Untracked => IconKeys.StatusAdd,
     StatusType.Unknown => IconKeys.StatusEdit,
     StatusType.None => IconKeys.StatusEdit,

@@ -49,6 +49,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <!-- 2026-09-28 残影修复：移除显式 VirtualizingStackPanel（WPF 迁移残留），回归主题默认
@@ -119,6 +120,10 @@
       <CheckBox Grid.Column="1" Grid.Row="6" Margin="8,8,0,4" HorizontalAlignment="Left" IsEnabled="False" Content="Squash unpushed commits" ToolTip.Tip="Combine all unpushed commits into a single commit before pushing. Available when the branch has an upstream and 2 or more unpushed commits. You can edit the commit message below." IsCheckedChanged="SquashCheckBox_Changed" x:Name="SquashCheckBox" />
       <TextBlock Grid.Column="1" Grid.Row="7" Margin="8,6,0,0" FontSize="13" Text="Squashed commit message:" x:Name="SquashMessageLabel" IsVisible="False" />
       <TextBox Text="" Grid.Column="1" Grid.Row="8" Margin="8,4,0,4" Height="72" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="SquashMessageTextBox" IsVisible="False" />
+      <!-- v3.13.0（WS2.2）：强推覆盖预览。force 打开且远程领先本地时显示
+           “将覆盖 N 个远程提交”+ 可展开的远程独有提交列表（&lt;本地&gt;..&lt;远程&gt;，
+           这些提交会被覆盖丢失；Expander 默认收起）。force 关闭或远程不领先时隐藏。 -->
+      <controls:CommitsPreviewSection Grid.Column="1" Grid.Row="9" Margin="8,8,0,4" x:Name="ForcePushPreviewSection" IsVisible="False" />
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

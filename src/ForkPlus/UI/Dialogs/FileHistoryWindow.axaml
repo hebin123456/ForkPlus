@@ -207,7 +207,8 @@
         <ColumnDefinition Width="1" />
         <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
-      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
+      <!-- 修复（2026-09-30，"右键文件历史弹空菜单"）：WPF ContextMenuOpening="TreeView_ContextMenuOpening" 接线迁移时丢失，补 ContextRequested -->
+      <controls:MultiselectionTreeView SelectionChanged="TreeView_SelectionChanged" ContextRequested="TreeView_ContextMenuOpening" Grid.Column="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="TreeView" DoubleTapped="TreeView_MouseDoubleClick" Theme="{DynamicResource FileHistoryMultiselectionTreeViewStyle}">
         <controls:MultiselectionTreeView.ContextMenu>
           <ContextMenu />
         </controls:MultiselectionTreeView.ContextMenu>

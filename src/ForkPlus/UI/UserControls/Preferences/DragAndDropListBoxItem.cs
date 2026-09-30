@@ -13,6 +13,11 @@ namespace ForkPlus.UI.UserControls.Preferences
 {
 	public class DragAndDropListBoxItem : ListBoxItem
 	{
+		/// <summary>进程内拖放 payload 的字符串 key（object[] 无法跨进程序列化，走
+		/// WpfDataObject.RuntimePayload 直通表；与 MultiselectionListViewItem.DragItemsFormat 同款，
+		/// 见 EditCustomCommandUIControlsWindow.ListBoxItem_Drop 读取侧）。</summary>
+		public static readonly string DragItemsFormat = "ForkPlusCiRows";
+
 		private bool _wasSelected;
 
 		private Point _dragStartPoint;
@@ -20,6 +25,24 @@ namespace ForkPlus.UI.UserControls.Preferences
 		private DragAndDropListBoxAdorner _adorner;
 
 		private DropPlaceAdorner _dropAdorner;
+
+		// 修复（2026-09-30，"拖拽排序完全无反应"）：WPF 原版行样式里 AllowDrop Setter + OnDragEnter/
+		// OnDragLeave/OnDrop 虚方法重写（框架调用）；迁移时 Setter 被删（axaml 注释声称"Avalonia 无该
+		// 属性"——实为 DragDrop 附加属性）、虚方法降级成无人调用的普通方法——行容器既不接受放置、
+		// 拖放指示线也永不显示。参照 DragAndDropListViewItem 构造函数补齐 AllowDrop 与类级接线。
+		public DragAndDropListBoxItem()
+		{
+			DragDrop.SetAllowDrop(this, true);
+			AddHandler(DragDrop.DragEnterEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragOverEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragLeaveEvent, (_, e) => OnDragLeave(e));
+			AddHandler(DragDrop.DropEvent, (_, e) => OnDrop(e));
+		}
+
+		// 修复（2026-09-30，同上）：记录本手势的按下参数，供 OnPointerMoved 用
+		// DragDropLauncher.DoDragDrop(press, ...) 重载一次发起（同 ClosableTabItem 修复模式，
+		// 避开 ConditionalWeakTable 两段式"首次手势被吞"的问题）。
+		private global::Avalonia.Input.PointerPressedEventArgs _lastPressArgs;
 
 		public DragAndDropListBox ParentListBox { get; internal set; }
 
@@ -35,6 +58,7 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
+				_lastPressArgs = e;
 				e.Pointer.Capture(this);
 			}
 		}
@@ -81,7 +105,19 @@ namespace ForkPlus.UI.UserControls.Preferences
 				if (adornerLayer != null)
 				{
 					adornerLayer.Add(_adorner);
-					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(this, array, DragDropEffects.Move);
+					// 修复（2026-09-30，"拖起后落点拿不到数据、重排永不发生"）：原版把 object[] 直接交给
+					// DragDropLauncher.DoDragDrop(source, ...)，ToTransfer 的 default 分支把它 ToString 成
+					// 类型名字符串存进 DataTransfer——落点 GetData 拿到的是字符串，GetData(typeof(object[]))
+					// 恒为 null。改为 WpfDataObject.SetData 进进程内直通表（RuntimePayload）保留原始引用
+					// （与侧边栏/文件列表/ClosableTabItem 拖放同款），并用本手势按下参数的 press 重载一次发起。
+					global::Avalonia.Input.PointerPressedEventArgs pressArgs = _lastPressArgs;
+					_lastPressArgs = null;
+					if (pressArgs != null)
+					{
+						WpfDataObject dataObject = new WpfDataObject();
+						dataObject.SetData(DragItemsFormat, array);
+						global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(pressArgs, dataObject, DragDropEffects.Move);
+					}
 					adornerLayer.Remove(_adorner);
 				}
 			}

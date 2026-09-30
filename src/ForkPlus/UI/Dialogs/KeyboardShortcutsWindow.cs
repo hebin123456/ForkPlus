@@ -1,17 +1,30 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using ForkPlus.Settings;
+using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Helpers;
+using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
 namespace ForkPlus.UI.Dialogs
 {
+	// WS7（2026-09-30）：本窗口原是手写静态清单（ShortcutSection/ShortcutRow 数组），
+	// 已两次发生漂移：New Tag 手势 Ctrl+Shift+T→Ctrl+Shift+G 改命令后要人肉同步窗口；
+	// ReopenClosedTab 新增也要手写补行。E2e28 已有「命令手势↔注册绑定」清单测试，但
+	// 「命令↔窗口展示」无防护。现改为反射生成：枚举各 CommandContainer 的 IUICommand
+	// （Title/Shortcut/SecondaryShortcut），按容器分节渲染；非命令类快捷键保留手写补充。
+	// 防漂移测试见 ForkPlus.Tests/KeyboardShortcutsWindowReflectionTests.cs。
 	public class KeyboardShortcutsWindow : ForkPlusDialogWindow
 	{
-		private sealed class ShortcutSection
+		internal sealed class ShortcutSection
 		{
 			public string Title { get; }
 
@@ -24,7 +37,7 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private sealed class ShortcutRow
+		internal sealed class ShortcutRow
 		{
 			public string Keys { get; }
 
@@ -37,59 +50,97 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private static readonly ShortcutSection[] Sections = new ShortcutSection[]
+		// 反射枚举的容器清单。CommandContainer 共 6 个子类，其中 FileDiffControlCommands /
+		// TextContentControlCommands 只装上下文菜单辅助类（非 IUICommand、无手势），不产生
+		// 任何行，不列。枚举顺序同时是「同一命令在多个容器声明时的归属优先级」（先到先得）：
+		// 作用域窄的容器先处理——New Branch.../New Tag.../Pull... 等在 Main 和 Repo 都声明，
+		// 归入 Repository（第一个声明的容器）；Main 独有的命令默认落 General Navigation，
+		// 个别按原窗口分组改派（见 CommandSectionOverrides）。
+		// （容器类型, 区段标题）二元组——不用独立描述符类：ClassCoverageManifest 要求生产代码
+		// 每个类型声明都登记清单，元组避免新增类型。
+		private static readonly (Type ContainerType, string SectionTitle)[] CommandContainerSections = new (Type, string)[]
 		{
-			new ShortcutSection("General Navigation",
-				new ShortcutRow("Ctrl+1", "Show Changes view (second press will focus commit field)"),
-				new ShortcutRow("Ctrl+2", "Show All Commits view (second press will jump to HEAD)"),
-				new ShortcutRow("Ctrl+0", "Reveal HEAD"),
-				new ShortcutRow("Ctrl+P", "Show Quick Launch window"),
-				new ShortcutRow("Ctrl+Tab", "Select next tab"),
-				new ShortcutRow("Ctrl+Shift+Tab", "Select previous tab"),
-				new ShortcutRow("Ctrl+T", "Open new tab"),
-				new ShortcutRow("Ctrl+W", "Close current tab"),
-				new ShortcutRow("Ctrl+= / Ctrl+-", "Zoom in / Zoom out"),
-				new ShortcutRow("Ctrl+,", "Open ForkPlus preferences")),
-			new ShortcutSection("All Commits View",
-				new ShortcutRow("Ctrl+0", "Jump to HEAD"),
-				new ShortcutRow("Ctrl+F", "Commit search"),
-				new ShortcutRow("Enter, F3", "Jump to next search result"),
-				new ShortcutRow("Shift+Enter, Shift+F3", "Jump to previous search result"),
-				new ShortcutRow("Ctrl+C", "Copy commit info"),
-				new ShortcutRow("Delete", "Remove branch/stash"),
-				new ShortcutRow("Ctrl+Shift+A", "Filter by active branch")),
-			new ShortcutSection("Changes View",
-				new ShortcutRow("Ctrl+Enter", "Commit"),
-				new ShortcutRow("Ctrl+Shift+Enter", "Commit and push"),
-				new ShortcutRow("Ctrl+1", "Focus commit message field"),
-				new ShortcutRow("Ctrl+F", "Filter"),
-				new ShortcutRow("Enter, Ctrl+Shift+S", "Stage/unstage selected file (or lines)"),
-				new ShortcutRow("Ctrl+Alt+Shift+S", "Stage/unstage all files"),
-				new ShortcutRow("Backspace, Ctrl+Shift+D", "Discard selected file (or lines)"),
-				new ShortcutRow("Ctrl+O", "Open selected file"),
-				new ShortcutRow("Ctrl+D", "Open selected file in external diff tool"),
-				new ShortcutRow("Ctrl+C", "Copy selected file full path")),
-			new ShortcutSection("Repository",
-				new ShortcutRow("F5", "Refresh"),
-				new ShortcutRow("Ctrl+Shift+N", "Init new repository"),
-				new ShortcutRow("Ctrl+N", "Clone new repository"),
-				new ShortcutRow("Ctrl+G", "Initialize git mm Repository"),
-				new ShortcutRow("Ctrl+O", "Open repository"),
-				new ShortcutRow("Ctrl+Shift+F", "Fetch"),
-				new ShortcutRow("Ctrl+Alt+Shift+F, Ctrl+Click", "Quick Fetch"),
-				new ShortcutRow("Ctrl+Shift+L", "Pull"),
-				new ShortcutRow("Ctrl+Alt+Shift+L, Ctrl+Click", "Quick Pull"),
-				new ShortcutRow("Ctrl+Shift+P", "Push"),
-				new ShortcutRow("Ctrl+Alt+Shift+P, Ctrl+Click", "Quick Push"),
-				new ShortcutRow("Ctrl+Shift+B", "New branch"),
-				new ShortcutRow("Ctrl+Shift+T", "New tag"),
-				new ShortcutRow("Ctrl+Shift+H", "Create stash"),
-				new ShortcutRow("Ctrl+Alt+O", "Open in File Explorer"),
-				new ShortcutRow("Ctrl+Alt+T", "Open in Terminal")),
-			new ShortcutSection("Repository Manager",
-				new ShortcutRow("F2", "Rename Repository"),
-				new ShortcutRow("Delete", "Remove Repository"),
-				new ShortcutRow("Enter", "Open Repository"))
+			(typeof(CommitUserControlCommands), "Changes View"),
+			(typeof(RepositoryUserControlCommands), "Repository"),
+			(typeof(RepositoryManagerUserControlCommands), "Repository Manager"),
+			(typeof(MainWindowCommands), "General Navigation")
+		};
+
+		// 区段渲染顺序（沿用原窗口布局）。
+		private static readonly string[] SectionOrder = new string[]
+		{
+			"General Navigation",
+			"All Commits View",
+			"Changes View",
+			"Repository",
+			"Repository Manager"
+		};
+
+		// 区段归属改派表（仅影响展示分组，手势/标题数据仍全部来自反射）：部分命令只在
+		// MainWindowCommands 声明（窗口级绑定），但按原窗口的信息架构属于 Repository /
+		// All Commits View 区段——用命令类型→区段标题的小表改派，避免这些行全部落进
+		// General Navigation 而打散原有分组。
+		private static readonly Dictionary<Type, string> CommandSectionOverrides = new Dictionary<Type, string>
+		{
+			{ typeof(QuickFetchCommand), "Repository" },
+			{ typeof(QuickPullCommand), "Repository" },
+			{ typeof(QuickPushCommand), "Repository" },
+			{ typeof(ShowFetchWindowCommand), "Repository" },
+			{ typeof(ShowPushWindowCommand), "Repository" },
+			{ typeof(ShowSaveStashWindowCommand), "Repository" },
+			{ typeof(RefreshRepositoryDataCommand), "Repository" },
+			{ typeof(OpenRepositoryCommand), "Repository" },
+			{ typeof(ShowCloneWindowCommand), "Repository" },
+			{ typeof(ShowInitRepositoryWindowCommand), "Repository" },
+			{ typeof(ShowInitGitMmRepositoryWindowCommand), "Repository" },
+			{ typeof(OpenRepositoryInFileExplorerCommand), "Repository" },
+			{ typeof(OpenRepositoryInShellToolCommand), "Repository" },
+			// 修订列表作用域命令（E2e28：不注册 window 级，只绑定修订列表/文件历史），
+			// 原窗口归 All Commits View。
+			{ typeof(CopyRevisionShaCommand), "All Commits View" },
+			{ typeof(CopyRevisionInfoCommand), "All Commits View" },
+			{ typeof(ToggleReferenceFilterCommand), "All Commits View" }
+		};
+
+		// Ctrl+Click（工具栏按钮按住 Ctrl 点击，见 ToolbarUserControl 的 IsCtrlDown 分支）是
+		// 鼠标手势，不在 IUICommand 的 KeyGesture 里（Quick* 的 SecondaryShortcut 均为 null），
+		// 反射拿不到——用命令类型→附加按键文本的小表补充，与原手写版展示一致
+		//（CreateKeysPanel 按 ", " 拆分，"Ctrl+Click" 渲染成 [Ctrl][Click]）。
+		private static readonly Dictionary<Type, string> ExtraCommandGestures = new Dictionary<Type, string>
+		{
+			{ typeof(QuickFetchCommand), "Ctrl+Click" },
+			{ typeof(QuickPullCommand), "Ctrl+Click" },
+			{ typeof(QuickPushCommand), "Ctrl+Click" }
+		};
+
+		// 非命令类快捷键（不走 IUICommand 体系）：控件级行为（搜索框/焦点导航）或无法反射
+		// 对应的命令。与反射区段合并渲染：同区段内反射行在前、手写行在后。已由反射覆盖的
+		// 手写行（同手势同命令）已删除，防双列——删行清单见 WS7 提交说明（Zoom In/Out、
+		// Reopen closed tab、New tag、Quick* 等改由反射生成；Backspace 丢弃文件是手写版陈旧
+		// 信息，命令真相为 Delete + Ctrl+Shift+D）。
+		private static readonly Dictionary<string, ShortcutRow[]> HandwrittenRowsBySection = new Dictionary<string, ShortcutRow[]>
+		{
+			{
+				"All Commits View",
+				new ShortcutRow[]
+				{
+					new ShortcutRow("Ctrl+F", "Commit search"),
+					new ShortcutRow("Enter, F3", "Jump to next search result"),
+					new ShortcutRow("Shift+Enter, Shift+F3", "Jump to previous search result"),
+					// RemoveReferenceCommand / ShowRemoveStashWindowCommand 的 Title 为 null，
+					// 反射行无法命名展示——该 Delete 手势的语义由本行承载。
+					new ShortcutRow("Delete", "Remove branch/stash")
+				}
+			},
+			{
+				"Changes View",
+				new ShortcutRow[]
+				{
+					new ShortcutRow("Ctrl+1", "Focus commit message field"),
+					new ShortcutRow("Ctrl+F", "Filter"),
+					new ShortcutRow("Ctrl+O", "Open selected file")
+				}
+			}
 		};
 
 		// Migration note（2026-09-06 生产 bug）：键位徽章展示的是键名原文（Delete/Ctrl/Enter...），
@@ -126,6 +177,93 @@ namespace ForkPlus.UI.Dialogs
 			base.ShowCancelButton = true;
 		}
 
+		/// <summary>
+		/// 构建全部区段（反射命令区段 + 手写补充行），internal 供防漂移测试断言。
+		/// 每次调用重新反射（命令 ~100，毫秒级；CommandContainer.Lazy 构造无副作用），无需缓存。
+		/// </summary>
+		internal static List<ShortcutSection> BuildSections()
+		{
+			Dictionary<string, List<ShortcutRow>> reflectedRowsBySection = new Dictionary<string, List<ShortcutRow>>();
+			HashSet<Type> renderedCommandTypes = new HashSet<Type>();
+			HashSet<string> renderedRowIdentities = new HashSet<string>();
+			foreach ((Type containerType, string containerSectionTitle) in CommandContainerSections)
+			{
+				CommandContainer container = (CommandContainer)Activator.CreateInstance(containerType);
+				foreach (PropertyInfo property in container.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+					.Where((PropertyInfo p) => typeof(IUICommand).IsAssignableFrom(p.PropertyType)).OrderBy((PropertyInfo p) => p.Name))
+				{
+					if (!(property.GetValue(container) is IUICommand command))
+					{
+						continue;
+					}
+					// Title 为 null/空的命令（RemoveReferenceCommand、ShowRemoveStashWindowCommand）
+					// 无法命名展示，跳过——其手势语义由手写行 "Delete Remove branch/stash" 承载。
+					if (string.IsNullOrEmpty(command.Title))
+					{
+						continue;
+					}
+					string keys = BuildCommandKeys(command);
+					if (keys.Length == 0)
+					{
+						continue;
+					}
+					// 同一命令类型在多个容器声明（如 CopyRevisionShaCommand 同时在 Main/Repo）只列一次。
+					if (!renderedCommandTypes.Add(command.GetType()))
+					{
+						continue;
+					}
+					// 完全重复行（同按键同描述，如本地/远程 "Delete Branch"）只列一次。
+					if (!renderedRowIdentities.Add(keys + "\0" + command.Title))
+					{
+						continue;
+					}
+					string sectionTitle = CommandSectionOverrides.TryGetValue(command.GetType(), out string overrideTitle) ? overrideTitle : containerSectionTitle;
+					if (!reflectedRowsBySection.TryGetValue(sectionTitle, out List<ShortcutRow> sectionRows))
+					{
+						sectionRows = new List<ShortcutRow>();
+						reflectedRowsBySection[sectionTitle] = sectionRows;
+					}
+					sectionRows.Add(new ShortcutRow(keys, command.Title));
+				}
+			}
+			List<ShortcutSection> sections = new List<ShortcutSection>();
+			foreach (string title in SectionOrder)
+			{
+				List<ShortcutRow> rows = new List<ShortcutRow>();
+				if (reflectedRowsBySection.TryGetValue(title, out List<ShortcutRow> reflectedRows))
+				{
+					rows.AddRange(reflectedRows);
+				}
+				if (HandwrittenRowsBySection.TryGetValue(title, out ShortcutRow[] handwrittenRows))
+				{
+					rows.AddRange(handwrittenRows);
+				}
+				if (rows.Count > 0)
+				{
+					sections.Add(new ShortcutSection(title, rows.ToArray()));
+				}
+			}
+			return sections;
+		}
+
+		private static string BuildCommandKeys(IUICommand command)
+		{
+			List<string> parts = new List<string>();
+			if (command.Shortcut != null)
+			{
+				parts.Add(command.Shortcut.ToFriendlyString());
+			}
+			if (command.SecondaryShortcut != null)
+			{
+				parts.Add(command.SecondaryShortcut.ToFriendlyString());
+			}
+			if (ExtraCommandGestures.TryGetValue(command.GetType(), out string extra))
+			{
+				parts.Add(extra);
+			}
+			return string.Join(", ", parts);
+		}
+
 		private static Grid CreateContent()
 		{
 			Grid grid = new Grid();
@@ -148,7 +286,7 @@ namespace ForkPlus.UI.Dialogs
 				Margin = new Thickness(0.0, 4.0, 0.0, 0.0)
 			};
 			StackPanel stackPanel = new StackPanel();
-			foreach (ShortcutSection section in Sections)
+			foreach (ShortcutSection section in BuildSections())
 			{
 				stackPanel.Children.Add(CreateSectionHeader(section.Title));
 				foreach (ShortcutRow row in section.Rows)
@@ -206,7 +344,11 @@ namespace ForkPlus.UI.Dialogs
 			{
 				VerticalAlignment = VerticalAlignment.Center
 			};
-			string[] alternatives = keys.Split(',');
+			// 修复（2026-09-29，"快捷键 Ctrl+,（打开偏好设置）渲染成 [Ctrl][空键][,][空键]"）：
+			// 原来按 ',' 拆分"备选按键"列表，而数据里备选分隔符统一是 ", "（逗号+空格），
+			// "Ctrl+," 末尾的逗号是快捷键本身 → 被拆出空串，AddChord 渲染成空徽章。
+			// 改为按 ", " 拆分：既保留多备选（"Enter, F3" 等）语义，又不吞掉 Ctrl+, 的逗号。
+			string[] alternatives = keys.Split(new string[] { ", " }, System.StringSplitOptions.None);
 			for (int i = 0; i < alternatives.Length; i++)
 			{
 				if (i > 0)

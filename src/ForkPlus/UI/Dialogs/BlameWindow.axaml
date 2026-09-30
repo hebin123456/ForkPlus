@@ -137,7 +137,8 @@
       <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,1,0,1" x:Name="RevisionListFallbackBorder">
         <userControls:FallbackUserControl Grid.Column="0" x:Name="RevisionListFallbackUserControl" />
       </Border>
-      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="BlameListBox" Theme="{DynamicResource NoSelectionListBoxStyle}">
+      <!-- 修复（2026-09-30，"右键 blame 行弹空菜单"）：WPF ContextMenuOpening="BlameListBox_ContextMenuOpening" 接线迁移时丢失，补 ContextRequested -->
+      <ListBox Grid.Column="0" SelectionMode="Single" BorderThickness="1,1,0,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" x:Name="BlameListBox" ContextRequested="BlameListBox_ContextMenuOpening" Theme="{DynamicResource NoSelectionListBoxStyle}">
         <ListBox.ContextMenu>
           <ContextMenu />
         </ListBox.ContextMenu>

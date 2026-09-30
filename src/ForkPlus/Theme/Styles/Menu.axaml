@@ -377,6 +377,15 @@
     <Setter Property="Background" Value="{DynamicResource Menu.Static.Background}" />
     <Setter Property="Foreground" Value="{DynamicResource Menu.Static.Foreground}" />
     <Setter Property="FontSize" Value="12" />
+    <!-- 修复（2026-09-29，"切换主题/标签布局子菜单里勾选项文字与未勾选项没对齐"）：
+         行模板的图标列是 SharedSizeGroup="MenuItemIconColumnGroup" + Auto——共享列宽只在
+         Grid.IsSharedSizeScope=True 的祖先作用域内生效。右键 ContextMenu 主题自己设了作用域
+         （见上方 ContextMenu 主题的同名 Setter），所以右键菜单各行对齐；而菜单栏 Menu 没设，
+         作用域经逻辑树（PrivateSharedSizeScopeProperty inherits）找不到 → 每行各自 Auto：
+         勾选行的勾选图标（16px + 边距）撑开图标列、未勾选无图标行图标列塌成 6px，文字起点
+         相差 18px。给 Menu 设作用域后整个菜单栏所有子菜单的图标列（含勾选图标）等宽对齐，
+         与 ContextMenu 同一口径。 -->
+    <Setter Property="Grid.IsSharedSizeScope" Value="True" />
     <Setter Property="ItemContainerTheme" Value="{StaticResource TopLevelMenuItemTheme}" />
     <!-- Keep the host ItemsPanel bound into the template so top-level menus stay horizontal. -->
     <Setter Property="ItemsPanel">

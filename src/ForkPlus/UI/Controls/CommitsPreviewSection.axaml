@@ -1,0 +1,62 @@
+<UserControl x:Class="ForkPlus.UI.Controls.CommitsPreviewSection" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- 样式修复（2026-09-30 v3，"Show commits 靠右 / sha 行歪斜 / sha 要可点击看变更详情"）：
+       1) 根布局 StackPanel → Grid：StackPanel 以无限宽测量子项，区块收缩到内容宽；
+           Grid 以自身宽约束子项，摘要/折叠区横向铺满宿主列。
+        2) 折叠头换本文件局部扁平 ControlTheme：此前套用 DiffListExpanderStyle，其头模板
+           固定 [33px 箭头列 + 10px 边距]，"Show commits" 相对摘要行右移 43px 显得靠右；
+           新模板头部内容 x=0 起步、透明底无边框，与摘要行同左缘。"Show commits" 仍留在
+           Expander.Header（逻辑树内），宿主 Loaded 的本地化遍历与测试钩子
+           （CommitsExpander.IsExpanded / CommitsItemsControl.ItemCount）不变。
+        3) 提交行 sha 与 subject 同字体同字号（原 sha Consolas + subject UI 字体，两字体
+           行高/基线不同导致同行上下歪斜）；同为默认字体后垂直居中即对齐。
+        4) sha 改超链接样式（AccentBrush + 下划线 + 手型），PointerPressed 经
+           ShowRevisionInSeparateWindowCommand 打开 RevisionDetailsWindow 变更详情面板；
+           显示用短 SHA，完整 SHA 由 GetCommitsBetweenGitCommand（%H）随 Item.FullSha 携带，
+           Tag 绑定传给点击处理器；FullSha 缺失（如测试自构造）或宿主未注入
+           RepositoryUserControl 时点击不动作。
+        5) 展开列表限高 + 滚动条：宿主弹窗 SizeToContent=Height，无界列表会把弹窗
+           撑得又高又窄；MaxHeight 后长列表滚动查看，弹窗保持紧凑。 -->
+  <UserControl.Resources>
+    <ControlTheme x:Key="PreviewDisclosureExpanderTheme" TargetType="Expander">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate>
+            <StackPanel>
+              <ToggleButton x:Name="PART_Header" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" BorderBrush="Transparent" Padding="0" MinHeight="0" Cursor="Hand" IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}">
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="▸" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" IsVisible="{Binding !$parent[Expander].IsExpanded}" />
+                  <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryLabelBrush}" IsVisible="{Binding $parent[Expander].IsExpanded}" />
+                  <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" Margin="6,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+              </ToggleButton>
+              <ContentPresenter IsVisible="{TemplateBinding IsExpanded}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="0,6,0,0" />
+            </StackPanel>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </ControlTheme>
+  </UserControl.Resources>
+  <Grid RowDefinitions="Auto,Auto">
+    <TextBlock Grid.Row="0" FontSize="13" TextWrapping="Wrap" x:Name="SummaryTextBlock" />
+    <Expander Grid.Row="1" Margin="0,4,0,0" IsExpanded="False" x:Name="CommitsExpander" Theme="{StaticResource PreviewDisclosureExpanderTheme}">
+      <Expander.Header>
+        <TextBlock Text="Show commits" FontSize="12" Foreground="{DynamicResource SecondaryLabelBrush}" />
+      </Expander.Header>
+      <ScrollViewer MaxHeight="220" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="CommitsItemsControl" Margin="0,4,0,0">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="Auto,*" Margin="0,1">
+                <TextBlock Grid.Column="0" Text="{Binding Sha}" FontSize="12" Margin="0,0,10,0" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" TextDecorations="Underline" Cursor="Hand" Tag="{Binding FullSha}" PointerPressed="ShaText_PointerPressed" />
+                <TextBlock Grid.Column="1" Text="{Binding Subject}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Expander>
+  </Grid>
+</UserControl>

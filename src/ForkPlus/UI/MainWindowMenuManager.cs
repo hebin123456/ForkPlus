@@ -223,6 +223,7 @@ namespace ForkPlus.UI
 			yield return new Separator();
 			yield return RepositoryUserControl.Commands.ShowRepositoryStatisticsWindow.CreateMenuItem(delegate { RepositoryUserControl.Commands.ShowRepositoryStatisticsWindow.Execute(gitModule); });
 			yield return RepositoryUserControl.Commands.ShowRepositoryOverviewWindow.CreateMenuItem(delegate { RepositoryUserControl.Commands.ShowRepositoryOverviewWindow.Execute(repositoryUserControl, gitModule); });
+			yield return commands.ShowRepositoryHealthWindow.CreateMenuItem(delegate { commands.ShowRepositoryHealthWindow.Execute(repositoryUserControl); });
 			yield return commands.ShowBenchmarkWindow.CreateMenuItem(delegate { commands.ShowBenchmarkWindow.Execute(repositoryUserControl); });
 			yield return new Separator();
 			yield return RepositoryUserControl.Commands.ShowRepositorySettingsWindow.CreateMenuItem(delegate { RepositoryUserControl.Commands.ShowRepositorySettingsWindow.Execute(gitModule, repositoryData); });

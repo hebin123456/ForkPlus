@@ -261,20 +261,48 @@ namespace ForkPlus.UI.UserControls
 				UpstreamStatus valueOrDefault = upstreamStatus.GetValueOrDefault();
 				if (valueOrDefault.IsValid)
 				{
-					RefreshBadge(PullBadge, PullBadgeText, PullToolbarButton, valueOrDefault.Behind);
-					RefreshBadge(PushBadge, PushBadgeText, PushToolbarButton, valueOrDefault.Ahead);
+					// WS2.5：分叉态（既领先又落后）与普通态区分——独立警示色画刷（diverged 类，
+					// 见 axaml 的 Border.pullPushBadge.diverged 样式）+ 专属 tooltip，
+					// 让用户一眼看出「既需拉又需推」。
+					bool diverged = valueOrDefault.Ahead > 0 && valueOrDefault.Behind > 0;
+					string divergedTip = Preferences.PreferencesLocalization.FormatCurrent(
+						"Diverged from remote: {0} ahead, {1} behind", valueOrDefault.Ahead, valueOrDefault.Behind);
+					string pullTip = diverged
+						? divergedTip
+						: Preferences.PreferencesLocalization.FormatCurrent("{0} commits behind remote", valueOrDefault.Behind);
+					string pushTip = diverged
+						? divergedTip
+						: Preferences.PreferencesLocalization.FormatCurrent("{0} commits ahead of remote", valueOrDefault.Ahead);
+					RefreshBadge(PullBadge, PullBadgeText, PullToolbarButton, valueOrDefault.Behind, diverged, pullTip);
+					RefreshBadge(PushBadge, PushBadgeText, PushToolbarButton, valueOrDefault.Ahead, diverged, pushTip);
 					return;
 				}
 			}
+			PullBadge.Classes.Remove("diverged");
+			PushBadge.Classes.Remove("diverged");
+			global::Avalonia.Controls.ToolTip.SetTip(PullBadge, null);
+			global::Avalonia.Controls.ToolTip.SetTip(PushBadge, null);
 			PullBadge.Collapse();
 			PushBadge.Collapse();
 		}
 
-		private void RefreshBadge(Border badge, TextBlock badgeText, global::Avalonia.Controls.Control button, int count)
+		private void RefreshBadge(Border badge, TextBlock badgeText, global::Avalonia.Controls.Control button, int count, bool diverged, string toolTip)
 		{
+			// 分叉态切警示色：diverged 类激活 Border.pullPushBadge.diverged 样式
+			//（Background 为 DynamicResource，换肤即时生效）。Classes 无 Set(name, bool)
+			//（那是 PseudoClasses 的 API），用 Add/Remove 翻转。
+			if (diverged)
+			{
+				badge.Classes.Add("diverged");
+			}
+			else
+			{
+				badge.Classes.Remove("diverged");
+			}
 			if (count > 0)
 			{
 				badgeText.Text = count.ToString();
+				global::Avalonia.Controls.ToolTip.SetTip(badge, toolTip);
 				badge.Show();
 				RefreshBadgePosition(badge, button);
 			}
@@ -698,7 +726,14 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			contextMenu.Items.Add(new Separator());
+			// 修复（2026-09-29，"贮藏区空时『最近贮藏』与『保存快照』之间出现两条分隔线"）：
+			// 贮藏列表为空时下面的循环一个菜单项都不加，循环前后两条固定 Separator 相邻
+			// → 双分隔线。首条 Separator 改为仅在有贮藏条目时添加（此处直接 Items.Add，
+			// 不经过 MenuExtensions.SetItems 的相邻 Separator 去重逻辑）。
+			if (array.Length != 0)
+			{
+				contextMenu.Items.Add(new Separator());
+			}
 			for (int i = 0; i < array.Length && i < 15; i++)
 			{
 				StashRevision stashRevision = array[i];

@@ -13,9 +13,20 @@ namespace ForkPlus.UI.Dialogs
 {
 	public class MultiselectionListViewItem : global::Avalonia.Controls.ListBoxItem
 	{
+		/// <summary>
+		/// 交互式变基 todo 列表拖拽 payload 的字符串格式 key（进程内直通表 RuntimePayload）。
+		/// WPF 原版 DataObject 以 typeof(RevisionEntry[]) 作 key；Avalonia 兼容层
+		/// WpfDataObject.GetData(Type) 对非 string 一律返回 null，自定义对象必须走字符串 key
+		/// （SetData/GetData 同名 key 经直通表保留原对象引用，落点才能拿回 RevisionEntry[]）。
+		/// 发起侧（OnPointerMoved）与读取侧（InteractiveRebaseWindow.RevisionListViewItem_Drop）共用。
+		/// </summary>
+		public static readonly string DragItemsFormat = "ForkPlusIrRows";
+
 		private bool _wasSelected;
 
 		private Point _dragStartPoint;
+
+		private global::Avalonia.Input.PointerPressedEventArgs _lastPressArgs;
 
 		private DragAndDropListBoxAdorner _adorner;
 
@@ -24,6 +35,24 @@ namespace ForkPlus.UI.Dialogs
 		public MultiselectionListView ParentListView { get; internal set; }
 
 		public DropPosition DropPosition { get; internal set; }
+
+		public MultiselectionListViewItem()
+		{
+			// 修复（WS3"交互式变基列表无法拖拽排序"）：WPF 原版靠 ItemContainerStyle 里的
+			// EventSetter 绑定 DragEnter/DragOver/DragLeave/Drop，迁移时 EventSetter 被删且
+			// 未在别处接线——OnDragEnter/OnDrop/OnDragLeave 沦为无人调用的死代码（无插入线、
+			// 无 DropPosition、不清残留 adorner）。按 DragAndDropListViewItem 同款在构造函数
+			// AddHandler 接线（DragDrop 事件为 Bubble 路由，AddHandler 默认 Direct|Bubble
+			// 订阅可收到行内子元素上触发的事件）。
+			AddHandler(DragDrop.DragEnterEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragOverEvent, (_, e) => OnDragEnter(e));
+			AddHandler(DragDrop.DragLeaveEvent, (_, e) => OnDragLeave(e));
+			AddHandler(DragDrop.DropEvent, (_, e) => OnDrop(e));
+			// WPF ItemContainerStyle Setter AllowDrop=true 迁移时被删（误注"Avalonia 无该属性"——
+			// 实为 inherits:true 附加属性 DragDrop.AllowDrop）。不设置则行容器不是合法落点，
+			// DragEnter/Drop 根本不会路由到行上（拖拽发起后无落点、无重排）。
+			DragDrop.SetAllowDrop(this, true);
+		}
 
 		protected override void OnPointerPressed(global::Avalonia.Input.PointerPressedEventArgs e)
 		{
@@ -36,6 +65,7 @@ namespace ForkPlus.UI.Dialogs
 			// 修复：命中源位于内嵌交互控件内时，跳过整个按压处理（含捕获与选择）。
 			if (IsPressOnEmbeddedInteractiveControl(e))
 			{
+				_lastPressArgs = null;
 				return;
 			}
 			_wasSelected = base.IsSelected;
@@ -46,6 +76,10 @@ namespace ForkPlus.UI.Dialogs
 			if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
 			{
 				_dragStartPoint = e.GetPosition(null);
+				// 修复（WS3）：记录本手势的按下参数——Avalonia DragDrop.DoDragDropAsync 必须由
+				// PointerPressedEventArgs 发起；走 DragDropLauncher.DoDragDrop(press,...) 直传
+				// 重载，首次手势即可发起（旧 DoDragDrop(source,...) 两段式首次手势必被吞）。
+				_lastPressArgs = e;
 				e.Pointer.Capture(this);
 			}
 		}
@@ -68,6 +102,8 @@ namespace ForkPlus.UI.Dialogs
 
 		protected override void OnPointerReleased(global::Avalonia.Input.PointerReleasedEventArgs e)
 		{
+			// 手势结束，按下参数作废（防止下个手势在未按压状态下凭旧参数发起拖拽）。
+			_lastPressArgs = null;
 			if (e.Pointer.Captured == this)
 			{
 				e.Pointer.Capture(null);
@@ -100,8 +136,19 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			global::Avalonia.Controls.ListBoxItem[] array2 = array.CompactMap((RevisionEntry x) => ParentListView.ContainerFromItem(x) as global::Avalonia.Controls.ListBoxItem);
-			ListBoxItem[] listBoxItems = array2;
+			global::Avalonia.Input.PointerPressedEventArgs pressArgs = _lastPressArgs;
+			_lastPressArgs = null;
+			if (pressArgs == null)
+			{
+				return;
+			}
+			// 修复（WS3"拖动有效果但没法换位置"）：原先把 RevisionEntry[] 裸交给
+			// DragDropLauncher.DoDragDrop——ToTransfer 的 default 分支把数组 ToString 成类型名
+			// 存进 DataTransfer，落点无论按什么 key 都拿不回原对象。改为 WpfDataObject.SetData
+			// 字符串 key（DragItemsFormat）进进程内直通表（与侧边栏/文件列表/tab 拖放同款做法）。
+			WpfDataObject dataObject = new WpfDataObject();
+			dataObject.SetData(DragItemsFormat, array);
+			global::Avalonia.Controls.ListBoxItem[] listBoxItems = array.CompactMap((RevisionEntry x) => ParentListView.ContainerFromItem(x) as global::Avalonia.Controls.ListBoxItem);
 			_adorner = new DragAndDropListBoxAdorner(this, listBoxItems, e.GetPosition(this));
 			if (_adorner != null)
 			{
@@ -109,7 +156,13 @@ namespace ForkPlus.UI.Dialogs
 				if (adornerLayer != null)
 				{
 					adornerLayer.Add(_adorner);
-					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(this, array, DragDropEffects.Move);
+					// 发起前释放指针捕获：拖拽会话期间指针事件由拖拽管线跟踪，行容器继续持有
+					// 捕获会让指针事件继续路由到本控件而非拖拽循环（拖影不动/会话状态错乱）。
+					if (e.Pointer.Captured == this)
+					{
+						e.Pointer.Capture(null);
+					}
+					global::ForkPlus.UI.WpfCompat.DragDropLauncher.DoDragDrop(pressArgs, dataObject, DragDropEffects.Move);
 					adornerLayer.Remove(_adorner);
 				}
 			}

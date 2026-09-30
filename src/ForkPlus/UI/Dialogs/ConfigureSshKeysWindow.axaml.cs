@@ -200,7 +200,10 @@ namespace ForkPlus.UI.Dialogs
 			}
 		}
 
-		private void CopyPublicKey_RequestNavigate(object sender, RequestNavigateEventArgs e)
+		// 修复（2026-09-30，"Copy to clipboard 点了没反应"）：WPF 原版是 Hyperlink.RequestNavigate →
+		// 复制公钥；迁移成 HyperlinkButton NavigateUri="dummy" 后本处理器无人调用（点击只尝试打开
+		// "dummy" 相对地址，无任何效果）。改名 Click 处理器并经 axaml 重新接线，逻辑不变。
+		private void CopyPublicKeyHyperlinkButton_Click(object sender, RoutedEventArgs e)
 		{
 			ServiceLocator.Clipboard.SetText(SshKeyPublicKeyTextBox.Text);
 		}

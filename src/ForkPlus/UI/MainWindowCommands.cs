@@ -20,6 +20,8 @@ namespace ForkPlus.UI
 
 		private CloseActiveTabCommand _closeActiveTab;
 
+		private ReopenClosedTabCommand _reopenClosedTab;
+
 		private ExitApplicationCommand _exitApplication;
 
 		private NewTabCommand _newTab;
@@ -39,6 +41,8 @@ namespace ForkPlus.UI
 		private ShowCheckoutBranchAsWorktreeWindowCommand _showCheckoutBranchAsWorktreeWindow;
 
 		private ShowBenchmarkWindowCommand _showBenchmarkWindow;
+
+		private ShowRepositoryHealthWindowCommand _showRepositoryHealthWindow;
 
 		private ShowCreateBranchWindowCommand _showCreateBranchWindow;
 
@@ -156,6 +160,9 @@ namespace ForkPlus.UI
 
 		public CloseActiveTabCommand CloseActiveTab => CommandContainer.Lazy(ref _closeActiveTab);
 
+		/// <summary>重开最近关闭的仓库标签（Ctrl+Shift+T）。v4.2.1 新增。</summary>
+		public ReopenClosedTabCommand ReopenClosedTab => CommandContainer.Lazy(ref _reopenClosedTab);
+
 		public ExitApplicationCommand ExitApplication => CommandContainer.Lazy(ref _exitApplication);
 
 		public NewTabCommand NewTab => CommandContainer.Lazy(ref _newTab);
@@ -175,6 +182,8 @@ namespace ForkPlus.UI
 		public ShowCheckoutBranchAsWorktreeWindowCommand ShowCheckoutBranchAsWorktreeWindow => CommandContainer.Lazy(ref _showCheckoutBranchAsWorktreeWindow);
 
 		public ShowBenchmarkWindowCommand ShowBenchmarkWindow => CommandContainer.Lazy(ref _showBenchmarkWindow);
+
+		public ShowRepositoryHealthWindowCommand ShowRepositoryHealthWindow => CommandContainer.Lazy(ref _showRepositoryHealthWindow);
 
 		public ShowCreateBranchWindowCommand ShowCreateBranchWindow => CommandContainer.Lazy(ref _showCreateBranchWindow);
 

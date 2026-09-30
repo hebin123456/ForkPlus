@@ -22,7 +22,7 @@ namespace ForkPlus.UI.Commands
 
 		public string Title => "New Tag...";
 
-		public KeyGesture Shortcut { get; } = new KeyGesture(Key.T, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
+		public KeyGesture Shortcut { get; } = new KeyGesture(Key.G, global::Avalonia.Input.KeyModifiers.Control | global::Avalonia.Input.KeyModifiers.Shift);
 
 
 		public KeyGesture SecondaryShortcut => null;

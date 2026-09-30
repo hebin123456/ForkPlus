@@ -1,4 +1,16 @@
 <p:UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls" xmlns:p="https://github.com/avaloniaui" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.ToolbarUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+  <p:UserControl.Styles>
+    <!-- WS2.5：Pull/Push 徽章底色改经样式 setter 提供（DynamicResource，换肤即时生效；
+         Background 不能留在 Border 本地值上，否则本地值优先级高于 Style，diverged 切换失效）。
+         分叉态（既领先又落后）由 code-behind 追加 diverged 类切独立警示色
+         Toolbar.PullPushBadgeDivergedBrush（各主题 Colors.*.axaml 定义，浅/深均有值）。 -->
+    <p:Style Selector="Border.pullPushBadge">
+      <p:Setter Property="Background" Value="{DynamicResource Toolbar.PullPushBadgeBrush}" />
+    </p:Style>
+    <p:Style Selector="Border.pullPushBadge.diverged">
+      <p:Setter Property="Background" Value="{DynamicResource Toolbar.PullPushBadgeDivergedBrush}" />
+    </p:Style>
+  </p:UserControl.Styles>
   <p:Grid>
     <p:Grid.Background>
       <p:DynamicResource ResourceKey="ToolbarBackgroundBrush" />
@@ -184,7 +196,7 @@
                Padding 4,0,4,1），迁移时 Style 块被注释化后这些视觉属性全部丢失，
                badge 只剩 8px 白字无背景——浅色主题下几乎不可见。此处按原版样式值内联。
                注意 TextBlock 原版 VerticalAlignment=Bottom + Border.Padding 底边 1px 一起生效。 -->
-          <p:Border x:Name="PullBadge" Height="12" MinWidth="12" Background="{DynamicResource Toolbar.PullPushBadgeBrush}" CornerRadius="6" Padding="4,0,4,1">
+          <p:Border x:Name="PullBadge" Classes="pullPushBadge" Height="12" MinWidth="12" CornerRadius="6" Padding="4,0,4,1">
             <p:Border.IsVisible>False</p:Border.IsVisible>
             <p:Border.Child>
               <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PullBadgeText">
@@ -195,7 +207,7 @@
               </p:TextBlock>
             </p:Border.Child>
           </p:Border>
-          <p:Border x:Name="PushBadge" Height="12" MinWidth="12" Background="{DynamicResource Toolbar.PullPushBadgeBrush}" CornerRadius="6" Padding="4,0,4,1">
+          <p:Border x:Name="PushBadge" Classes="pullPushBadge" Height="12" MinWidth="12" CornerRadius="6" Padding="4,0,4,1">
             <p:Border.IsVisible>False</p:Border.IsVisible>
             <p:Border.Child>
               <p:TextBlock Margin="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="8" x:Name="PushBadgeText">

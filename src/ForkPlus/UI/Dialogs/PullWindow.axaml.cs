@@ -87,9 +87,10 @@ namespace ForkPlus.UI.Dialogs
 			RepositoryData repositoryData = MainWindow.ActiveRepositoryUserControl.RepositoryData;
 			if (repositoryData != null)
 			{
-				_repositoryUserControl = repositoryUserControl;
-				_predefinedRemoteBranch = remoteBranch;
-				InitializeComponent();
+			_repositoryUserControl = repositoryUserControl;
+			_predefinedRemoteBranch = remoteBranch;
+			InitializeComponent();
+			PullPreviewSection.RepositoryUserControl = _repositoryUserControl;
 				base.DialogTitle = Translate("Pull");
 				base.DialogDescription = Translate("Pull remote branches and merge them into your local branch");
 				base.SubmitButtonTitle = Translate("Pull");
@@ -155,6 +156,49 @@ namespace ForkPlus.UI.Dialogs
 		{
 			UpdateSubmitButton();
 			RefreshCommandPreview();
+			RefreshPullPreview();
+		}
+
+		// v3.13.0（WS5）：拉取预览。远程分支选中变化后，后台查询 <本地基线>..<远程分支> 的
+		// 远程独有提交（JobQueue 模式同 PushWindow.RefreshUnpushedCommits），显示
+		// “将拉取 N 个提交”+ CommitsPreviewSection（Expander 默认收起）。
+		// 0 提交或查询失败时静默隐藏该区块。
+		private void RefreshPullPreview()
+		{
+			PullPreviewSection.Collapse();
+			RepositoryUserControl repositoryUserControl = _repositoryUserControl;
+			LocalBranch localBranch = _activeLocalBranch;
+			RemoteBranch remoteBranch = RemoteBranchesComboBox.SelectedItem as RemoteBranch;
+			GitModule gitModule = repositoryUserControl?.GitModule;
+			if (localBranch == null || remoteBranch == null || gitModule == null)
+			{
+				return;
+			}
+			string from = localBranch.Sha.ToString();
+			string to = remoteBranch.Sha.ToString();
+			repositoryUserControl.JobQueue.Add(Translate("Get commits to pull"), delegate
+			{
+				GitCommandResult<GetCommitsBetweenGitCommand.CommitsBetweenResult> result = new GetCommitsBetweenGitCommand().Execute(gitModule, from, to);
+				base.Dispatcher.Post(delegate
+				{
+					if (_activeLocalBranch == localBranch && RemoteBranchesComboBox.SelectedItem == remoteBranch)
+					{
+						if (result.Succeeded && result.Result.Count > 0)
+						{
+							PullPreviewSection.SetCommits(string.Format(Translate("Will pull {0} commits"), result.Result.Count), result.Result.Commits.Map((GetCommitsBetweenGitCommand.CommitPreview x) => new CommitsPreviewSection.Item(x.Sha, x.Subject, x.FullSha)));
+							PullPreviewSection.Show();
+						}
+						else
+						{
+							if (!result.Succeeded)
+							{
+								Log.Error(result.Error.FriendlyDescription);
+							}
+							PullPreviewSection.Collapse();
+						}
+					}
+				});
+			}, JobFlags.Hidden);
 		}
 
 		private void CheckBox_Changed(object sender, RoutedEventArgs e)
