@@ -152,9 +152,14 @@ namespace ForkPlus.Tests
 								box.Close();
 							}
 						}
-						if (mainWindow != null && mainWindow.IsVisible)
+						if (mainWindow != null)
 						{
-							mainWindow.Close();
+							// 铁律（E2eMainWindowHarness）：绝不能 Close() 主窗口——构造内订阅了
+							// Closed → lifetime.Shutdown()，会把 headless App 整个关停，殃及同片
+							// 后续所有用例（v4.2.1 core-a 实证：本用例按字母序紧邻
+							// ReflogTimelineWindowTests 之前，Close 后该用例起 68 个用例连锁
+							// TaskCanceledException）。收尾只关仓库 tab 并摘除窗口。
+							E2eMainWindowHarness.CloseRepositoryTab(mainWindow, repo);
 						}
 					});
 					jumpReturned.Wait(5000);
