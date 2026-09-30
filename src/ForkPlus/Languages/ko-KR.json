@@ -1581,6 +1581,8 @@
     "Reset Files": "파일 재설정",
     "Reset HEAD to Revision": "HEAD를 리비전으로 재설정",
     "Reset previously deleted repository entries": "이전에 삭제된 저장소 항목 재설정",
+    "Reset Size": "크기 재설정",
+    "Reset Size ({0}%)": "크기 재설정 ({0}%)",
     "Reset to '{0}'": "'{0}'로 재설정",
     "Reset to default": "기본값으로 재설정",
     "Reset type:": "재설정 유형:",

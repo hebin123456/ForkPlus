@@ -1581,6 +1581,8 @@
     "Reset Files": "Resetear archivos",
     "Reset HEAD to Revision": "Resetear HEAD a revisión",
     "Reset previously deleted repository entries": "Resetear entradas de repositorio eliminadas previamente",
+    "Reset Size": "Resetear tamaño",
+    "Reset Size ({0}%)": "Resetear tamaño ({0}%)",
     "Reset to '{0}'": "Resetear a '{0}'",
     "Reset to default": "Resetear a predeterminado",
     "Reset type:": "Tipo de reset:",

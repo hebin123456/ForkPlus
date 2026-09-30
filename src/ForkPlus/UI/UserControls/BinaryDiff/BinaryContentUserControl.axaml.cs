@@ -33,6 +33,20 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		public global::Avalonia.Media.Imaging.Bitmap DiffImageSource { get; set; }
 
+		/// <summary>v4.3.1：与其它图片视图共享的缩放/平移状态（由 BinaryDiffUserControl 注入）。</summary>
+		[Null]
+		public ImageZoomState ZoomState
+		{
+			get
+			{
+				return ImageControl.ZoomState;
+			}
+			set
+			{
+				ImageControl.ZoomState = value;
+			}
+		}
+
 		public bool HighlightImageDiff
 		{
 			get
@@ -177,12 +191,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
 			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
-			// Migration note：WPF BitmapSource.PixelHeight → Avalonia Bitmap.PixelSize.Height。
-					double num = ((double?)bitmapSource?.PixelSize.Height) ?? 0.0;
-			Image.Source = bitmapSource;
-			Image.Height = num;
-			DiffImage.Height = num;
-			ImageViewBox.MaxHeight = num;
+			// v4.3.1：原 Viewbox 方案在此设 Image.Height / DiffImage.Height / ImageViewBox.MaxHeight
+			// （像素高，用于"不放大超过原始尺寸"）。改由 ZoomPanImageControl 承载后，
+			// ImageZoomState.FitScale 已复刻该上限（缩放不超过 1），无需再设尺寸。
+			ImageControl.Source = bitmapSource;
 			RefreshDiffImage();
 		}
 
@@ -193,7 +205,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshDiffImage()
 		{
-			DiffImage.Source = (HighlightImageDiff ? DiffImageSource : null);
+			// v4.3.1：掩码与开关都交给 ZoomPanImageControl（原先是 Image.Source 二选一）。
+			ImageControl.DiffSource = DiffImageSource;
+			ImageControl.HighlightImageDiff = HighlightImageDiff;
 		}
 
 		private void SaveAsMenuItem_Click(object sender, RoutedEventArgs e)

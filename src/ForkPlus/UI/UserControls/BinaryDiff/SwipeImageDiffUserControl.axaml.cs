@@ -30,6 +30,20 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			RefreshHighlightImageDiff();
 		}
 
+		/// <summary>v4.3.1：与并排视图共享的缩放/平移状态（由 BinaryDiffUserControl 注入同一实例）。</summary>
+		[Null]
+		public ImageZoomState ZoomState
+		{
+			get
+			{
+				return OverlayImage.ZoomState;
+			}
+			set
+			{
+				OverlayImage.ZoomState = value;
+			}
+		}
+
 		public void Refresh(ImageData oldImageData, ImageData newImageData, global::Avalonia.Media.Imaging.Bitmap diffImageSource, bool showTitle)
 		{
 			if (oldImageData == null || newImageData == null)

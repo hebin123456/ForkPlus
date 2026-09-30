@@ -1583,6 +1583,8 @@
     "Reset Files": "重置文件",
     "Reset HEAD to Revision": "将 HEAD 重置到修订",
     "Reset previously deleted repository entries": "重置之前删除的仓库条目",
+    "Reset Size": "还原大小",
+    "Reset Size ({0}%)": "还原大小 ({0}%)",
     "Reset to '{0}'": "重置到 '{0}'",
     "Reset to default": "重置为默认",
     "Reset type:": "重置类型：",

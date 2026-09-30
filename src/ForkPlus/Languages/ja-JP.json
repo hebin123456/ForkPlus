@@ -1581,6 +1581,8 @@
     "Reset Files": "ファイルをリセット",
     "Reset HEAD to Revision": "HEAD をリビジョンにリセット",
     "Reset previously deleted repository entries": "以前に削除されたリポジトリエントリをリセット",
+    "Reset Size": "サイズをリセット",
+    "Reset Size ({0}%)": "サイズをリセット ({0}%)",
     "Reset to '{0}'": "'{0}' にリセット",
     "Reset to default": "デフォルトにリセット",
     "Reset type:": "リセットタイプ:",

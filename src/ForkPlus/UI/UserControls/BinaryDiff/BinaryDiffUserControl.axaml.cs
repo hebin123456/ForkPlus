@@ -52,6 +52,10 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		private global::Avalonia.Media.Imaging.Bitmap _diffImageSource;
 
+		/// <summary>v4.3.1：图片对比各视图（并排/Swipe/洋葱皮）共享的缩放/平移状态——
+		/// 同一实例即同一缩放与中心点，切换视图、左右两栏都保持同步。</summary>
+		private readonly ImageZoomState _imageZoomState = new ImageZoomState();
+
 		// v3.4.1：Hex 视图 — 存储原始字节和 ChangedFile 用于创建 HexDiffContent
 		[Null]
 		private ChangedFile _changedFile;
@@ -85,6 +89,17 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			InitializeComponent();
 			// v3.4.1：让 RadioButton 内容（Side-by-Side/Swipe/Onion Skin/Hex）在构造时翻译
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
+			// v4.3.1：四个图片视图共用同一个缩放状态实例——滚轮缩放/拖动平移在左右两栏、
+			// 并排/Swipe/洋葱皮之间天然同步，且按归一化中心点对齐（尺寸不一致也能对上同一位置）。
+			_imageZoomState.Changed += delegate
+			{
+				UpdateResetZoomButton();
+			};
+			SrcFileContentUserControl.ZoomState = _imageZoomState;
+			DstFileContentUserControl.ZoomState = _imageZoomState;
+			SwipeImageDiffView.ZoomState = _imageZoomState;
+			OnionSkinImageDiffView.ZoomState = _imageZoomState;
+			UpdateResetZoomButton();
 			// v3.4.1：Hex 视图容器初始隐藏
 			HexDiffViewContainer.Collapse();
 			BinaryContentUserControl srcFileContentUserControl = SrcFileContentUserControl;
@@ -383,6 +398,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void UpdateContent(GitModule gitModule, [Null] BinaryContent srcContent, [Null] BinaryContent dstContent, bool showTitle)
 		{
+			// v4.3.1：换文件后回到贴合视图的初始缩放，避免沿用上一个文件的缩放/中心点。
+			_imageZoomState.Reset();
 			_srcBinaryContent = srcContent;
 			_dstBinaryContent = dstContent;
 			_srcImageData = null;
@@ -658,6 +675,26 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			SrcFileContentUserControl.ApplyLocalization();
 			DstFileContentUserControl.ApplyLocalization();
+			// 语言切换后"还原大小 (N%)"的文案要用新语言重出。
+			UpdateResetZoomButton();
+		}
+
+		/// <summary>v4.3.1：图片被缩放（非 100%）时在底部工具条显示"还原大小 (N%)"，
+		/// 点击还原为贴合视图的初始状态（各视图共享同一缩放状态，一处还原全部还原）。</summary>
+		private void UpdateResetZoomButton()
+		{
+			bool zoomed = _imageZoomState.IsZoomed;
+			ResetZoomButton.IsVisible = zoomed;
+			if (zoomed)
+			{
+				ResetZoomButton.Content = PreferencesLocalization.FormatCurrent("Reset Size ({0}%)", _imageZoomState.ZoomPercent);
+				ToolTip.SetTip(ResetZoomButton, PreferencesLocalization.Current("Reset Size"));
+			}
+		}
+
+		private void ResetZoomButton_Click(object sender, RoutedEventArgs e)
+		{
+			_imageZoomState.Reset();
 		}
 
 		private Job StartSmudgeLfsImageJob(LfsPointer lfsPointer, GitModule gitModule, Action<JobMonitor> progressCallback, Action<GitCommandResult<MemoryStream>> completedCallback)

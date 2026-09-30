@@ -1,6 +1,8 @@
 using System;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Layout;
@@ -8,8 +10,18 @@ using Avalonia.Styling;
 
 namespace ForkPlus.UI.UserControls.BinaryDiff
 {
-	public class OverlayImageControl : Control
+	/// <summary>
+	/// v4.3.1：Swipe / 洋葱皮视图的叠加渲染控件。除原有的分割裁剪/透明度叠加外，
+	/// 新增滚轮缩放 + 拖动平移（与并排视图共享同一个 <see cref="ImageZoomState"/>）：
+	/// 两张图按各自的归一化中心点绘制，缩放/平移后仍保持同一图像位置对齐。
+	/// 基类用 Control（Panel.Render 已 sealed 无法自绘），在 Render 里先铺一层透明矩形——
+	/// 与 Panel(Background=Transparent) 等效，保证整块区域（含图片外的留白）可命中，
+	/// 滚轮/拖动在整个图片区域都有效。
+	/// </summary>
+	public class OverlayImageControl : Control, IZoomableImage
 	{
+		private const double PanSlack = 0.5;
+
 		private enum HorizontalClip
 		{
 			Old,
@@ -31,9 +43,60 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private double? _newOpacity;
 
-		private Size _oldImageSize;
+		[Null]
+		private ImageZoomState _zoomState;
 
-		private Size _newImageSize;
+		private bool _dragging;
+
+		private double _dragStartZoom = 1.0;
+
+		private double _dragStartCenterX = 0.5;
+
+		private double _dragStartCenterY = 0.5;
+
+		private Point _dragStartPointer;
+
+		[Null]
+		private Cursor _previousCursor;
+
+		public OverlayImageControl()
+		{
+			ClipToBounds = true;
+			AddHandler(PointerWheelChangedEvent, OnPointerWheel, RoutingStrategies.Bubble);
+			AddHandler(PointerPressedEvent, OnPointerPressed, RoutingStrategies.Bubble);
+			AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Bubble);
+			AddHandler(PointerReleasedEvent, OnPointerReleased, RoutingStrategies.Bubble);
+		}
+
+		/// <summary>两张图都在时才可缩放（见 <see cref="IZoomableImage"/>）。</summary>
+		public bool IsZoomable => _oldImageSource != null && _newImageSource != null;
+
+		/// <summary>与并排视图共享的缩放/平移状态（同一实例即同步）。</summary>
+		[Null]
+		public ImageZoomState ZoomState
+		{
+			get
+			{
+				return _zoomState;
+			}
+			set
+			{
+				if (ReferenceEquals(_zoomState, value))
+				{
+					return;
+				}
+				if (_zoomState != null)
+				{
+					_zoomState.Changed -= OnZoomStateChanged;
+				}
+				_zoomState = value;
+				if (_zoomState != null)
+				{
+					_zoomState.Changed += OnZoomStateChanged;
+				}
+				InvalidateVisual();
+			}
+		}
 
 		public Size ParentBounds
 		{
@@ -95,6 +158,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		_diffImageSource = diffImageSource;
 	}
 
+		/// <summary>v4.3.1：Measure 仍按"两张图各自贴合 ParentBounds 后取较大者"给出期望尺寸
+		/// （与改造前一致）；实际绘制视口用 <see cref="Visual.Bounds"/>（见 Render），
+		/// 缩放/平移几何统一由 <see cref="ImageZoomState"/> 计算。</summary>
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			if (_oldImageSource == null || _newImageSource == null)
@@ -103,8 +169,6 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 			Size oldImageSize = ResizeImageMaintaningAspectRatio(_oldImageSource, ParentBounds);
 			Size newImageSize = ResizeImageMaintaningAspectRatio(_newImageSource, ParentBounds);
-			_oldImageSize = oldImageSize;
-			_newImageSize = newImageSize;
 			double width = Math.Max(oldImageSize.Width, newImageSize.Width);
 			double height = Math.Max(oldImageSize.Height, newImageSize.Height);
 			return new Size(width, height);
@@ -113,12 +177,16 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		public override void Render(DrawingContext drawingContext)
 		{
 			base.Render(drawingContext);
+			// 基类 Control 不自绘 Background：显式铺透明矩形，保证整块区域可命中
+			//（滚轮/拖动在图片外的留白处同样有效，等价改造前的 Panel(Background=Transparent)）。
+			drawingContext.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
 			if (_oldImageSource != null && _newImageSource != null)
 			{
-				Rect targetRect = new Rect(0.0, 0.0, base.Bounds.Width, base.Bounds.Height);
-				Rect imageRect = GetImageRect(_oldImageSize, targetRect);
+				// v4.3.1：两张图各自按共享的缩放/中心点算出目标矩形——中心点用归一化
+				// 图像坐标表达，尺寸不同的两张图也能对齐同一图像位置（中心点对齐）。
+				Rect imageRect = DstRectFor(_oldImageSource);
 				Draw(drawingContext, _oldImageSource, imageRect, HorizontalClip.Old, ClipX);
-				Rect imageRect2 = GetImageRect(_newImageSize, targetRect);
+				Rect imageRect2 = DstRectFor(_newImageSource);
 				Draw(drawingContext, _newImageSource, imageRect2, HorizontalClip.New, ClipX, NewOpacity);
 			if (HighlightImageDiff && _diffImageSource != null)
 			{
@@ -157,19 +225,114 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 		}
 
-		private Rect GetImageRect(Size imageSize, Rect targetRect)
+		/// <summary>图片在控件坐标系下的目标矩形（贴合基准 + 共享缩放 + 归一化中心点）。</summary>
+		private Rect DstRectFor([Null] global::Avalonia.Media.Imaging.Bitmap image)
 		{
-			double y = 0.0;
-			double x = 0.0;
-			if (imageSize.Height < targetRect.Height)
+			return ImageZoomState.ComputeDstRect(Bounds.Size, PixelSize(image),
+				_zoomState?.Zoom ?? 1.0, _zoomState?.CenterX ?? 0.5, _zoomState?.CenterY ?? 0.5);
+		}
+
+		private static Size PixelSize([Null] global::Avalonia.Media.Imaging.Bitmap image)
+		{
+			return image != null ? new Size(image.PixelSize.Width, image.PixelSize.Height) : default(Size);
+		}
+
+		/// <summary>v4.3.1：滚轮缩放/拖动平移的参考图——取"贴合后显示面积"较大的那张：
+		/// 钳制（ClampCenter）按它算，保证较大的图能拖到底；较小的一张若未超出视口则自然居中。</summary>
+		private Size ReferenceImageSize()
+		{
+			Size viewport = Bounds.Size;
+			Size oldPixel = PixelSize(_oldImageSource);
+			Size newPixel = PixelSize(_newImageSource);
+			return DisplayArea(viewport, newPixel) > DisplayArea(viewport, oldPixel) ? newPixel : oldPixel;
+		}
+
+		private static double DisplayArea(Size viewport, Size image)
+		{
+			if (image.Width <= 0.0 || image.Height <= 0.0)
 			{
-				y = (targetRect.Height - imageSize.Height) / 2.0;
+				return 0.0;
 			}
-			if (imageSize.Width < targetRect.Width)
+			double fit = ImageZoomState.FitScale(viewport, image);
+			return image.Width * fit * image.Height * fit;
+		}
+
+		private bool CanPan()
+		{
+			if (!IsZoomable || _zoomState == null)
 			{
-				x = (targetRect.Width - imageSize.Width) / 2.0;
+				return false;
 			}
-			return new Rect(x, y, imageSize.Width, imageSize.Height);
+			Size viewport = Bounds.Size;
+			Rect oldRect = DstRectFor(_oldImageSource);
+			Rect newRect = DstRectFor(_newImageSource);
+			return oldRect.Width > viewport.Width + PanSlack || oldRect.Height > viewport.Height + PanSlack
+				|| newRect.Width > viewport.Width + PanSlack || newRect.Height > viewport.Height + PanSlack;
+		}
+
+		private void OnZoomStateChanged(object sender, EventArgs e)
+		{
+			InvalidateVisual();
+		}
+
+		private void OnPointerWheel(object sender, PointerWheelEventArgs e)
+		{
+			if (e.Handled || !IsZoomable || _zoomState == null)
+			{
+				return;
+			}
+			double delta = e.Delta.Y;
+			if (Math.Abs(delta) < 0.01)
+			{
+				return;
+			}
+			_zoomState.ZoomAt(Bounds.Size, ReferenceImageSize(), e.GetPosition(this), delta);
+			e.Handled = true;
+		}
+
+		private void OnPointerPressed(object sender, PointerPressedEventArgs e)
+		{
+			if (_dragging || !CanPan())
+			{
+				return;
+			}
+			PointerPoint point = e.GetCurrentPoint(this);
+			if (!point.Properties.IsLeftButtonPressed)
+			{
+				return;
+			}
+			_dragging = true;
+			_dragStartPointer = point.Position;
+			_dragStartZoom = _zoomState.Zoom;
+			_dragStartCenterX = _zoomState.CenterX;
+			_dragStartCenterY = _zoomState.CenterY;
+			_previousCursor = Cursor;
+			Cursor = new Cursor(StandardCursorType.SizeAll);
+			e.Pointer.Capture(this);
+			e.Handled = true;
+		}
+
+		private void OnPointerMoved(object sender, PointerEventArgs e)
+		{
+			if (!_dragging || _zoomState == null)
+			{
+				return;
+			}
+			_zoomState.PanTo(Bounds.Size, ReferenceImageSize(), _dragStartZoom,
+				_dragStartCenterX, _dragStartCenterY, _dragStartPointer, e.GetPosition(this));
+			e.Handled = true;
+		}
+
+		private void OnPointerReleased(object sender, PointerReleasedEventArgs e)
+		{
+			if (!_dragging)
+			{
+				return;
+			}
+			_dragging = false;
+			e.Pointer.Capture(null);
+			Cursor = _previousCursor;
+			e.Handled = true;
 		}
 
 		private static Size ResizeImageMaintaningAspectRatio(global::Avalonia.Media.Imaging.Bitmap image, Size targetSize)

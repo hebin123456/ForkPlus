@@ -66,6 +66,12 @@ namespace ForkPlus.UI.Controls
 			{
 				return;
 			}
+			// v4.3.1：指针落在可缩放的图片（图片对比视图）上时不拦截滚轮——放行让事件继续
+			// 冒泡到图片控件做缩放，而不是滚动页面。
+			if (IsOverZoomableImage(e.Source))
+			{
+				return;
+			}
 			if (e.KeyModifiers.HasFlag(KeyModifiers.Shift) && Math.Abs(e.Delta.Y) > 0)
 			{
 				ScrollBy(-e.Delta.Y * HorizontalStep(), 0.0);
@@ -88,6 +94,20 @@ namespace ForkPlus.UI.Controls
 				e.Handled = true;
 				return;
 			}
+		}
+
+		/// <summary>v4.3.1：从命中的元素向上找最近的"可缩放图片"控件（图片对比视图）。
+		/// 命中它时滚轮归图片控件（缩放）而非本 ScrollViewer（滚动页面）。</summary>
+		private static bool IsOverZoomableImage(object source)
+		{
+			for (global::Avalonia.Visual v = source as global::Avalonia.Visual; v != null; v = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(v))
+			{
+				if (v is ForkPlus.UI.UserControls.BinaryDiff.IZoomableImage zoomable && zoomable.IsZoomable)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		private double HorizontalStep()

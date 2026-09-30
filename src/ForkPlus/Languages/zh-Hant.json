@@ -1580,6 +1580,8 @@
     "Reset Files": "重設檔案",
     "Reset HEAD to Revision": "將 HEAD 重設到修訂",
     "Reset previously deleted repository entries": "重設先前刪除的倉庫項目",
+    "Reset Size": "還原大小",
+    "Reset Size ({0}%)": "還原大小 ({0}%)",
     "Reset to '{0}'": "重置到 '{0}'",
     "Reset to default": "重設為預設",
     "Reset type:": "重設類型：",
