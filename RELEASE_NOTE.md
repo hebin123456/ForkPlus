@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.3.0
+
+> 新增新手引导（Getting Started）：首次启动自动弹出 12 步分步向导，覆盖核心区域（工具栏/分支侧栏/提交历史与 Diff/提交变更）与进阶功能（git mm 工作流/仓库树图/仓库统计/Reflog 时间轴/解决冲突/主题与语言定制），帮助菜单可随时重看，8 语言国际化；修复删除远端弹窗图标与文字挤在一起的问题。应用版本号升至 4.3.0。
+
+### 新增
+
+- **新手引导（Getting Started，首启自动弹出 + 帮助菜单随时重看）**：首次启动自动弹出 12 步分步向导——欢迎、工具栏、分支侧栏、提交历史与 Diff、提交变更、git mm 工作流、仓库树图、仓库统计、Reflog 时间轴、解决冲突、随心定制（主题/语言/标签布局）、结束。每步配示意图（mock 复用真实界面画刷与既有词条）：git mm 步骤展示主/子仓列表与 Sync 按钮，树图步骤展示面积块拼图，统计步骤展示语言行数图例，Reflog 步骤展示时间轨道圆点，冲突步骤展示冲突标记与 Resolve 按钮，定制步骤展示主题色板、语言与标签位置选项。完成判定：走完或跳过均算完成（`OnboardingCompleted` 持久化到 settings.json），且置位在弹窗之前——弹窗期间崩溃/断电不会陷入每次启动重弹；帮助菜单 "Getting Started"（快捷键说明之上）可随时重看，重看不重置完成标志。全部文案随 en / zh-Hans / zh-Hant / de-DE / es-ES / fr-FR / ja-JP / ko-KR 8 种语言发布（新增 28 个翻译键，"Repository Treemap"/"Repository Statistics" 等复用既有词条）。
+- **测试覆盖**：新增 `OnboardingManagerTests`——首启弹窗并置位持久化（settings.json 落盘复核）、已完成幂等不弹、弹窗异常整体吞掉不影响置位（启动路径装饰性功能不影响主流程）、12 步翻页与本地化按钮（Back/Next/Finish/Skip）、headless 看门狗兜底关闭回归（CI 全新 runner 首开 MainWindow 必触发首启弹窗，模态无人关闭死锁整分片——防线与 ReleaseNotesWindow 同款，3s 宽限 + Run 收尾 immediate 兜底关闭）。
+
+### 修复
+
+- **删除远端弹窗（RemoveRemoteWindow）图标与文字挤在一起**：根 Grid 缺少 RowDefinitions，基类标题区（固定 Row 0/Col 1）、内容文本与命令预览（`previewRow = RowDefinitions.Count = 0`）全部叠在第 0 行互相重叠；且第 0 列宽为 `Auto` 而非 80，logo 图标（64×64，RowSpan 2）与远端名文本同列重叠。按其他弹窗通用布局规范修复（对齐 ChangeRemoteTrackingWindow 等）：80px logo 列 + 标题行/内容行分离，内容移至 Row 1/Col 1 并改为 "Remote:" 标签 + 远端名的两列布局；顺带移除从未赋值、且与基类 `DescriptionTextBlock` 属性重名（隐藏基类成员隐患）的死控件。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.3.0-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.3.0-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.3.0-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.3.0-macos-arm64.zip` |
+
 ## v4.2.1
 
 > 新增仓库健康检查窗口（分支/提交/大文件多分区概览，删除分支带二次确认与受保护分支拦截）；提交预览区重做（折叠头与摘要行左对齐、SHA 与提交说明同行对齐、SHA 可点击打开变更详情面板）；Reflog 表头对齐与跳转确认弹窗压窗修复；丢弃更改改用专用确认窗口；新增"重开已关闭标签页"（Ctrl+Shift+T）。应用版本号升至 4.2.1。

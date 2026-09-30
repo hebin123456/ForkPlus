@@ -15,26 +15,23 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-09-30，v4.2.1）：本版为仓库健康检查 + 提交预览/Reflog 系列体验修复——
-//   1) 仓库健康检查窗口（菜单位于基准测试之上）：定宽 900、内容分区 100% 宽铺满
-//      （根因：Fluent Expander 默认 ControlTheme 设 HorizontalAlignment=Left 且 MinHeight=48，
-//      分区收缩成"又大又窄"，5 个 Expander 显式 Stretch + 分区 Grid 化后铺满）、
-//      删除分支二次确认 + 受保护分支确认（RepositorySettings.ProtectedBranches 模式匹配）+
-//      删除后陈旧/已合并/分叉三区联动刷新（原先只清当前分区，重叠分支在其他分区残留）。
-//   2) 提交预览区 v3（Pull 拉取 / Push 强推覆盖 / Reset 丢失提交三处共用）：折叠头与摘要行
-//      同左缘（原 DiffListExpanderStyle 头模板固定缩进 43px 显靠右）、sha 与 subject 同字体
-//      对齐（原 Consolas/UI 字体基线差致歪斜）、sha 改超链接点击打开 RevisionDetailsWindow
-//      变更详情面板（完整 SHA 由 GetCommitsBetweenGitCommand 以 %H 随行携带）。
-//   3) Reflog 窗口：表头随列表行几何校准对齐；"跳转到此提交"确认弹窗显式 SetOwnerCompat
-//      归属宿主（原 ForkPlusDialogWindow 构造默认登记 MainWindow，关闭时主窗口压到 Reflog 上面）。
-//   4) 丢弃更改专用确认窗口（DiscardChangesWindow，WS2.3）、重开已关闭标签页
-//      （ReopenClosedTabCommand，Ctrl+Shift+T；原 New Tag 快捷键改 Ctrl+Shift+G）。
-//   详见 RELEASE_NOTE v4.2.1。
+// 版本号说明（2026-09-30，v4.3.0）：本版为新手引导 + 删除远端弹窗布局修复——
+//   1) 新手引导（Getting Started）：首次启动自动弹出 12 步分步向导（欢迎/工具栏/
+//      分支侧栏/提交历史与 Diff/提交变更/git mm 工作流/仓库树图/仓库统计/Reflog
+//      时间轴/解决冲突/随心定制/结束），帮助菜单 "Getting Started" 可随时重看；
+//      看过或跳过均算完成（OnboardingCompleted 持久化），置位在弹窗前——弹窗期间
+//      崩溃/断电不会陷入每次启动重弹；8 语言翻译。
+//   2) 删除远端弹窗（RemoveRemoteWindow）图标文字挤在一起：根 Grid 无 RowDefinitions
+//      导致基类标题区、内容文本、命令预览全叠第 0 行，且第 0 列宽 Auto 而非 80
+//      导致 logo 与远端名同列重叠——按其他弹窗通用布局修复（80 logo 列 + 标题行/
+//      内容行分离，"Remote:" 标签 + 远端名），顺带移除与基类 DescriptionTextBlock
+//      属性重名的死控件。
+//   详见 RELEASE_NOTE v4.3.0。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
-//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.2.1"；
-//   程序集标识与文件版本同为 4.2.1（.0）。
-[assembly: AssemblyFileVersion("4.2.1")]
-[assembly: AssemblyInformationalVersion("4.2.1")]
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.3.0"；
+//   程序集标识与文件版本同为 4.3.0（.0）。
+[assembly: AssemblyFileVersion("4.3.0")]
+[assembly: AssemblyInformationalVersion("4.3.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("4.2.1.0")]
+[assembly: AssemblyVersion("4.3.0.0")]

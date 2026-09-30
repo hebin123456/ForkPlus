@@ -373,6 +373,8 @@ namespace ForkPlus.UI
 			MainWindowCommands commands = MainWindow.Commands;
 			yield return commands.UpdateApplication.CreateMenuItem(delegate { commands.UpdateApplication.Execute(); });
 			yield return new Separator();
+			// 新手引导：首启自动弹过一次后，用户可从这里随时重看
+			yield return commands.ShowOnboardingTour.CreateMenuItem(delegate { commands.ShowOnboardingTour.Execute(); });
 			yield return commands.OpenKeyboardShortcuts.CreateMenuItem(delegate { commands.OpenKeyboardShortcuts.Execute(); });
 			yield return commands.ShowPerformanceDiagnosticsWindow.CreateMenuItem(delegate { commands.ShowPerformanceDiagnosticsWindow.Execute(); });
 			// v4.0.6：诊断包一键导出（crash/freeze/dump 日志目录打包）——"UI 卡着卡着崩溃"

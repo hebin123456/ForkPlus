@@ -102,6 +102,17 @@ namespace ForkPlus.Tests
 			global::ForkPlus.UI.Dialogs.ReleaseNotesWindow,
 			System.Runtime.CompilerServices.StrongBox<long>> ReleaseNotesFirstSeenTicks = new();
 
+		// 新手引导向导（OnboardingTourWindow）：与 ReleaseNotesWindow 同类的首启模态
+		// 弹窗——CI 全新 runner 无 settings.json，首个开 MainWindow 的用例必触发
+		// "首次启动未完成引导"判定弹该窗（MainWindow Dispatcher.Post 启动钩子），
+		// headless 下无人点 Close → ShowDialog 的 PushFrame 永不退出 → UI 线程死锁。
+		// 处理方式与更新内容弹窗一致：3s 宽限 + 记录步骤指示器 + 兜底关闭。
+		private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<
+			global::ForkPlus.UI.Dialogs.OnboardingTourWindow,
+			System.Runtime.CompilerServices.StrongBox<long>> OnboardingFirstSeenTicks = new();
+
+		private static readonly List<string> CapturedOnboardingTours = new();
+
 		private static readonly List<string> CapturedReleaseNotes = new();
 
 		/// <summary>窥视（不清空）看门狗已关闭的 ReleaseNotesWindow 弹窗正文。</summary>
@@ -119,6 +130,24 @@ namespace ForkPlus.Tests
 			lock (CapturedReleaseNotes)
 			{
 				CapturedReleaseNotes.Clear();
+			}
+		}
+
+		/// <summary>窥视（不清空）看门狗已关闭的新手引导向导弹窗步骤指示文本。</summary>
+		internal static string[] PeekCapturedOnboardingTours()
+		{
+			lock (CapturedOnboardingTours)
+			{
+				return CapturedOnboardingTours.ToArray();
+			}
+		}
+
+		/// <summary>清空已捕获的新手引导向导文本（用例开头调用，避免用例间遗留干扰断言）。</summary>
+		internal static void ClearCapturedOnboardingTours()
+		{
+			lock (CapturedOnboardingTours)
+			{
+				CapturedOnboardingTours.Clear();
 			}
 		}
 
@@ -270,6 +299,44 @@ namespace ForkPlus.Tests
 				}
 				ReleaseNotesFirstSeenTicks.Remove(releaseNotes);
 				releaseNotes.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
+			}
+			else if (window is global::ForkPlus.UI.Dialogs.OnboardingTourWindow onboarding && onboarding.IsVisible)
+			{
+				// 新手引导向导与更新内容弹窗同款宽限期语义（见 OnboardingFirstSeenTicks
+				// 字段注释）：首见记时间戳、持续可见超 3s 才兜底关闭；有处理器的用例正常
+				// 路径毫秒级自行关闭。记录步骤指示器文本供断言/诊断。
+				if (!immediate)
+				{
+					System.Runtime.CompilerServices.StrongBox<long> tourFirstSeen =
+						OnboardingFirstSeenTicks.GetOrCreateValue(onboarding);
+					long tourNowTicks = DateTime.UtcNow.Ticks;
+					if (tourFirstSeen.Value == 0)
+					{
+						tourFirstSeen.Value = tourNowTicks;
+						continue;
+					}
+					if (tourNowTicks - tourFirstSeen.Value < MessageBoxWatchdogGraceTicks)
+					{
+						continue;
+					}
+				}
+				string tourText;
+				try
+				{
+					tourText = onboarding.StepIndicatorText;
+				}
+				catch
+				{
+					tourText = null;
+				}
+				lock (CapturedOnboardingTours)
+				{
+					CapturedOnboardingTours.Add(string.IsNullOrEmpty(tourText)
+						? "<OnboardingTourWindow 无文本>"
+						: tourText);
+				}
+				OnboardingFirstSeenTicks.Remove(onboarding);
+				onboarding.Close(); // ShowDialog 的 PushFrame 随窗口关闭退出
 			}
 		}
 		}

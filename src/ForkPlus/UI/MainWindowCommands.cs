@@ -134,6 +134,8 @@ namespace ForkPlus.UI
 
 		private OpenKeyboardShortcutsCommand _openKeyboardShortcuts;
 
+		private ShowOnboardingTourCommand _showOnboardingTour;
+
 		private OpenReleaseNotesCommand _openReleaseNotes;
 
 		private ShowPerformanceDiagnosticsWindowCommand _showPerformanceDiagnosticsWindow;
@@ -276,6 +278,9 @@ namespace ForkPlus.UI
 		public OpenIssueTrackerCommand OpenIssueTracker => CommandContainer.Lazy(ref _openIssueTracker);
 
 		public OpenKeyboardShortcutsCommand OpenKeyboardShortcuts => CommandContainer.Lazy(ref _openKeyboardShortcuts);
+
+		/// <summary>帮助菜单"Getting Started"：手动重看新手引导向导。</summary>
+		public ShowOnboardingTourCommand ShowOnboardingTour => CommandContainer.Lazy(ref _showOnboardingTour);
 
 		public OpenReleaseNotesCommand OpenReleaseNotes => CommandContainer.Lazy(ref _openReleaseNotes);
 

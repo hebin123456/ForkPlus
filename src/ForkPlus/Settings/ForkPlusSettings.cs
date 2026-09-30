@@ -1122,6 +1122,10 @@ namespace ForkPlus.Settings
 
 		private bool _aiCheckpointReportingEnabled = true;
 
+		// 是否已完成新手引导（看过或跳过均算完成）：首次启动未完成时自动弹
+		// OnboardingTourWindow，完成后不再自动弹；帮助菜单可随时手动重看。
+		private bool _onboardingCompleted = false;
+
 		private bool _verboseGitOutput;
 
 		private string[] _sshKeys;
@@ -2613,6 +2617,19 @@ namespace ForkPlus.Settings
 			}
 		}
 
+		/// <summary>是否已完成新手引导（看过或跳过均算完成）。未完成时首次启动自动弹引导向导；默认 false。帮助菜单可随时手动重看。</summary>
+		public bool OnboardingCompleted
+		{
+			get
+			{
+				return _onboardingCompleted;
+			}
+			set
+			{
+				_onboardingCompleted = value;
+			}
+		}
+
 		public bool VerboseGitOutput
 		{
 			get
@@ -2913,6 +2930,7 @@ namespace ForkPlus.Settings
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
 			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? false;
 			bool aiCheckpointReportingEnabled = json["AiCheckpointReportingEnabled"]?.Value<bool>() ?? true;
+			bool onboardingCompleted = json["OnboardingCompleted"]?.Value<bool>() ?? false;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
 			string recentPatchDirectory = json["RecentPatchDirectory"]?.Value<string>();
@@ -3042,6 +3060,7 @@ namespace ForkPlus.Settings
 				GitAiInstancePath = gitAiInstancePath,
 				AiAttributionEnabled = aiAttributionEnabled,
 				AiCheckpointReportingEnabled = aiCheckpointReportingEnabled,
+				OnboardingCompleted = onboardingCompleted,
 				VerboseGitOutput = verboseGitOutput,
 				SshKeys = sshKeys,
 				RecentPatchDirectory = recentPatchDirectory,
@@ -3625,6 +3644,10 @@ namespace ForkPlus.Settings
 			{
 				"AiCheckpointReportingEnabled",
 				new JValue(target.AiCheckpointReportingEnabled)
+			},
+			{
+				"OnboardingCompleted",
+				new JValue(target.OnboardingCompleted)
 			},
 				{
 					"VerboseGitOutput",

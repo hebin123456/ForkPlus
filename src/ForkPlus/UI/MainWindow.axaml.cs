@@ -385,8 +385,11 @@ namespace ForkPlus.UI
 			base.Dispatcher.Post(StartupTimeReporter.UIReady);
 			// v4.1.0：首次启动新版本时弹"更新内容"（延迟一帧，等 CLI/首个渲染完成；
 			// 模态弹窗挂起在独立 dispatcher 帧，不阻塞启动链路）
+			// 新手引导（OnboardingManager）排在更新内容之前：首次用户先看界面导览，
+			// 两个模态弹窗经 PushFrame 串行排队
 			base.Dispatcher.Post(delegate
 			{
+				OnboardingManager.ShowIfFirstLaunch();
 				ReleaseNotesManager.ShowIfFirstLaunchOfNewVersion();
 			});
 		}

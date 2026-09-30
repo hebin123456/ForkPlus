@@ -1,0 +1,254 @@
+<dialogs:ForkPlusDialogWindow Width="560" MaxHeight="620" SizeToContent="Height" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.OnboardingTourWindow" xmlns="https://github.com/avaloniaui" Title="Getting Started">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="80" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <!-- Row 0：基类对话框标题区（AddDialogHeader 固定放 Row 0 / Column 1） -->
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,12,0,0">
+      <TextBlock x:Name="StepIndicatorTextBlock" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" Margin="0,0,0,8" />
+      <!-- 6 个步骤面板：完整内容（标题+示意图+描述）都在 XAML 里，切换只改 IsVisible，
+           让基类的 Loaded 自动本地化一次翻译全部步骤文本 -->
+      <StackPanel x:Name="StepPanel0" IsVisible="False">
+        <TextBlock Text="Welcome to ForkPlus" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="A quick tour of the essentials — the toolbar, sidebar, history and commit area — plus power features like git mm, the repository treemap, the reflog timeline and AI conflict resolution. Takes just a couple of minutes." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel1" IsVisible="False">
+        <TextBlock Text="The Toolbar" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Border Background="{DynamicResource Item.SelectedActive.Background}" CornerRadius="3" Padding="10,5">
+              <TextBlock Text="Pull" FontSize="12" />
+            </Border>
+            <Border Background="{DynamicResource Item.SelectedActive.Background}" CornerRadius="3" Padding="10,5">
+              <TextBlock Text="Push" FontSize="12" />
+            </Border>
+            <Border Background="{DynamicResource Item.SelectedActive.Background}" CornerRadius="3" Padding="10,5">
+              <TextBlock Text="Branch" FontSize="12" />
+            </Border>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Pull fetches and integrates remote changes, Push publishes your local commits, and Branch creates or switches branches. The badges on the buttons show how many commits you are ahead or behind." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel2" IsVisible="False">
+        <TextBlock Text="Branch Sidebar" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="170">
+          <StackPanel Spacing="5">
+            <TextBlock Text="Branches" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" />
+              <TextBlock Text="main" FontSize="12" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" />
+              <TextBlock Text="develop" FontSize="12" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Stroke="{DynamicResource AccentColorBrush}" StrokeThickness="1" />
+              <TextBlock Text="feature/tour" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="The sidebar on the left lists your local branches, tags and remotes. Click a branch to switch to it, and use the right-click menu to track, merge, rebase or delete branches." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel3" IsVisible="False">
+        <TextBlock Text="Commit History &amp; Diff" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Grid Margin="0,2,0,8">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Border Grid.Column="0" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}">
+            <StackPanel Spacing="5">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" />
+                <TextBlock Text="Fix login validation" FontSize="12" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" />
+                <TextBlock Text="Add CI build" FontSize="12" />
+              </StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Ellipse Width="7" Height="7" Stroke="{DynamicResource AccentColorBrush}" StrokeThickness="1" />
+                <TextBlock Text="Initial commit" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="8" Background="{DynamicResource BackgroundBrush}">
+            <StackPanel Spacing="3">
+              <TextBlock Text="+ if (user != null)" FontSize="12" FontFamily="Consolas" Background="{DynamicResource Diff.Added}" Foreground="{DynamicResource Diff.Added.Foreground}" />
+              <TextBlock Text="- if (user)" FontSize="12" FontFamily="Consolas" Background="{DynamicResource Diff.Removed}" Foreground="{DynamicResource Diff.Removed.Foreground}" />
+              <TextBlock Text="+   validate(user);" FontSize="12" FontFamily="Consolas" Background="{DynamicResource Diff.Added}" Foreground="{DynamicResource Diff.Added.Foreground}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="The revision graph shows the full history of the active branch. Click a commit to inspect it: the details pane below shows exactly what changed, file by file, with syntax-colored diffs." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel4" IsVisible="False">
+        <TextBlock Text="Commit Your Changes" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" Margin="0,2,0,8">
+          <StackPanel Spacing="6">
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,4">
+              <TextBlock Text="Fix login validation" FontSize="12" />
+            </Border>
+            <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,4" Height="34">
+              <TextBlock Text="Description..." FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            </Border>
+            <Border Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Padding="12,4" HorizontalAlignment="Right">
+              <TextBlock Text="Commit" FontSize="12" Foreground="{DynamicResource BackgroundBrush}" />
+            </Border>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Your changes appear in the changes list. Stage the files you want, write a subject and a description, then hit Commit. AI can draft the commit message for you from the staged changes." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel5" IsVisible="False">
+        <TextBlock Text="git mm Workflow" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="230">
+          <StackPanel Spacing="5">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="[Main]" FontSize="12" Foreground="{DynamicResource AccentColorBrush}" />
+              <TextBlock Text="app" FontSize="12" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="[Sub]" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+              <TextBlock Text="ui-kit" FontSize="12" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="[Sub]" FontSize="12" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+              <TextBlock Text="docs" FontSize="12" />
+            </StackPanel>
+            <Border Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Padding="8,3" HorizontalAlignment="Left" Margin="0,4,0,0">
+              <TextBlock Text="Sync git mm" FontSize="12" Foreground="{DynamicResource BackgroundBrush}" />
+            </Border>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="ForkPlus ships with git mm built in: a lean workflow that keeps a main repository and its sub repositories in sync. Switch to the git mm workspace, then use Sync git mm to pull all sub repos consistently or Upload git mm to push their changes together (requires git-mm 3.x)." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel6" IsVisible="False">
+        <TextBlock Text="Repository Treemap" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="260" Height="92">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="3*" />
+              <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="2*" />
+              <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Margin="0,0,2,2" Opacity="0.85" />
+            <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource AccentSecondaryBrush}" CornerRadius="3" Margin="0,2,2,0" Opacity="0.85" />
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" Background="{DynamicResource Item.SelectedInactive.Background}" CornerRadius="3" Margin="2,0,0,0" Opacity="0.85" />
+          </Grid>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Open Repository Treemap... for a size map of your repository: every rectangle is a file or folder, sized by its footprint on disk. Click a rectangle to drill down into a folder and discover what really eats your space." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel7" IsVisible="False">
+        <TextBlock Text="Repository Statistics" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="230">
+          <StackPanel Spacing="5">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentColorBrush}" />
+              <TextBlock Text="C#     54,321" FontSize="12" FontFamily="Consolas" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource AccentSecondaryBrush}" />
+              <TextBlock Text="Rust   12,004" FontSize="12" FontFamily="Consolas" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource ForegroundBrush.Gray}" Opacity="0.6" />
+              <TextBlock Text="Other   3,210" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel8" IsVisible="False">
+        <TextBlock Text="Reflog Timeline" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="300" Height="44">
+          <Panel>
+            <Border Height="2" Background="{DynamicResource BorderBrush}" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="40">
+              <Ellipse Width="9" Height="9" Fill="{DynamicResource AccentColorBrush}" />
+              <Ellipse Width="9" Height="9" Fill="{DynamicResource AccentColorBrush}" />
+              <Ellipse Width="9" Height="9" Stroke="{DynamicResource AccentColorBrush}" StrokeThickness="1" />
+              <Ellipse Width="9" Height="9" Fill="{DynamicResource ForegroundBrush.Gray}" Opacity="0.5" />
+            </StackPanel>
+          </Panel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel9" IsVisible="False">
+        <TextBlock Text="Resolving Conflicts" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="270">
+          <StackPanel Spacing="4">
+            <TextBlock Text="&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource Diff.Removed.Foreground}" Background="{DynamicResource Diff.Removed}" />
+            <TextBlock Text="=======" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+            <TextBlock Text="&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login" FontSize="12" FontFamily="Consolas" Foreground="{DynamicResource Diff.Added.Foreground}" Background="{DynamicResource Diff.Added}" />
+            <Border Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Padding="8,3" HorizontalAlignment="Left" Margin="0,4,0,0">
+              <TextBlock Text="Resolve" FontSize="12" Foreground="{DynamicResource BackgroundBrush}" />
+            </Border>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel10" IsVisible="False">
+        <TextBlock Text="Make It Yours" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="300">
+          <StackPanel Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border Width="22" Height="14" CornerRadius="3" Background="#2D7D9A" />
+              <Border Width="22" Height="14" CornerRadius="3" Background="#34C84A" />
+              <Border Width="22" Height="14" CornerRadius="3" Background="#8E44AD" />
+              <Border Width="22" Height="14" CornerRadius="3" Background="#E67E22" />
+              <Border Width="22" Height="14" CornerRadius="3" Background="#16A085" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2">
+                <TextBlock Text="English" FontSize="11" />
+              </Border>
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2" Background="{DynamicResource Item.SelectedActive.Background}">
+                <TextBlock Text="简体中文" FontSize="11" />
+              </Border>
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2">
+                <TextBlock Text="日本語" FontSize="11" />
+              </Border>
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2">
+                <TextBlock Text="한국어" FontSize="11" />
+              </Border>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2" Background="{DynamicResource Item.SelectedActive.Background}">
+                <TextBlock Text="Top" FontSize="11" />
+              </Border>
+              <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="6,2">
+                <TextBlock Text="Left" FontSize="11" />
+              </Border>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel11" IsVisible="False">
+        <TextBlock Text="You're All Set" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="That's the basics. You can revisit this tour anytime via Help > Getting Started, and customize themes, languages and everything else in Preferences. Happy committing!" />
+      </StackPanel>
+    </StackPanel>
+    <!-- 自建 footer：Back 在左，Skip/Next 在右。不用基类 ForkPlusDialogFooter，
+         因为向导需要 Back 按钮且 Next/Finish 随步骤切换，自建可完整掌控 -->
+    <DockPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,14,0,0">
+      <Button x:Name="BackButton" DockPanel.Dock="Left" Click="BackButton_Click" MinWidth="80" IsVisible="False">Back</Button>
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button x:Name="SkipButton" Click="SkipButton_Click" MinWidth="80" Margin="0,0,8,0">Skip Tour</Button>
+        <Button x:Name="NextButton" Click="NextButton_Click" MinWidth="80" IsDefault="True">Next</Button>
+      </StackPanel>
+      <Panel />
+    </DockPanel>
+  </Grid>
+</dialogs:ForkPlusDialogWindow>
