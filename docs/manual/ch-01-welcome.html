@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 1 章 · 欢迎页与仓库管理</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
+  <p>ForkPlus 用户手册 · 版本 v4.3.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -85,6 +85,25 @@
   </figure>
 
   <div class="tip"><strong>小贴士：</strong>你可以随时用工具栏或菜单打开、新建、克隆仓库，ForkPlus 会为每个仓库自动建立标签页；空闲标签可点右上角 <kbd>×</kbd> 关闭。</div>
+
+  <h2>新手引导（Getting Started，v4.3.0）</h2>
+  <p>首次启动 ForkPlus 时会自动弹出<strong>新手引导向导</strong>：共 12 步，先把核心界面过一遍（工具栏 → 分支侧栏 → 提交历史与 Diff → 提交变更），再介绍进阶能力（git mm 工作流 → 仓库树图 → 仓库统计 → Reflog 时间轴 → 解决冲突 → 随心定制），最后收尾。每一步都是「标题 + 示意图 + 说明」，示意图复用真实界面的配色与控件画刷。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/08-onboarding-tour-welcome.png" alt="新手引导向导第 1 步" loading="lazy">
+    <figcaption>图 1-8　新手引导第 1 步：顶部显示「第 N 步，共 12 步」，底部为「跳过引导」与「下一步」（末步变为「完成」）</figcaption>
+  </figure>
+
+  <p>向导是纯介绍性的，<strong>不会改动任何仓库内容</strong>，也不会占用主界面——看完即可继续工作。翻页用右下角按钮（<strong>下一步</strong> / 末步 <strong>完成</strong>），第一页之后左上角会出现<strong>上一步</strong>；不想看完就点<strong>跳过引导</strong>或按 <kbd>Esc</kbd>。</p>
+
+  <figure>
+    <img src="screenshots/01-welcome/09-onboarding-tour-customize.png" alt="新手引导向导进阶步骤：随心定制" loading="lazy">
+    <figcaption>图 1-9　进阶步骤示例「随心定制」：主题色板、界面语言与标签条位置</figcaption>
+  </figure>
+
+  <div class="note"><strong>说明：</strong>无论走完还是跳过，都算作「已完成引导」，标记写入设置文件，之后启动不再自动弹出。完成标记在弹窗之前写入，所以即便向导期间退出（崩溃或断电）也不会陷入每次启动重弹。</div>
+
+  <div class="tip"><strong>小贴士：</strong>想再看一遍？打开菜单栏<strong>「帮助 › 新手引导」</strong>即可随时重看，且重看不会重置完成标记。想换语言/主题，本步骤对应的是<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>。</div>
 </main>
 <footer class="manual-footer">
   ForkPlus 用户手册 · 第 1 章 · 欢迎页与仓库管理

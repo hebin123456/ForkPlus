@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 13 章 · 远程交互</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
+  <p>ForkPlus 用户手册 · 版本 v4.3.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -106,6 +106,8 @@
     <img src="screenshots/13-remotes/10-remove-remote.png" alt="删除远端" loading="lazy">
     <figcaption>图 13-10　删除远端：预览 git remote remove 命令并确认</figcaption>
   </figure>
+
+  <div class="note"><strong>v4.3.0 修复：</strong>此前该弹窗的 logo 图标与标题 / 说明文字、内容与命令预览相互重叠（根容器缺少行定义、图标列宽取值错误），现已按通用弹窗布局规范重排为「图标列 + 标题行 + 内容行」；同时移除了一个与基类成员重名、实际不参与布局的死控件。功能与文案未变。</div>
 
   <h2>变更远程跟踪</h2>
   <p>「变更远程跟踪」对话框用于调整本地分支与其上游远程分支的关联关系：可为当前分支选择新的上游（预览 <code>git branch --set-upstream-to</code> 命令），或取消跟踪（预览 <code>git branch --unset-upstream</code>）。当分支不再跟踪远程、或需要把跟踪目标切换到另一个远程分支（如接管他人分支）时使用。</p>
