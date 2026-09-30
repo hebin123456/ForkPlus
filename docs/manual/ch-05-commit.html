@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 5 章 · 变更与提交</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -91,6 +91,19 @@
   </figure>
 
   <div class="warn"><strong>注意：</strong>「丢弃」会真实改写工作区文件且不可撤销。执行前请确认选中的行确实是想要丢弃的内容。</div>
+
+  <h2>丢弃更改确认窗口（v4.2.1）</h2>
+  <p>点击「丢弃」（Discard）后，确认流程由原先的普通消息框升级为<strong>专用的确认窗口</strong>：窗口把将丢弃的路径按「子模块 / 文件」两组分别列出，组头显示分组名，路径列表带滚动；单组路径超过 200 条时截断显示并追加 <em>…and N more</em> 汇总行。</p>
+  <ul>
+    <li><strong>分组展示</strong>：子模块组（Submodules）与普通文件组（Files）分别成列，便于一眼看出丢弃范围是否涉及子仓库。</li>
+    <li><strong>按钮文案</strong>：确认按钮标题按「将丢弃的<strong>去重</strong>路径数」计数（与旧消息框语义一致），例如 <em>Discard Changes in 4 Files</em>；只有一个路径时显示 <em>Discard</em>。</li>
+    <li><strong>行为不变</strong>：点「确认」才真正丢弃（子模块在文件丢弃后另行处理），点「取消」则不做任何改动。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/05-commit/08-discard-changes-confirm.png" alt="丢弃更改确认窗口" loading="lazy">
+    <figcaption>图 5-8　丢弃更改确认窗口：子模块与文件分组列出将丢弃的路径，确认才丢弃</figcaption>
+  </figure>
 </main>
 <footer class="manual-footer">
   ForkPlus 用户手册 · 第 5 章 · 变更与提交

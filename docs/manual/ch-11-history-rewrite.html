@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 11 章 · 历史改写</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -64,6 +64,8 @@
 
   <div class="note"><strong>警告：</strong>Hard 重置会丢掉工作区与暂存区变更且不可恢复，执行前请确认或利用 Reflog 找回。</div>
 
+  <p><strong>丢失提交预览（v4.2.1）：</strong>重置到较早提交时，对话框会列出「将被丢弃的提交」。该预览区与 Pull 拉取预览、Push 强推覆盖预览共用同一套呈现（v4.2.1 重做）：折叠头 与摘要行同左缘、SHA 与提交说明同行对齐，列表限高 220 滚动、窗口不再被长列表撑高；预览行的短 SHA（<code>%h</code>）是<strong>超链接</strong>（强调色 + 下划线 + 手型光标），点击即可打开该提交的变更详情面板。</p>
+
   <h2>Reflog 历史</h2>
   <p>Reflog 记录了所有引用（分支、HEAD）的移动历史。即使分支被重置或删除，也能从 Reflog 中找回之前的提交状态，是误操作后的安全网。</p>
 
@@ -71,6 +73,8 @@
     <img src="screenshots/11-history-rewrite/06-reflog-window.png" alt="Reflog 窗口" loading="lazy">
     <figcaption>图 11-6　Reflog 窗口：列出 HEAD/分支每次移动的记录</figcaption>
   </figure>
+
+  <p><strong>v4.2.1 修复：</strong>表头列随列表行容器的几何实时校准，滚动条出现 / 消失时不再错位；另外，从 Reflog 窗口（非模态独立窗口）弹出的确认框（如「跳转到此提交」）现在正确归属 Reflog 窗口本身——此前确认框默认挂到主窗口，关闭时主窗口会跳到最前，把 Reflog 窗口压到下面。</p>
 
   <h2>变基分支（Rebase）</h2>
   <p>「变基分支」对话框把当前分支基于另一个分支的顶端重新排列其提交。相对于合并，变基会重写当前分支的提交使历史线性清晰。界面上会预览 <code>git rebase</code> 命令与目标基底。</p>

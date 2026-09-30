@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 13 章 · 远程交互</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -47,6 +47,8 @@
     <figcaption>图 13-3　Pull：默认合并拉取并预览命令</figcaption>
   </figure>
 
+  <p><strong>提交预览（v4.2.1）：</strong>当拉取会带入新提交时，对话框会列出「将合并进来的提交」。该预览区（与 Push 强推覆盖预览、Reset 丢失提交预览共用一套呈现）折叠头与摘要行同左缘、SHA 与提交说明同行对齐，列表限高滚动、窗口不被撑高；预览行的短 SHA 是<strong>超链接</strong>，点击可直接打开该提交的变更详情面板。</p>
+
   <h2>Pull 并 Rebase</h2>
   <p>勾选「以 Rebase 方式拉取」，Pull 将改为 <code>git pull --rebase</code>，把本地提交重新摆放到远程最新提交之上，形成更线性的历史。</p>
 
@@ -62,6 +64,8 @@
     <img src="screenshots/13-remotes/05-push.png" alt="Push 默认预览" loading="lazy">
     <figcaption>图 13-5　Push：对已有上游分支预览推送命令</figcaption>
   </figure>
+
+  <p><strong>提交预览（v4.2.1）：</strong>强推覆盖远程时同样会列出「将被覆盖的提交」，呈现与拉取预览一致——折叠头左对齐、SHA 与提交说明同行对齐、列表限高滚动；预览行的短 SHA 是超链接，点击可直接打开该提交的变更详情面板。</p>
 
   <h2>编辑远程：添加</h2>
   <p>「编辑远程」对话框以 Add 模式添加新的远程：输入名称与 URL 后，预览 <code>git remote add</code> 命令，用于注册新的远程源。</p>

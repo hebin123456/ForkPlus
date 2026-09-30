@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.2.0</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,15 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v4.2.1 更新</h2>
+  <ul>
+    <li><strong>仓库健康检查窗口</strong>：新增「仓库健康检查」独立窗口，分区折叠展示仓库体检结果——概览（对象体积 / 关注项）、陈旧分支、已合并分支、分叉分支（未推送 / 分支独有提交）、最大的文件与 .git 体积明细；陈旧 / 已合并分支可勾选批量删除，删除前二次确认，受保护分支会被拦截。详见<a href="ch-20-viewers.html">第 20 章 · 查看器窗口</a>。</li>
+    <li><strong>提交预览区重做</strong>：Pull / Push / Reset 三处共用的「将包含的提交」预览区，折叠头与摘要行左对齐、SHA 与提交说明同行对齐，列表限高滚动不再把窗口撑高；预览行的短 SHA 变为超链接，点击即可打开该提交的变更详情。详见<a href="ch-13-remotes.html">第 13 章 · 远程交互</a>与<a href="ch-11-history-rewrite.html">第 11 章 · 历史改写</a>。</li>
+    <li><strong>丢弃更改确认窗口</strong>：丢弃更改（含子模块）由消息框升级为专用确认窗口，按「子模块 / 文件」分组列出将丢弃的路径，长列表可滚动、超大列表截断提示（…and N more）。详见<a href="ch-05-commit.html">第 5 章 · 变更与提交</a>。</li>
+    <li><strong>重开已关闭标签页</strong>：新增 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>，按最近关闭顺序重开仓库标签（栈空或路径已失效时静默跳过）；原「新建标签」快捷键改为 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>。详见<a href="ch-08-shortcuts.html">第 8 章 · 键盘快捷键</a>。</li>
+    <li><strong>体验修复</strong>：Reflog 窗口表头随列表行几何实时对齐（滚动条出现 / 消失不再错位）；从非模态 Reflog 窗口弹出的确认框正确归属该窗口，关闭后不再把 Reflog 窗口压到主窗口下面。</li>
+  </ul>
 
   <h2>v4.2.0 更新</h2>
   <ul>
@@ -49,7 +58,7 @@
     <a class="chapter-card" href="ch-05-commit.html">
       <span class="num">CH-05</span>
       <h3>变更与提交</h3>
-      <p>工作区状态、文件级与行级暂存、提交消息与 Amend</p>
+      <p>工作区状态、文件级与行级暂存、提交消息与 Amend、丢弃更改确认窗口</p>
     </a>
     <a class="chapter-card" href="ch-06-text-diff.html">
       <span class="num">CH-06</span>
@@ -124,7 +133,7 @@
     <a class="chapter-card" href="ch-20-viewers.html">
       <span class="num">CH-20</span>
       <h3>查看器窗口</h3>
-      <p>Blame、文件/文件夹历史、仓库概览与统计</p>
+      <p>Blame、文件/文件夹历史、仓库概览、仓库健康检查与统计</p>
     </a>
     <a class="chapter-card" href="ch-21-preferences.html">
       <span class="num">CH-21</span>
@@ -154,7 +163,7 @@
   </div>
 </main>
 <footer class="manual-footer">
-  ForkPlus 用户手册 · 生成于 2026-09-28
+  ForkPlus 用户手册 · 生成于 2026-09-30
 </footer>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 20 章 · 查看器窗口</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.2.0</p>
+  <p>ForkPlus 用户手册 · 版本 v4.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -87,6 +87,22 @@
   <figure>
     <img src="screenshots/20-viewers/06-go-to-line.png" alt="跳转行窗口" loading="lazy">
     <figcaption>图 20-6　跳转行窗口：输入行号即可跳转（空/非法输入忽略）</figcaption>
+  </figure>
+
+  <h2>仓库健康检查（Repository Health，v4.2.1）</h2>
+  <p>「仓库健康检查」窗口一次性地把仓库的「体检」结果分区展示（菜单栏位于「基准测试」之上，<strong>Quick Launch</strong> 中也同步提供）。窗口定宽 900，各分区横向铺满、可折叠；内容由仓库 JobQueue 后台计算完成后装配：</p>
+  <ul>
+    <li><strong>概览 Overview</strong>：Packed / Loose 对象体积、.git 目录体积，以及「关注项」计数（待处理的陈旧 + 已合并 + 分叉分支数）。</li>
+    <li><strong>陈旧分支 Stale branches</strong>：全部本地分支按提交时间列出，勾选后可<strong>批量删除</strong>；删除前弹出二次确认（列出所选分支名，超过 15 个截断显示），受保护分支（仓库设置中配置）会被专用确认窗口拦截。</li>
+    <li><strong>已合并分支 Merged branches</strong>：已合入当前基准的分支列表（删除分支后与陈旧 / 分叉区联动刷新）。</li>
+    <li><strong>分叉分支 Diverged branches</strong>：相对上游尚未推送 / 含分支独有提交的分支。</li>
+    <li><strong>最大的文件 Largest files</strong>：仓库里体积最大的对象（右键可复制路径 / 查看文件历史）。</li>
+    <li><strong>体积明细 Size breakdown</strong>：.git 各目录（objects / refs / hooks 等）的大小与占比。</li>
+  </ul>
+
+  <figure>
+    <img src="screenshots/20-viewers/07-repository-health.png" alt="仓库健康检查窗口" loading="lazy">
+    <figcaption>图 20-7　仓库健康检查窗口：概览条 + 陈旧 / 已合并 / 分叉分支 + 大文件 / 体积明细分区，勾选后可批量清理</figcaption>
   </figure>
 </main>
 <footer class="manual-footer">
