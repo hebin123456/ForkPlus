@@ -128,7 +128,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 						Log.Error(gitCommandResult.Error.FriendlyDescription);
 					}
 				}
-				RefreshImage(memoryStream);
+				RefreshImage(memoryStream, imageContent.Path);
 				ImageContainer.Show();
 				DropDownButton.Show();
 			}
@@ -199,25 +199,31 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		public void SetLfsImageData(MemoryStream memoryStream, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource = null)
+		/// <param name="path">v4.4.0：仓库内路径，供查看器注册表按扩展名判定；未知时可不传。</param>
+		public void SetLfsImageData(MemoryStream memoryStream, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource = null, [Null] string path = null)
 		{
 			DiffImageSource = diffImageSource;
-			RefreshImage(memoryStream);
+			RefreshImage(memoryStream, path);
 			ImageContainer.Show();
 			FileContainer.Collapse();
 			ShowLfsImageButton.Collapse();
 			FileExtensionTextBlock.Collapse();
 		}
 
-		private void RefreshImage(MemoryStream memoryStream)
+		private void RefreshImage(MemoryStream memoryStream, [Null] string path)
 		{
-			// v4.3.2：先尝试按动图解码（GIF / 动态 WebP / APNG）；成功则交给播放器逐帧渲染，
-			// 失败/非动图/超阈值时回退为原来的静态首帧显示。
-			AnimatedImage animated = AnimatedImage.TryDecode(memoryStream);
-			if (animated != null)
+			// v4.4.0：渲染方式改由查看器注册表判定（动图优先于静态图），不再在本控件里硬编码
+			// 动图探测——新增格式只需往 BinaryViewerRegistry 注册查看器。
+			IBinaryViewer viewer = BinaryViewerRegistry.Resolve(new BinaryViewerRequest(path, memoryStream));
+			if (viewer.Kind == BinaryViewerKind.AnimatedImage)
 			{
-				AttachAnimated(animated, memoryStream.Length);
-				return;
+				// 帧数/总像素超阈值或解码失败的动图 TryDecode 返回 null，退回静态首帧显示。
+				AnimatedImage animated = AnimatedImage.TryDecode(memoryStream);
+				if (animated != null)
+				{
+					AttachAnimated(animated, memoryStream.Length);
+					return;
+				}
 			}
 			DetachAnimated();
 			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);

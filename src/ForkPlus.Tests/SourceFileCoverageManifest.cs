@@ -1281,6 +1281,8 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/UserControls/BinaryDiff/AnimatedImagePlayer.cs",
 				"src/ForkPlus/UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml.cs",
 				"src/ForkPlus/UI/UserControls/BinaryDiff/BinaryDiffUserControl.axaml.cs",
+				"src/ForkPlus/UI/UserControls/BinaryDiff/BinaryViewerRegistry.cs",
+				"src/ForkPlus/UI/UserControls/BinaryDiff/BuiltInBinaryViewers.cs",
 				"src/ForkPlus/UI/UserControls/BinaryDiff/ImageData.cs",
 				"src/ForkPlus/UI/UserControls/BinaryDiff/ImageZoomState.cs",
 				"src/ForkPlus/UI/UserControls/BinaryDiff/OnionSkinImageDiffUserControl.axaml.cs",

@@ -149,7 +149,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 								// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
 								DstFileContentUserControl.DiffImageSource = DiffImageSource;
 								SrcFileContentUserControl.DiffImageSource = DiffImageSource;
-									SrcFileContentUserControl.SetLfsImageData(result2);
+									SrcFileContentUserControl.SetLfsImageData(result2, path: srcLfsContent.Path);
 									RefreshViewModes();
 								}
 							});
@@ -207,7 +207,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 								_hexDstData = result; // v3.4.1：存原始字节供 Hex 视图
 							DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 							// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
-							DstFileContentUserControl.SetLfsImageData(result, DiffImageSource);
+							DstFileContentUserControl.SetLfsImageData(result, DiffImageSource, path: dstLfsContent.Path);
 							SrcFileContentUserControl.DiffImageSource = DiffImageSource;
 								RefreshViewModes();
 								}
@@ -517,7 +517,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				_hexSrcData = result; // v3.4.1：存原始字节供 Hex 视图
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 				// 修复（2026-09-14，高亮像素双侧显示）：本地 LFS 缓存路径同样给左侧补传掩码。
-				SrcFileContentUserControl.SetLfsImageData(result, DiffImageSource);
+				SrcFileContentUserControl.SetLfsImageData(result, DiffImageSource, path: lfsContent.Path);
 				}
 			}
 			if (_dstBinaryContent is LfsContent { BinaryFileType: BinaryFileType.LfsImage } lfsContent2)
@@ -541,7 +541,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 					_dstImageData = ImageData.Create(result2, isLfs: true, lfsContent2.IsTracked);
 					_hexDstData = result2; // v3.4.1：存原始字节供 Hex 视图
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
-				DstFileContentUserControl.SetLfsImageData(result2, DiffImageSource);
+				DstFileContentUserControl.SetLfsImageData(result2, DiffImageSource, path: lfsContent2.Path);
 				}
 			}
 			RefreshViewModes();

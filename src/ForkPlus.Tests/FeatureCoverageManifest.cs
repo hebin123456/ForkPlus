@@ -33,7 +33,7 @@ namespace ForkPlus.Tests
 			new FeatureCoverageEntry("commit.commit-message", "Commit", "UNIT-RANGE-001"),
 			new FeatureCoverageEntry("commit.amend", "Commit", "UNIT-SOURCE-COVERAGE-001"),
 			new FeatureCoverageEntry("diff.text", "Diff", "UNIT-RANGE-001"),
-			new FeatureCoverageEntry("diff.binary", "Diff", "UNIT-SOURCE-COVERAGE-001"),
+			new FeatureCoverageEntry("diff.binary", "Diff", "UNIT-SOURCE-COVERAGE-001", "UNIT-BINARY-VIEWER-001"),
 			new FeatureCoverageEntry("diff.popup", "Diff", "UNIT-LOCALIZATION-001"),
 			new FeatureCoverageEntry("history.revision-list", "History", "UNIT-SOURCE-COVERAGE-001"),
 			new FeatureCoverageEntry("history.file-history", "History", "UNIT-SOURCE-COVERAGE-001"),
