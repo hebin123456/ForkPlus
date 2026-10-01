@@ -3,7 +3,8 @@
 //   1) 控件层：ZoomPanImageControl / OverlayImageControl 的 IsZoomable 与共享状态注入；
 //   2) 并排语义：两个控件共享同一 ImageZoomState 时，视口中心对应同一归一化图像坐标（中心点对齐）；
 //   3) 装配层：BinaryDiffUserControl 把同一 ImageZoomState 实例注入四个图片视图，
-//      并在缩放后显示"还原大小 (N%)"按钮、点击后还原为初始状态。
+//      并在缩放后于对比视图中间偏下悬浮显示"还原大小 (N%)"按钮（Hex 模式隐藏，不塞进底部工具条）、
+//      点击后还原为初始状态。
 // 纯布局数学见 ImageZoomStateTests（不依赖 headless）。
 using System;
 using Avalonia;
@@ -11,6 +12,7 @@ using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using Xunit;
 
@@ -174,6 +176,25 @@ namespace ForkPlus.Tests
 					Dispatcher.UIThread.RunJobs();
 					Assert.True(control.ResetZoomButton.IsVisible);
 					Assert.Contains("200", (string)control.ResetZoomButton.Content);
+
+					// 悬浮在对比视图内、不在底部视图模式工具条里（对齐冲突页合并按钮的口径）：
+					// 水平居中，且整体位于底部工具条上方。
+					Point? pillTopLeft = control.ResetZoomButton.TranslatePoint(new Point(0.0, 0.0), control);
+					Point? toolbarTopLeft = control.ViewModeButtonsContainer.TranslatePoint(new Point(0.0, 0.0), control);
+					Assert.NotNull(pillTopLeft);
+					Assert.NotNull(toolbarTopLeft);
+					Assert.Equal(control.Bounds.Width / 2.0,
+						pillTopLeft.Value.X + control.ResetZoomButton.Bounds.Width / 2.0, 0);
+					Assert.True(pillTopLeft.Value.Y + control.ResetZoomButton.Bounds.Height < toolbarTopLeft.Value.Y,
+						"「还原大小」按钮应悬浮在图片区域内（底部工具条之上）");
+
+					// Hex 视图不参与图片缩放 → 选中 Hex 时隐藏；切回并排（缩放态仍在）重新出现
+					control.HexRadioButton.IsChecked = true;
+					Dispatcher.UIThread.RunJobs();
+					Assert.False(control.ResetZoomButton.IsVisible);
+					control.SideBySideRadioButton.IsChecked = true;
+					Dispatcher.UIThread.RunJobs();
+					Assert.True(control.ResetZoomButton.IsVisible);
 
 					// 点击还原 → 共享状态回初始、按钮隐藏（各视图同步还原）
 					UiClick.Click(control.ResetZoomButton);

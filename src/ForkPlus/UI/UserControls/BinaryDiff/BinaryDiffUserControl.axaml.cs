@@ -611,6 +611,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				ShowHexDiffView();
 				HexDiffViewContainer.Show();
 			}
+			// v4.3.1：视图模式变化会影响"还原大小"是否该显示（Hex 不可缩放 → 不显示），
+			// 这里统一重算一次（内含 HexRadioButton 判断）。
+			UpdateResetZoomButton();
 		}
 
 		/// <summary>v3.4.1：懒创建 HexDiffUserControl 并加载原始字节。
@@ -679,11 +682,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			UpdateResetZoomButton();
 		}
 
-		/// <summary>v4.3.1：图片被缩放（非 100%）时在底部工具条显示"还原大小 (N%)"，
-		/// 点击还原为贴合视图的初始状态（各视图共享同一缩放状态，一处还原全部还原）。</summary>
+		/// <summary>v4.3.1：图片被缩放（非 100%）时在对比视图中间偏下悬浮"还原大小 (N%)"，
+		/// 点击还原为贴合视图的初始状态（各视图共享同一缩放状态，一处还原全部还原）。
+		/// Hex 视图不参与图片缩放，选中 Hex 时即便共享状态仍是放大态也不显示该按钮。</summary>
 		private void UpdateResetZoomButton()
 		{
-			bool zoomed = _imageZoomState.IsZoomed;
+			bool zoomed = _imageZoomState.IsZoomed && !HexRadioButton.IsChecked.GetValueOrDefault();
 			ResetZoomButton.IsVisible = zoomed;
 			if (zoomed)
 			{

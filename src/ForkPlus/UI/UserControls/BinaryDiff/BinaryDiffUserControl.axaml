@@ -1,4 +1,40 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:binaryDiff="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:userControls="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl" xmlns:fuu="clr-namespace:ForkPlus.UI.UserControls">
+  <UserControl.Resources>
+    <!-- v4.3.1：图片对比的「还原大小 (N%)」悬浮按钮样式——压在图片之上的半透明胶囊。
+         不用默认按钮底色（会与图片撞色/被吞掉），改用中性深底 + 细描边 + 投影：
+         任何图片背景上都读得清。高度 28、上下内边距 0（避免默认模板的垂直裁剪）。 -->
+    <ControlTheme x:Key="ImageZoomResetButton" TargetType="Button">
+      <Setter Property="Background" Value="#B3000000" />
+      <Setter Property="Foreground" Value="#FFFFFFFF" />
+      <Setter Property="BorderBrush" Value="#40FFFFFF" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Pill" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+              <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.35" OffsetY="2" />
+              </Border.Effect>
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style Selector="^:pointerover /template/ Border#Pill">
+        <Setter Property="Background" Value="#D9000000" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#Pill">
+        <Setter Property="Background" Value="#F2000000" />
+      </Style>
+    </ControlTheme>
+  </UserControl.Resources>
   <Grid>
     <Grid.Background>
       <DynamicResource ResourceKey="BackgroundBrush" />
@@ -23,11 +59,14 @@
           <RadioButton Grid.Column="1" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="SwipeRadioButton">Swipe<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
           <RadioButton Grid.Column="2" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="OnionSkinRadioButton">Onion Skin<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
           <RadioButton Grid.Column="3" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="HexRadioButton">Hex<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
-          <!-- v4.3.1：图片被滚轮缩放/拖动过后出现的"还原大小"按钮（带当前百分比），
-               文案在代码里按当前语言生成（含动态百分比，不能在 XAML 写死）。 -->
-          <Button x:Name="ResetZoomButton" Margin="12,0,0,0" Padding="8,1" FontSize="12" IsVisible="False" Click="ResetZoomButton_Click" />
         </StackPanel.Children>
       </StackPanel>
+      <!-- v4.3.1：图片被滚轮缩放/拖动后，在对比视图中间偏下悬浮一枚「还原大小 (N%)」胶囊
+           （对齐冲突页合并按钮的"居中悬浮操作"位置，而不是塞进底部视图模式工具条）。
+           文案含动态百分比，由代码按当前语言生成；Margin 上边距 90 → 视觉下移约 45px，
+           避开用户大概率在看的画面中心。置于各图片控件之上、FallbackUserControl 之下：
+           无图回退时被回退层盖住。仅并排/滑动/洋葱皮显示（Hex 不可缩放，选中时由代码隐藏）。 -->
+      <Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ResetZoomButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,90,0,0" IsVisible="False" Click="ResetZoomButton_Click" Theme="{StaticResource ImageZoomResetButton}" />
       <fuu:FallbackUserControl Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="FallbackUserControl" />
     </Grid.Children>
   </Grid>

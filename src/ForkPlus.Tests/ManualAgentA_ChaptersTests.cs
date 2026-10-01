@@ -694,7 +694,7 @@ namespace ForkPlus.Tests
 							}), "old/new 双图装配后 ViewModeButtonsContainer 应可见");
 							ManualScreenshotHelper.Snap(window, "01-image-side-by-side", "07-binary-diff");
 
-							// v4.3.1：滚轮放大后工具条出现「还原大小 (N%)」按钮（各视图共享同一缩放状态）
+							// v4.3.1：滚轮放大后对比视图中间偏下悬浮出现「还原大小 (N%)」按钮（各视图共享同一缩放状态）
 							ImageZoomState zoomState = binaryDiff.SrcFileContentUserControl.ZoomState;
 							Assert.NotNull(zoomState);
 							zoomState.Set(2.0, 0.5, 0.5);
