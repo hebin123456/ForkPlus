@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.3.1</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.3.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,11 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v4.3.2 更新</h2>
+  <ul>
+    <li><strong>图片对比动图播放</strong>：图片 Diff 的并排视图支持<strong>直接播放动图</strong>（GIF / 动态 WebP / APNG），不再只显示第一帧。每列图片区域底部居中悬浮<strong>播放控制条</strong>：播放/暂停、上一帧/下一帧、播放速度（0.5×/1×/2×）与帧序号；动图自动关闭像素差异高亮，切视图/换文件自动暂停并释放帧内存，超大动图退回首帧。详见<a href="ch-07-binary-diff.html">第 7 章 · 二进制与图片 Diff</a>。</li>
+  </ul>
 
   <h2>v4.3.1 更新</h2>
   <ul>
@@ -79,7 +84,7 @@
     <a class="chapter-card" href="ch-07-binary-diff.html">
       <span class="num">CH-07</span>
       <h3>二进制与图片 Diff</h3>
-      <p>四模式图片对比（含滚轮缩放 / 拖动平移 / 还原大小）、二进制卡片视图与大文件加载</p>
+      <p>四模式图片对比（滚轮缩放 / 拖动平移 / 还原大小、动图直接播放）、二进制卡片视图与大文件加载</p>
     </a>
     <a class="chapter-card" href="ch-08-shortcuts.html">
       <span class="num">CH-08</span>

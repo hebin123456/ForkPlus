@@ -2453,6 +2453,11 @@
     "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.": "Repository Statistics...（リポジトリ統計）は、言語ごとにコード・コメント・空行の行数を集計し（200 以上の言語に対応した tokei 駆動）、円グラフで内訳を可視化します。ワークスペース・ブランチ・タグで ref を切り替えて比較できます。",
     "The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo.": "Reflog は、ForkPlus で実行したすべての操作（コミット、チェックアウト、リセットなど）をタイムラインで記録します。ツールバーから開き、エントリをダブルクリックすると、その時点の状態へ安全にジャンプできます。後から取り消せます。",
     "When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click.": "マージやリベースで競合が発生すると、対象ファイルがコミットビューに表示されます。左右並列のマージ画面で行ごとに解決する、コンテキストメニューからバージョンを選ぶ、あるいは AI にワンクリックでまとめて解決させることもできます。",
-    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "ForkPlus を自分好みに：ライト・ダークから Dracula、Monokai、Solarized まで 12 種類の内蔵テーマにカスタムカラー、8 種類の UI 言語、タブバーは上部または左側に配置可能です。すべて設定にあり、即座に切り替わります。"
+    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "ForkPlus を自分好みに：ライト・ダークから Dracula、Monokai、Solarized まで 12 種類の内蔵テーマにカスタムカラー、8 種類の UI 言語、タブバーは上部または左側に配置可能です。すべて設定にあり、即座に切り替わります。",
+    "Next Frame": "次のフレーム",
+    "Pause": "一時停止",
+    "Play": "再生",
+    "Playback Speed": "再生速度",
+    "Previous Frame": "前のフレーム"
   }
 }

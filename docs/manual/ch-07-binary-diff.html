@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 7 章 · 二进制与图片 Diff</h1>
-  <p>ForkPlus 用户手册 · 版本 v4.3.1</p>
+  <p>ForkPlus 用户手册 · 版本 v4.3.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -67,6 +67,20 @@
   <figure>
     <img src="screenshots/07-binary-diff/09-image-zoom-reset.png" alt="图片放大后显示还原大小按钮" loading="lazy">
     <figcaption>图 7-5　滚轮放大后，对比视图中间偏下悬浮出现「还原大小 (200%)」按钮，点击回到初始缩放</figcaption>
+  </figure>
+
+  <h2>动图直接播放：GIF / 动态 WebP / APNG</h2>
+  <p>对比的两张图若是<strong>动图</strong>（GIF / 动态 WebP / APNG），ForkPlus 不再只显示第一帧，而是<strong>直接按帧自动播放</strong>，无需逐帧对比。每列图片区域<strong>底部居中</strong>悬浮一条播放控制条，包含：</p>
+  <ul>
+    <li><strong>播放 / 暂停</strong>：打开动图后默认自动播放，点按钮可暂停或继续；</li>
+    <li><strong>上一帧 / 下一帧</strong>：逐帧步进查看（步进时会暂停播放）；</li>
+    <li><strong>播放速度</strong>：0.5× / 1× / 2× 三档；</li>
+    <li><strong>帧序号</strong>：如 <code>1/2</code>，实时显示当前帧与总帧数。</li>
+  </ul>
+  <p>动图会自动<strong>关闭像素差异高亮</strong>（逐帧的像素差异没有意义）；切换到「滑动 / 洋葱皮 / 十六进制」或切换文件时，播放会暂停并释放帧内存，回到并排视图再继续。为控制内存占用，帧数或总像素超过阈值的超大动图会退回只显示第一帧。</p>
+  <figure>
+    <img src="screenshots/07-binary-diff/10-image-animation-playback.png" alt="动图并排播放与播放控制条" loading="lazy">
+    <figcaption>图 7-10　并排视图中的两张动图：每列底部居中悬浮播放控制条（播放/暂停、上一帧/下一帧、帧序号 1/2、速度 1×）</figcaption>
   </figure>
 
   <h2>非图片二进制的简略卡片视图</h2>

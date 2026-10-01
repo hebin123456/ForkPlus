@@ -30,8 +30,27 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private string _statusLabel;
 
+		/// <summary>v4.3.2：该侧动图的解码结果（帧序列）。</summary>
+		[Null]
+		private AnimatedImage _animatedImage;
+
+		/// <summary>v4.3.2：该侧动图的播放控制器。</summary>
+		[Null]
+		private AnimatedImagePlayer _animatedPlayer;
+
+		/// <summary>v4.3.2：该侧动图的播放控制条（懒创建，静态图不创建）。</summary>
+		[Null]
+		private AnimatedImagePlaybackBar _playbackBar;
+
 		[Null]
 		public global::Avalonia.Media.Imaging.Bitmap DiffImageSource { get; set; }
+
+		/// <summary>v4.3.2：该侧动图播放器；非动图为 null。</summary>
+		[Null]
+		public AnimatedImagePlayer AnimatedPlayer => _animatedPlayer;
+
+		/// <summary>v4.3.2：该侧是否为动图。</summary>
+		public bool HasAnimatedImage => _animatedPlayer != null;
 
 		/// <summary>v4.3.1：与其它图片视图共享的缩放/平移状态（由 BinaryDiffUserControl 注入）。</summary>
 		[Null]
@@ -73,6 +92,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		public void SetContent(BinaryContent content, [Null] string statusLabel = null, [Null] Brush statusBrush = null, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource = null)
 		{
+			// v4.3.2：换文件先停掉并释放上一份动图（新内容为动图时 RefreshImage 会重建）。
+			DetachAnimated();
 			_statusLabel = statusLabel;
 			DiffImageSource = diffImageSource;
 			if (statusBrush != null)
@@ -147,6 +168,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			TitleTextBlock.Text = string.IsNullOrEmpty(_statusLabel) ? "" : PreferencesLocalization.Translate(_statusLabel, ForkPlusSettings.Default.UiLanguage);
+			// v4.3.2：动图播放控制条的按钮提示也要随语言切换（代码构建的控件不在逻辑树翻译范围内）。
+			_playbackBar?.ApplyLocalization();
 		}
 
 		public void SetProgress(double? progress)
@@ -188,6 +211,15 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshImage(MemoryStream memoryStream)
 		{
+			// v4.3.2：先尝试按动图解码（GIF / 动态 WebP / APNG）；成功则交给播放器逐帧渲染，
+			// 失败/非动图/超阈值时回退为原来的静态首帧显示。
+			AnimatedImage animated = AnimatedImage.TryDecode(memoryStream);
+			if (animated != null)
+			{
+				AttachAnimated(animated, memoryStream.Length);
+				return;
+			}
+			DetachAnimated();
 			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
 			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
@@ -196,6 +228,60 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			// ImageZoomState.FitScale 已复刻该上限（缩放不超过 1），无需再设尺寸。
 			ImageControl.Source = bitmapSource;
 			RefreshDiffImage();
+		}
+
+		/// <summary>v4.3.2：装配动图——挂播放器到图片控件、显示底部播放控制条并自动播放。</summary>
+		private void AttachAnimated(AnimatedImage animated, long fileSize)
+		{
+			DetachAnimated();
+			_animatedImage = animated;
+			_animatedPlayer = new AnimatedImagePlayer(animated);
+			ImageControl.Player = _animatedPlayer;
+			ImageControl.Source = animated.Frames[0];
+			DescriprionTextBlock.Text = GetImageDescription(animated.Frames[0], fileSize);
+			if (_playbackBar == null)
+			{
+				_playbackBar = new AnimatedImagePlaybackBar();
+			}
+			_playbackBar.Player = _animatedPlayer;
+			PlaybackBarContainer.Content = _playbackBar;
+			PlaybackBarContainer.Show();
+			RefreshDiffImage();
+			_animatedPlayer.Play();
+		}
+
+		/// <summary>v4.3.2：卸载动图——停播、摘掉播放器、隐藏控制条并释放帧内存。</summary>
+		private void DetachAnimated()
+		{
+			if (_playbackBar != null)
+			{
+				_playbackBar.Player = null;
+			}
+			PlaybackBarContainer.Content = null;
+			PlaybackBarContainer.Collapse();
+			ImageControl.Player = null;
+			if (_animatedPlayer != null)
+			{
+				_animatedPlayer.Dispose();
+				_animatedPlayer = null;
+			}
+			if (_animatedImage != null)
+			{
+				_animatedImage.Dispose();
+				_animatedImage = null;
+			}
+		}
+
+		/// <summary>v4.3.2：暂停该侧动图播放（切换到滑动/洋葱皮/Hex 时由宿主调用，避免后台空转）。</summary>
+		public void PauseAnimation()
+		{
+			_animatedPlayer?.Pause();
+		}
+
+		/// <summary>v4.3.2：恢复该侧动图播放（切回并排视图时由宿主调用）。</summary>
+		public void ResumeAnimation()
+		{
+			_animatedPlayer?.Play();
 		}
 
 		private void UpdateHighlightImageDiff()

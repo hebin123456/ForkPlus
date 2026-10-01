@@ -2453,6 +2453,11 @@
     "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.": "Repository Statistics...(저장소 통계)는 언어별로 코드, 주석, 빈 줄 수를 집계하고(200개 이상 언어를 지원하는 tokei 기반) 파이 차트로 시각화합니다. 작업 공간, 브랜치, 태그 간에 ref를 전환해 비교할 수 있습니다.",
     "The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo.": "Reflog는 ForkPlus에서 수행한 모든 작업(커밋, 체크아웃, 리셋 등)을 타임라인 레일로 기록합니다. 툴바에서 연 뒤 항목을 더블클릭하면 그 이전 상태로 안전하게 되돌아갈 수 있으며, 나중에 실행 취소도 가능합니다.",
     "When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click.": "병합이나 리베이스 중 충돌이 발생하면 해당 파일이 커밋 뷰에 나타납니다. 나란히 보기 머저에서 한 줄씩 해결하거나, 컨텍스트 메뉴에서 버전을 선택하거나, AI에게 클릭 한 번으로 모든 충돌을 해결하게 맡길 수도 있습니다.",
-    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "ForkPlus를 나만의 것으로: 라이트, 다크는 물론 Dracula, Monokai, Solarized까지 12가지 기본 테마와 사용자 지정 색상, 8가지 인터페이스 언어, 상단 또는 왼쪽에 배치할 수 있는 탭 바까지 모두 환경설정에서 즉시 바꿀 수 있습니다."
+    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "ForkPlus를 나만의 것으로: 라이트, 다크는 물론 Dracula, Monokai, Solarized까지 12가지 기본 테마와 사용자 지정 색상, 8가지 인터페이스 언어, 상단 또는 왼쪽에 배치할 수 있는 탭 바까지 모두 환경설정에서 즉시 바꿀 수 있습니다.",
+    "Next Frame": "다음 프레임",
+    "Pause": "일시정지",
+    "Play": "재생",
+    "Playback Speed": "재생 속도",
+    "Previous Frame": "이전 프레임"
   }
 }

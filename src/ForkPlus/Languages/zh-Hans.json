@@ -2462,6 +2462,11 @@
     "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.": "Repository Statistics...（仓库统计）按语言统计代码、注释和空行行数——由 tokei 驱动，支持 200+ 种语言——并以饼图直观展示。可在工作区、分支或标签之间切换 ref 进行对比。",
     "The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo.": "Reflog 以时间轨道记录在 ForkPlus 里执行过的每一步操作：提交、检出、重置等。从工具栏打开后，双击任意条目即可跳回当时的仓库状态——之后可撤销，安全无忧。",
     "When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click.": "合并或变基遇到冲突时，相关文件会出现在提交视图。可以在并排合并器中逐行解决，从右键菜单选择版本，或让 AI 一键解决所有冲突。",
-    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "把 ForkPlus 变成你的：12 套内置主题——浅色、深色、Dracula、Monokai、Solarized 等——外加自定义颜色、8 种界面语言，标签栏可放在顶部或左侧。所有选项都在偏好设置里，即时生效。"
+    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "把 ForkPlus 变成你的：12 套内置主题——浅色、深色、Dracula、Monokai、Solarized 等——外加自定义颜色、8 种界面语言，标签栏可放在顶部或左侧。所有选项都在偏好设置里，即时生效。",
+    "Next Frame": "下一帧",
+    "Pause": "暂停",
+    "Play": "播放",
+    "Playback Speed": "播放速度",
+    "Previous Frame": "上一帧"
   }
 }

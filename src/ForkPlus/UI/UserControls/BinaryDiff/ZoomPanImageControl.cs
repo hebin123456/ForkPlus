@@ -40,6 +40,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		private Bitmap _diffSource;
 
+		[Null]
+		private AnimatedImagePlayer _player;
+
 		private bool _highlightImageDiff;
 
 		private bool _dragging;
@@ -65,7 +68,51 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 
 		/// <summary>有图可缩放时才为 true（见 <see cref="IZoomableImage"/>）。</summary>
-		public bool IsZoomable => _source != null;
+		public bool IsZoomable => CurrentBitmap != null;
+
+		/// <summary>v4.3.2：动图播放器。装配后按当前帧渲染，帧切换自动重绘；
+		/// 动图上不叠加像素差异掩码（关闭动图像素差异高亮）。</summary>
+		[Null]
+		public AnimatedImagePlayer Player
+		{
+			get
+			{
+				return _player;
+			}
+			set
+			{
+				if (ReferenceEquals(_player, value))
+				{
+					return;
+				}
+				if (_player != null)
+				{
+					_player.FrameChanged -= OnPlayerFrameChanged;
+				}
+				_player = value;
+				if (_player != null)
+				{
+					_player.FrameChanged += OnPlayerFrameChanged;
+				}
+				InvalidateMeasure();
+				InvalidateVisual();
+			}
+		}
+
+		/// <summary>当前要绘制的位图：动图取当前帧，否则取静态源图。</summary>
+		[Null]
+		private Bitmap CurrentBitmap
+		{
+			get
+			{
+				if (_player != null && _player.Image.FrameCount > 0)
+				{
+					int index = System.Math.Clamp(_player.CurrentFrame, 0, _player.Image.FrameCount - 1);
+					return _player.Image.Frames[index];
+				}
+				return _source;
+			}
+		}
 
 		/// <summary>与其它视图共享的缩放/平移状态（同一实例即同步）。</summary>
 		[Null]
@@ -137,7 +184,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		private Size ImageSize => _source != null ? new Size(_source.PixelSize.Width, _source.PixelSize.Height) : default(Size);
+		private Size ImageSize
+		{
+			get
+			{
+				Bitmap bitmap = CurrentBitmap;
+				return ((bitmap != null) ? new Size(bitmap.PixelSize.Width, bitmap.PixelSize.Height) : default(Size));
+			}
+		}
 
 		/// <summary>首屏期望尺寸 = 图片按贴合比例缩放后的尺寸（等价原 Viewbox 的测量结果）。</summary>
 		protected override Size MeasureOverride(Size availableSize)
@@ -157,13 +211,15 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			// 基类 Control 不自绘 Background：显式铺透明矩形，保证整块区域可命中
 			//（滚轮/拖动在图片外的留白处同样有效，等价 Panel(Background=Transparent)）。
 			context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
-			if (_source == null)
+			Bitmap bitmap = CurrentBitmap;
+			if (bitmap == null)
 			{
 				return;
 			}
 			Rect rect = DstRect();
-			context.DrawImage(_source, rect);
-			if (_highlightImageDiff && _diffSource != null)
+			context.DrawImage(bitmap, rect);
+			// v4.3.2：动图不叠加像素差异掩码（GIF 逐帧差异无意义，直接关闭该侧高亮）。
+			if (_highlightImageDiff && _diffSource != null && _player == null)
 			{
 				context.DrawImage(_diffSource, rect);
 			}
@@ -177,7 +233,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private bool CanPan()
 		{
-			if (_source == null || _zoomState == null)
+			if (CurrentBitmap == null || _zoomState == null)
 			{
 				return false;
 			}
@@ -190,9 +246,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			InvalidateVisual();
 		}
 
+		private void OnPlayerFrameChanged(object sender, System.EventArgs e)
+		{
+			InvalidateVisual();
+		}
+
 		private void OnPointerWheel(object sender, PointerWheelEventArgs e)
 		{
-			if (e.Handled || _source == null || _zoomState == null)
+			if (e.Handled || CurrentBitmap == null || _zoomState == null)
 			{
 				return;
 			}
@@ -229,11 +290,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void OnPointerMoved(object sender, PointerEventArgs e)
 		{
-			if (!_dragging || _source == null || _zoomState == null)
-			{
-				return;
-			}
-			_zoomState.PanTo(Bounds.Size, ImageSize, _dragStartZoom,
+			if (!_dragging || CurrentBitmap == null || _zoomState == null)
+		{
+			return;
+		}
+		_zoomState.PanTo(Bounds.Size, ImageSize, _dragStartZoom,
 				_dragStartCenterX, _dragStartCenterY, _dragStartPointer, e.GetPosition(this));
 			e.Handled = true;
 		}

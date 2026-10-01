@@ -545,6 +545,8 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				}
 			}
 			RefreshViewModes();
+			// v4.3.2：内容装配完再按当前视图决定动图是否播放（并排即播、其它视图暂停）。
+			UpdateAnimationPlayback();
 		}
 
 		public static GitCommandResult<MemoryStream> DecodeImageData(byte[] data)
@@ -614,6 +616,23 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			// v4.3.1：视图模式变化会影响"还原大小"是否该显示（Hex 不可缩放 → 不显示），
 			// 这里统一重算一次（内含 HexRadioButton 判断）。
 			UpdateResetZoomButton();
+			// v4.3.2：动图控制条只在并排视图出现；离开并排时暂停播放，切回时恢复。
+			UpdateAnimationPlayback();
+		}
+
+		/// <summary>v4.3.2：并排视图播放动图，其余视图（Swipe/洋葱皮/Hex）暂停，避免后台空转。</summary>
+		private void UpdateAnimationPlayback()
+		{
+			if (SideBySideRadioButton.IsChecked.GetValueOrDefault())
+			{
+				SrcFileContentUserControl.ResumeAnimation();
+				DstFileContentUserControl.ResumeAnimation();
+			}
+			else
+			{
+				SrcFileContentUserControl.PauseAnimation();
+				DstFileContentUserControl.PauseAnimation();
+			}
 		}
 
 		/// <summary>v3.4.1：懒创建 HexDiffUserControl 并加载原始字节。
@@ -767,6 +786,12 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		private global::Avalonia.Media.Imaging.Bitmap GetDiffImage([Null] ImageData lhsImageData, [Null] ImageData rhsImageData)
 		{
+			// v4.3.2：任一侧是动图时不做像素差异高亮——GIF/WebP/APNG 按帧播放，
+			// 拿首帧算出的差异掩码既无意义又会盖住动画，直接返回 null 关闭高亮。
+			if ((lhsImageData?.IsAnimated ?? false) || (rhsImageData?.IsAnimated ?? false))
+			{
+				return null;
+			}
 			global::Avalonia.Media.Imaging.Bitmap bitmapSource = lhsImageData?.ImageSource;
 			if (bitmapSource != null)
 			{

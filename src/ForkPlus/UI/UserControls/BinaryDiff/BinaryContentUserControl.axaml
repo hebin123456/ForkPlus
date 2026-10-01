@@ -66,6 +66,9 @@
                               <!-- v4.3.1：Viewbox（只能自适应缩放）替换为可缩放/平移的图片控件，
                                    滚轮缩放、放大后拖动平移由控件自身处理；缩放状态与其它视图共享。 -->
                               <fuub:ZoomPanImageControl x:Name="ImageControl" />
+                              <!-- v4.3.2：动图播放控制条（代码构建），悬浮在本列图片区域底部居中；
+                                   仅当该侧是动图时显示，静态图始终隐藏。 -->
+                              <ContentControl x:Name="PlaybackBarContainer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" IsVisible="False" />
                             </Grid.Children>
                           </Grid>
                         </Border.Child>

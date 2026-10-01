@@ -2,6 +2,29 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v4.3.2
+
+> 图片对比视图支持直接播放动图：GIF / 动态 WebP / APNG 在并排视图中按帧自动播放，不再只显示首帧；每列图片区域底部居中悬浮播放控制条，提供播放/暂停、上一帧/下一帧、播放速度（0.5×/1×/2×）与帧序号；动图关闭像素差异高亮，切视图/换文件自动暂停并释放帧内存。应用版本号升至 4.3.2。
+
+### 新增
+
+- **动图直接播放（GIF / 动态 WebP / APNG）**：新增 `AnimatedImage` 用 SkiaSharp 的 `SKCodec` 统一解码三种容器的帧序列（Avalonia 自身的 `Bitmap` 只能解首帧）——按顺序把各帧解码进同一块像素缓冲（GIF 增量帧依赖前一帧）再转成逐帧位图，帧时长做下限归一并保留循环次数；帧数（>120）或总像素（宽 × 高 × 帧数 > 1600 万）超阈值时整体放弃、回退为静态首帧，避免内存爆掉。新增 `AnimatedImagePlayer` 承载每张动图独立的播放状态与当前帧，用 `DispatcherTimer` 按当前帧时长（除以播放速度）驱动帧切换并支持有限循环（播完停在末帧），速度夹取在 0.25×–4×；`ZoomPanImageControl` 接入播放器后按当前帧渲染，并排视图的原静态图路径保持不变。
+- **动图播放控制条**：新增 `AnimatedImagePlaybackBar`（代码构建），悬浮在并排视图各列图片区域底部居中，仅该侧为动图时显示：播放/暂停、上一帧/下一帧、速度下拉（0.5×/1×/2×）与帧序号（如 1/2）。`BinaryContentUserControl` 在装载内容时优先探测动图——是动图则装配播放器与控制条并自动播放，否则走静态图路径；切到滑动/洋葱皮/Hex 视图或换文件时暂停播放并释放帧内存，返回并排视图再恢复。控制条提示文案随 8 种界面语言发布。
+- **动图关闭像素差异高亮**：`ImageData.IsAnimated` 标记动图，`BinaryDiffUserControl` 据此在任一侧为动图时不生成差异掩码（`GetDiffImage` 返回 null），`ZoomPanImageControl` 侧也不再叠加掩码——GIF 逐帧差异无意义。
+
+### 测试
+
+- 新增 `ImageAnimationTests`：`AnimatedImage.TryDecode` 解内联 2 帧 GIF 得帧数/时长/循环（loop=0 无限）与静态 PNG 返回 null；构造器帧时长下限归一与负数循环归零；`AnimatedImagePlayer` 播放/暂停、逐帧步进（含环绕）、有限循环播完停止、速度上下限夹取；`AnimatedImagePlaybackBar` 按钮驱动播放器与帧序号刷新；`BinaryContentUserControl` 装载 GIF 显示控制条并自动播放、换静态图隐藏并摘除播放器；`ImageData.IsAnimated` 供关闭差异高亮。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-4.3.2-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-4.3.2-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-4.3.2-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-4.3.2-macos-arm64.zip` |
+
 ## v4.3.1
 
 > 图片对比视图支持放大查看：并排 / 滑动 / 洋葱皮三种模式可在图片区域滚轮缩放、放大超出可视区域后按住拖动平移；并排左右两栏与各模式共享同一缩放与位置，两张图尺寸不一致时按中心点对齐同步平移；只要缩放不为 100%，对比视图中间偏下就会悬浮出现「还原大小 (N%)」按钮，一键回到贴合视图的初始状态。应用版本号升至 4.3.1。

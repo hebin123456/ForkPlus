@@ -818,6 +818,33 @@ namespace ForkPlus.Tests
 				{
 					TestRepoFactory.Cleanup(bigRepo);
 				}
+
+				// ----- 4) 动图（GIF）直接播放 + 播放控制条 -----
+				string gifRepo = TestRepoFactory.CreateAnimatedImageDiff();
+				try
+				{
+					HeadlessAppBootstrap.Run(delegate
+					{
+						BinaryDiffUserControl gifDiff = OpenCommitViewAndWaitBinaryDiff(gifRepo, "anim.gif", out var window);
+						try
+						{
+							Assert.True(UiClick.WaitFor(delegate
+							{
+								return gifDiff.SrcFileContentUserControl.HasAnimatedImage
+									&& gifDiff.SrcFileContentUserControl.PlaybackBarContainer.IsVisible;
+							}), "动图装配后应在图片区域底部显示播放控制条");
+							ManualScreenshotHelper.Snap(window, "10-image-animation-playback", "07-binary-diff");
+						}
+						finally
+						{
+							E2eMainWindowHarness.CloseRepositoryTab(window, gifRepo);
+						}
+					});
+				}
+				finally
+				{
+					TestRepoFactory.Cleanup(gifRepo);
+				}
 			}
 			finally
 			{
