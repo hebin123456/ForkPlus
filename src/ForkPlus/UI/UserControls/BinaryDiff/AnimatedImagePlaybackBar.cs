@@ -46,13 +46,22 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			_prevFrameButton.Name = "PrevFrameButton";
 			_nextFrameButton = CreateButton(NextGlyph, "Next Frame", NextFrameButton_Click);
 			_nextFrameButton.Name = "NextFrameButton";
+			// 与相邻透明按钮的深色胶囊底一致：透明底 + 白字 + 去边框，
+			// 并垂直居中内容（默认主题下文本偏上）。
 			_speedComboBox = new ComboBox
 			{
 				Name = "SpeedComboBox",
 				Width = 74,
 				Height = 28,
 				MinHeight = 28,
-				Padding = new Thickness(6.0, 0.0, 0.0, 0.0),
+				Padding = new Thickness(8.0, 0.0, 0.0, 0.0),
+				Background = Brushes.Transparent,
+				BorderBrush = Brushes.Transparent,
+				BorderThickness = new Thickness(0.0),
+				Foreground = Brushes.White,
+				FontSize = 12.0,
+				HorizontalContentAlignment = HorizontalAlignment.Left,
+				VerticalContentAlignment = VerticalAlignment.Center,
 				VerticalAlignment = VerticalAlignment.Center,
 				ItemsSource = new string[3] { "0.5\u00d7", "1\u00d7", "2\u00d7" },
 				SelectedIndex = 1
