@@ -143,7 +143,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 											Log.Error(gitCommandResult2.Error.FriendlyDescription);
 										}
 									}
-								_srcImageData = ImageData.Create(result2, isLfs: true, srcLfsContent.IsTracked);
+								_srcImageData = ImageData.Create(result2, isLfs: true, srcLfsContent.IsTracked, srcLfsContent.Path);
 								_hexSrcData = result2; // v3.4.1：存原始字节供 Hex 视图
 								DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 								// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
@@ -203,7 +203,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 											Log.Error(gitCommandResult.Error.FriendlyDescription);
 										}
 									}
-								_dstImageData = ImageData.Create(result, isLfs: true, dstLfsContent.IsTracked);
+								_dstImageData = ImageData.Create(result, isLfs: true, dstLfsContent.IsTracked, dstLfsContent.Path);
 								_hexDstData = result; // v3.4.1：存原始字节供 Hex 视图
 							DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 							// 修复（2026-09-14，高亮像素双侧显示）：LFS 路径同样给左侧补传掩码。
@@ -513,7 +513,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 							Log.Error(gitCommandResult2.Error.FriendlyDescription);
 						}
 					}
-				_srcImageData = ImageData.Create(result, isLfs: true, lfsContent.IsTracked);
+				_srcImageData = ImageData.Create(result, isLfs: true, lfsContent.IsTracked, lfsContent.Path);
 				_hexSrcData = result; // v3.4.1：存原始字节供 Hex 视图
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 				// 修复（2026-09-14，高亮像素双侧显示）：本地 LFS 缓存路径同样给左侧补传掩码。
@@ -538,7 +538,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 							Log.Error(gitCommandResult4.Error.FriendlyDescription);
 						}
 					}
-					_dstImageData = ImageData.Create(result2, isLfs: true, lfsContent2.IsTracked);
+					_dstImageData = ImageData.Create(result2, isLfs: true, lfsContent2.IsTracked, lfsContent2.Path);
 					_hexDstData = result2; // v3.4.1：存原始字节供 Hex 视图
 				DiffImageSource = GetDiffImage(_srcImageData, _dstImageData);
 				DstFileContentUserControl.SetLfsImageData(result2, DiffImageSource, path: lfsContent2.Path);

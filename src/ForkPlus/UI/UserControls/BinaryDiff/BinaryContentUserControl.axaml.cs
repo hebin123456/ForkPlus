@@ -214,21 +214,19 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			// v4.4.0：渲染方式改由查看器注册表判定（动图优先于静态图），不再在本控件里硬编码
 			// 动图探测——新增格式只需往 BinaryViewerRegistry 注册查看器。
-			IBinaryViewer viewer = BinaryViewerRegistry.Resolve(new BinaryViewerRequest(path, memoryStream));
-			if (viewer.Kind == BinaryViewerKind.AnimatedImage)
+			// v4.5.0：被插件认领的格式（BinaryViewerKind.Plugin）也在这里解析——解码/渲染统一
+			// 收敛到 BinaryContentRenderer，本控件不再直接调用 CreateBitmapSource。
+			AnimatedImage animated;
+			string statusLabel;
+			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryContentRenderer.CreateAnimatedOrStatic(path, memoryStream, out animated, out statusLabel);
+			if (animated != null)
 			{
-				// 帧数/总像素超阈值或解码失败的动图 TryDecode 返回 null，退回静态首帧显示。
-				AnimatedImage animated = AnimatedImage.TryDecode(memoryStream);
-				if (animated != null)
-				{
-					AttachAnimated(animated, memoryStream.Length);
-					return;
-				}
+				AttachAnimated(animated, memoryStream.Length, statusLabel);
+				return;
 			}
 			DetachAnimated();
-			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
-			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
+			DescriprionTextBlock.Text = AppendStatusLabel(GetImageDescription(bitmapSource, length), statusLabel);
 			// v4.3.1：原 Viewbox 方案在此设 Image.Height / DiffImage.Height / ImageViewBox.MaxHeight
 			// （像素高，用于"不放大超过原始尺寸"）。改由 ZoomPanImageControl 承载后，
 			// ImageZoomState.FitScale 已复刻该上限（缩放不超过 1），无需再设尺寸。
@@ -236,15 +234,25 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			RefreshDiffImage();
 		}
 
+		/// <summary>v4.5.0：把插件/解码方给出的一行说明拼到尺寸描述后（无说明则原样返回）。</summary>
+		private static string AppendStatusLabel(string description, [Null] string statusLabel)
+		{
+			if (string.IsNullOrEmpty(statusLabel))
+			{
+				return description;
+			}
+			return string.IsNullOrEmpty(description) ? statusLabel : description + " · " + statusLabel;
+		}
+
 		/// <summary>v4.3.2：装配动图——挂播放器到图片控件、显示底部播放控制条并自动播放。</summary>
-		private void AttachAnimated(AnimatedImage animated, long fileSize)
+		private void AttachAnimated(AnimatedImage animated, long fileSize, [Null] string statusLabel = null)
 		{
 			DetachAnimated();
 			_animatedImage = animated;
 			_animatedPlayer = new AnimatedImagePlayer(animated);
 			ImageControl.Player = _animatedPlayer;
 			ImageControl.Source = animated.Frames[0];
-			DescriprionTextBlock.Text = GetImageDescription(animated.Frames[0], fileSize);
+			DescriprionTextBlock.Text = AppendStatusLabel(GetImageDescription(animated.Frames[0], fileSize), statusLabel);
 			if (_playbackBar == null)
 			{
 				_playbackBar = new AnimatedImagePlaybackBar();

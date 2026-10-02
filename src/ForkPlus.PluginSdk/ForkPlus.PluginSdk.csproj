@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 插件契约层（MIT）：清单模型 + 线协议 + 发现 + 宿主进程会话。
+         刻意不依赖 Avalonia / 不依赖主工程——第三方插件仓（可含 GPL 代码）直接
+         引用本工程或它的源码即可实现宿主协议，从而与主工程进程彻底隔离。
+         与 AutoUpdater 同属"子进程/契约"工程，不在 SourceFileCoverageManifest /
+         ClassCoverageManifest 的扫描根（src/ForkPlus、AskPass、RI）之内。-->
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>ForkPlus.PluginSdk</AssemblyName>
+    <RootNamespace>ForkPlus.Plugins</RootNamespace>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+</Project>

@@ -18,7 +18,13 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		StaticImage,
 
 		/// <summary>动图（GIF / 动态 WebP / APNG）：逐帧播放 + 播放控制条。</summary>
-		AnimatedImage
+		AnimatedImage,
+
+		/// <summary>
+		/// v4.5.0：由外部插件提供的自定义对比视图。宿主把该侧的字节转交插件进程，
+		/// 拿回 PNG 帧后按位图显示（缩放/平移等对比交互仍由宿主统一提供）。
+		/// </summary>
+		Plugin
 	}
 
 	/// <summary>v4.4.0：一次查看器判定的输入。</summary>

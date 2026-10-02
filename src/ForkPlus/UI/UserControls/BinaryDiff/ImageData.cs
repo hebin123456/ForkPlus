@@ -27,14 +27,17 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			IsAnimated = isAnimated;
 		}
 
-		public static ImageData Create(MemoryStream memoryStream, bool isLfs, bool isTracked)
+		/// <param name="path">v4.5.0：仓库内路径；给出后，插件认领的格式也能得到位图，
+		/// 使 Swipe / 洋葱皮 / 像素高亮对插件视图同样可用。未知时可为 null（仅内置解码）。</param>
+		public static ImageData Create(MemoryStream memoryStream, bool isLfs, bool isTracked, [Null] string path = null)
 		{
-			return new ImageData(BinaryDiffUserControl.CreateBitmapSource(memoryStream), memoryStream.Length, isLfs, isTracked, AnimatedImage.IsAnimatedStream(memoryStream));
+			// v4.5.0：解码改经 BinaryContentRenderer——内置走原路径，插件格式转交插件进程。
+			return new ImageData(BinaryContentRenderer.CreateStatic(path, memoryStream, out _), memoryStream.Length, isLfs, isTracked, AnimatedImage.IsAnimatedStream(memoryStream));
 		}
 
 		public static ImageData Create(ImageContent imageContent)
 		{
-			return new ImageData(BinaryDiffUserControl.CreateBitmapSource(imageContent.Data), imageContent.Size.GetValueOrDefault(), isLfs: false, imageContent.IsTracked, AnimatedImage.IsAnimatedStream(imageContent.Data));
+			return new ImageData(BinaryContentRenderer.CreateStatic(imageContent.Path, imageContent.Data, out _), imageContent.Size.GetValueOrDefault(), isLfs: false, imageContent.IsTracked, AnimatedImage.IsAnimatedStream(imageContent.Data));
 		}
 	}
 }

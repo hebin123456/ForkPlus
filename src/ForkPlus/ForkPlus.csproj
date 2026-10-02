@@ -124,6 +124,10 @@
     <!-- AutoUpdater（自动更新子进程，v4.1.0 起）：与 AskPass/RI 同模式——ReferenceOutputAssembly=false
          不引用程序集，只为构建顺序（CollectHelperOutputs 从其 bin 拷 exe/dll/runtimeconfig）。 -->
     <ProjectReference Include="..\ForkPlus.AutoUpdater\ForkPlus.AutoUpdater.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <!-- 插件 SDK（v4.5.0）：宿主与插件进程之间的静态契约（清单/协议/分帧/会话）。
+         主程序只引用 SDK 的契约类型，绝不加载任何插件程序集——插件（可含 GPL 依赖）
+         以独立进程运行，通过 stdin/stdout 的 JSON 报文与宿主通信，实现许可证与稳定性隔离。 -->
+    <ProjectReference Include="..\ForkPlus.PluginSdk\ForkPlus.PluginSdk.csproj" />
   </ItemGroup>
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
        Biturbo 仓库最新 release 拉取。Biturbo v1.1.3 起发布四平台 asset：

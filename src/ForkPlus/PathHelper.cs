@@ -87,13 +87,48 @@ namespace ForkPlus
 			return Path.Combine(path1, path2, path3, path4);
 		}
 
+		/// <summary>
+		/// v4.5.0：外部（插件）文件类型认领钩子。内置图片扩展名之外，再问一次注册进来的判定
+		/// （当前由插件子系统注入：插件清单声明的扩展名）。
+		///
+		/// 为什么挂在 IsImagePath 上：宿主对"图片"的处理恰好就是要给插件的东西——按字节加载
+		/// 两侧内容、按可解码内容渲染。让插件格式在路由阶段被判定为"图片"，插件视图即可复用
+		/// 现成的字节加载 + 渲染 + 并排对比链路，而不必在 Git 层/UI 层逐处新增类型分支。
+		/// 钩子为 null（插件未启用/已退出）时行为与改造前完全一致。
+		/// </summary>
+		private static volatile Func<string, bool> _externalMediaPathClaim;
+
+		/// <summary>注入/清除外部文件类型认领（传 null 表示清除）。由插件子系统在启停时调用。</summary>
+		public static void SetExternalMediaPathClaim([Null] Func<string, bool> claim)
+		{
+			_externalMediaPathClaim = claim;
+		}
+
 		public static bool IsImagePath(string path)
 		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return false;
+			}
 			if (path.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".gif", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ico", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".tga", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".webp", StringComparison.OrdinalIgnoreCase))
 			{
 				return true;
 			}
-			return false;
+			Func<string, bool> claim = _externalMediaPathClaim;
+			if (claim == null)
+			{
+				return false;
+			}
+			try
+			{
+				return claim(path);
+			}
+			catch (Exception ex)
+			{
+				// 认领判定来自外部，失败绝不能影响宿主对文件的正常处理。
+				Log.Warn("External media path claim failed for '" + path + "'", ex);
+				return false;
+			}
 		}
 
 		public static string RelativePathOrFileName(string parent, string absolutePath)

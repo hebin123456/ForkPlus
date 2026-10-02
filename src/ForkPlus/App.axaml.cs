@@ -24,6 +24,7 @@ using ForkPlus.Accounts;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.IO.Ipc;
+using ForkPlus.Plugins;
 using ForkPlus.Services;
 using ForkPlus.Services.Wpf;
 using ForkPlus.Settings;
@@ -1274,6 +1275,7 @@ namespace ForkPlus
 			InitializeTheme();
 			RefreshWindowBorderBrush();
 			SubscribeToUserPreferences();
+			InitializePlugins();
 			if (!Environment.Is64BitOperatingSystem)
 			{
 				new ForkPlus.UI.Dialogs.MessageBoxWindow("Unsupported Platform", "Currently Fork doesn't support 32-bit Windows", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
@@ -1664,9 +1666,34 @@ namespace ForkPlus
 		{
 			// v4.0.6：先停看门狗（退出流程自身可能触发"无心跳"，不应在关机时写冻结报告）。
 			UiFreezeWatchdog.Stop();
+			// v4.5.0：释放插件进程（礼貌 shutdown + 兜底杀进程），并撤掉文件类型认领钩子。
+			try
+			{
+				PluginManager.Instance.Shutdown();
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to shut down the plugin subsystem", ex);
+			}
 			ForkPlusSettings.Default.Save();
 			_askPassIpcServer.Dispose();
 			_defaultIpcServer.Dispose();
+		}
+
+		/// <summary>
+		/// v4.5.0：初始化插件子系统——扫描插件目录、登记插件声明的视图、接上文件类型认领钩子。
+		/// 只读清单不起进程；任何失败都只记日志，绝不阻断启动（没有插件时与改造前完全一致）。
+		/// </summary>
+		private static void InitializePlugins()
+		{
+			try
+			{
+				PluginManager.Instance.Initialize(PluginManager.ResolveDefaultPluginsRoot(), AppName, Version);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("Failed to initialize the plugin subsystem", ex);
+			}
 		}
 
 		private void DoShutdown()

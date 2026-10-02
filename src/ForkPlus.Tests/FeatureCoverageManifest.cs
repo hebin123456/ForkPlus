@@ -70,7 +70,8 @@ namespace ForkPlus.Tests
 			new FeatureCoverageEntry("repository.undo-redo", "Repository", "UNIT-SOURCE-COVERAGE-001"),
 			new FeatureCoverageEntry("ai.commit-composer", "AI", "UNIT-SOURCE-COVERAGE-001"),
 			new FeatureCoverageEntry("diff.hex-viewer", "Diff", "UNIT-SOURCE-COVERAGE-001"),
-			new FeatureCoverageEntry("app.theme-solid-colors", "Application", "UNIT-LOCALIZATION-001")
+			new FeatureCoverageEntry("app.theme-solid-colors", "Application", "UNIT-LOCALIZATION-001"),
+			new FeatureCoverageEntry("plugins.view-registration", "Plugins", "UNIT-PLUGIN-001", "UNIT-BINARY-VIEWER-001")
 		};
 	}
 }
