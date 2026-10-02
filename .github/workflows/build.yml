@@ -12,7 +12,10 @@
 #       （hebin123456/tokei latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压，
 #       linux-arm64 用 tokei-aarch64-unknown-linux-gnu.tar.gz）+
 #       OxyPlot.Avalonia 图表库 nupkg（hebin123456/oxyplot-avalonia fork latest release，
-#       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）。
+#       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）+
+#       对比视图插件（hebin123456/ForkPlus-Plugins latest release 的 tar.gz，解压到
+#       publish/<rid>/plugins/<插件名>/；插件是跨平台纯托管程序集，一份资产四平台通用。
+#       插件独立成仓，故其内部可自由使用与主程序不同许可证的依赖，靠进程边界隔离）。
 #       linux-x64 自包含实测约 125M。
 #
 # 发布链：build（四平台矩阵）+ test（ubuntu 五分片并行矩阵）全绿 → release job 下载
@@ -234,6 +237,44 @@ jobs:
               -o "publish/${{ matrix.rid }}" --nologo
           done
 
+      # 插件不再由本仓构建，改从 hebin123456/ForkPlus-Plugins 的 release 取：
+      # 插件独立成仓后，其内部可使用与主程序不同许可证的依赖（进程边界隔离），
+      # 主仓也就不必为了插件把那些依赖拉进自己的构建。
+      # 插件是跨平台纯托管程序集（宿主以 dotnet <dll> 拉起，见 PluginManifest /
+      # PluginSession 的 .dll 分支），故一份资产四平台通用、无 RID 分支。
+      # 解压落到 publish/<rid>/plugins/<插件名>/ —— 宿主启动时扫描
+      # AppContext.BaseDirectory/plugins/（PluginManager.ResolveDefaultPluginsRoot）。
+      # 资产名不带版本号，用 latest/download 稳定取用，与 biturbo/tokei/oxyplot 同模式。
+      - name: Download plugins
+        shell: bash
+        run: |
+          set -e
+          base="https://github.com/hebin123456/ForkPlus-Plugins/releases/latest/download"
+          dest="publish/${{ matrix.rid }}/plugins"
+          mkdir -p "$dest"
+          for name in ForkPlus.Plugin.ImageCompare ForkPlus.Plugin.BinaryPreview; do
+            asset="$name.tar.gz"
+            tmp="third_party/plugin-download.tar.gz"
+            echo "Downloading $asset ..."
+            ok=0
+            for i in 1 2 3 4 5; do
+              if curl -fsSL --retry 3 "$base/$asset" -o "$tmp"; then ok=1; break; fi
+              echo "attempt $i failed, retrying in $((i*5))s..."
+              sleep $((i*5))
+            done
+            [ "$ok" = "1" ] || { echo "FAILED to download $asset after 5 attempts"; exit 1; }
+            # 非空且 >10KB 校验（插件包约数百 KB；拦 0 字节/截断残留）
+            size=$(wc -c < "$tmp")
+            [ "$size" -gt 10000 ] || { echo "downloaded $asset too small: $size bytes"; exit 1; }
+            mkdir -p "$dest/$name"
+            tar -xzf "$tmp" -C "$dest/$name" || { echo "FAILED to extract $asset"; exit 1; }
+            rm -f "$tmp"
+            # 清单必须与宿主 dll 同目录，宿主据此识别插件；少一份等于该插件静默失效
+            [ -f "$dest/$name/plugin.json" ] || { echo "MISSING plugin.json for $name"; exit 1; }
+            [ -f "$dest/$name/$name.dll" ] || { echo "MISSING $name.dll for $name"; exit 1; }
+            ls -la "$dest/$name"
+          done
+
       - name: Verify critical outputs
         shell: bash
         run: |
@@ -247,6 +288,11 @@ jobs:
                    "ForkPlus.AutoUpdater${ext}" ForkPlus.AutoUpdater.dll ForkPlus.AutoUpdater.runtimeconfig.json ForkPlus.AutoUpdater.deps.json \
                    Docs/RELEASE_NOTE.md OxyPlot.Avalonia.dll; do
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
+          done
+          # 插件随包分发（来自插件仓 release）；缺了等于用户装完没有任何自定义对比视图
+          for name in ForkPlus.Plugin.ImageCompare ForkPlus.Plugin.BinaryPreview; do
+            [ -f "plugins/$name/plugin.json" ] || { echo "MISSING: plugins/$name/plugin.json"; missing=1; }
+            [ -f "plugins/$name/$name.dll" ] || { echo "MISSING: plugins/$name/$name.dll"; missing=1; }
           done
           case "${{ matrix.name }}" in
             windows-x64) native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
