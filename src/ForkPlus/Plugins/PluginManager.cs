@@ -59,6 +59,12 @@ namespace ForkPlus.Plugins
 
 		private readonly List<PluginViewerHandle> _viewers = new List<PluginViewerHandle>();
 
+		/// <summary>只认具体扩展名（如 ".png"）的视图，已按优先级降序。</summary>
+		private readonly List<PluginViewerHandle> _explicitViewers = new List<PluginViewerHandle>();
+
+		/// <summary>声明了通配 "*" 的视图（任何文件都愿意看），已按优先级降序。</summary>
+		private readonly List<PluginViewerHandle> _wildcardViewers = new List<PluginViewerHandle>();
+
 		private readonly Dictionary<string, PluginSession> _sessions = new Dictionary<string, PluginSession>(StringComparer.Ordinal);
 
 		private bool _initialized;
@@ -173,18 +179,53 @@ namespace ForkPlus.Plugins
 					handles.Add(new PluginViewerHandle(discovered.Manifest, viewer));
 				}
 			}
-			// 优先级降序；OrderByDescending 稳定排序，同优先级保持扫描顺序，便于复现。
+			// 优先级降序；OrderByDescending 稳定排序，同优先级保持扫描顺序（目录名序，见
+			// PluginDiscovery.Discover 的排序），故同优先级竞争的结果可复现。
 			handles = handles.OrderByDescending((PluginViewerHandle handle) => handle.Viewer.Priority).ToList();
+
+			// 具体扩展名与通配分成两组：查询时显式永远先于通配兜底，于是"二进制兜底"插件
+			// 不会从图片插件手里抢走 .png——两者都"命中"，但显式声明更具体、更该赢。
+			// 同一声明里既有具体后缀又有 "*" 的，两组都进（由查询顺序保证显式优先）。
+			List<PluginViewerHandle> explicitViewers = new List<PluginViewerHandle>();
+			List<PluginViewerHandle> wildcardViewers = new List<PluginViewerHandle>();
+			foreach (PluginViewerHandle handle in handles)
+			{
+				bool hasExplicit = false;
+				bool hasWildcard = false;
+				foreach (string extension in handle.Viewer.ExtensionsOrEmpty)
+				{
+					if (string.Equals(extension, PluginViewerDescriptor.WildcardExtension, StringComparison.Ordinal))
+					{
+						hasWildcard = true;
+					}
+					else
+					{
+						hasExplicit = true;
+					}
+				}
+				if (hasExplicit)
+				{
+					explicitViewers.Add(handle);
+				}
+				if (hasWildcard)
+				{
+					wildcardViewers.Add(handle);
+				}
+			}
 
 			lock (_sync)
 			{
 				_viewers.Clear();
 				_viewers.AddRange(handles);
+				_explicitViewers.Clear();
+				_explicitViewers.AddRange(explicitViewers);
+				_wildcardViewers.Clear();
+				_wildcardViewers.AddRange(wildcardViewers);
 			}
 
 			// 桥接查看器（让宿主按扩展名把格式路由到插件）+ 文件类型认领钩子
 			// （让插件格式走与图片相同的"加载字节"路径）。两者都只在初始化后生效。
-			BinaryViewerRegistry.Register(new PluginBinaryViewer());
+			BinaryViewerRegistry.Register(new PluginBinaryViewer(this));
 			PathHelper.SetExternalMediaPathClaim(ClaimsPath);
 
 			if (handles.Count > 0)
@@ -193,8 +234,28 @@ namespace ForkPlus.Plugins
 			}
 		}
 
-		/// <summary>返回认领该路径的视图（扩展名预筛 + 优先级最高者）；无人认领返回 null。</summary>
+		/// <summary>
+		/// 返回按<b>具体扩展名</b>认领该路径的视图（优先级最高者）；无人认领返回 null。
+		/// 刻意不认通配 "*"：本方法的答案会被 PathHelper.IsImagePath 用来决定"该文件是否
+		/// 按图片/字节内容处理"，通配若在这里算数，每个文本文件都会被判成"图片"，并让
+		/// GetWorkingDirectoryFileChangesGitCommand 里"跳过超大未跟踪文件"的性能闸门失效。
+		/// </summary>
 		public PluginViewerHandle FindViewer(string path)
+		{
+			return FindIn(_explicitViewers, path, allowWildcard: false);
+		}
+
+		/// <summary>
+		/// 渲染用解析：先找具体扩展名命中的，再退到通配 "*" 兜底。宿主只在"已拿到字节、
+		/// 且已确认该文件是二进制"的分支里调用，故这里允许通配扩张。
+		/// "显式优先"保证通配插件不会抢走图片插件已声明的格式（.png 归图片插件，不是二进制兜底）。
+		/// </summary>
+		public PluginViewerHandle FindRenderViewer(string path)
+		{
+			return FindIn(_explicitViewers, path, allowWildcard: false) ?? FindIn(_wildcardViewers, path, allowWildcard: true);
+		}
+
+		private PluginViewerHandle FindIn(List<PluginViewerHandle> viewers, string path, bool allowWildcard)
 		{
 			if (string.IsNullOrEmpty(path))
 			{
@@ -206,21 +267,27 @@ namespace ForkPlus.Plugins
 				{
 					return null;
 				}
-				for (int i = 0; i < _viewers.Count; i++)
+				for (int i = 0; i < viewers.Count; i++)
 				{
-					if (_viewers[i].Viewer.MatchesExtension(path))
+					if (viewers[i].Viewer.MatchesPath(path, allowWildcard))
 					{
-						return _viewers[i];
+						return viewers[i];
 					}
 				}
 			}
 			return null;
 		}
 
-		/// <summary>该路径是否由任一插件声明（供 PathHelper 的文件类型认领钩子使用）。</summary>
+		/// <summary>该路径是否由某个插件按具体扩展名声明（供 PathHelper 的文件类型认领钩子使用）。</summary>
 		public bool ClaimsPath(string path)
 		{
 			return FindViewer(path) != null;
+		}
+
+		/// <summary>该路径是否由某个插件视图接管渲染（含通配 "*" 兜底）。</summary>
+		public bool ClaimsRenderablePath(string path)
+		{
+			return FindRenderViewer(path) != null;
 		}
 
 		/// <summary>
@@ -263,6 +330,8 @@ namespace ForkPlus.Plugins
 				sessions = _sessions.Values.ToArray();
 				_sessions.Clear();
 				_viewers.Clear();
+				_explicitViewers.Clear();
+				_wildcardViewers.Clear();
 			}
 			foreach (PluginSession session in sessions)
 			{

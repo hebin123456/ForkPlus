@@ -11,6 +11,7 @@ using ForkPlus.Biturbo;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
+using ForkPlus.Plugins;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.Dialogs;
@@ -362,6 +363,18 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 			else if (diffContent is UnknownBinaryDiffContent unknownBinaryDiffContent)
 			{
+				// v4.5.0：非图片二进制若被插件的通配视图（extensions 里的 "*"）认领，改走
+				// "内容渲染"路径——与图片完全同一条链（BinaryContentUserControl → 查看器注册表
+				// → 插件进程 → PNG 帧），底部的 Hex 切换也照旧可用。
+				// 仅在字节已预载（两侧均 ≤ MaxHexDiffSize 才有 hexContent）时接管：插件拿不到
+				// 字节就渲不出东西，此时维持原有的文件卡片视图更诚实，也避免把超大文件读进内存。
+				if ((_hexSrcData != null || _hexDstData != null) && PluginManager.Instance.ClaimsRenderablePath(changedFile.Path))
+				{
+					ImageContent srcPluginContent = ((_hexSrcData == null) ? null : new ImageContent(changedFile.OldPath ?? changedFile.Path, changedFile.Tracked, _hexSrcData));
+					ImageContent dstPluginContent = ((_hexDstData == null) ? null : new ImageContent(changedFile.Path, changedFile.Tracked, _hexDstData));
+					UpdateContent(repositoryUserControl.GitModule, srcPluginContent, dstPluginContent, showTitle);
+					return;
+				}
 				BinaryContent srcContent2 = null;
 				long? srcSize = unknownBinaryDiffContent.SrcSize;
 				if (srcSize.HasValue)

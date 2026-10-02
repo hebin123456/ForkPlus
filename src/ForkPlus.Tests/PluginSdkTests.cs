@@ -56,6 +56,20 @@ namespace ForkPlus.Tests
 }";
 		}
 
+		private static string WildcardManifestJson()
+		{
+			return @"{
+  ""id"": ""com.example.binary"",
+  ""name"": ""Binary"",
+  ""version"": ""1.0.0"",
+  ""apiVersion"": " + PluginProtocol.Version + @",
+  ""host"": { ""executable"": ""Binary.dll"" },
+  ""viewers"": [
+    { ""id"": ""binary"", ""displayName"": ""Binary View"", ""priority"": 100, ""extensions"": [""*""] }
+  ]
+}";
+		}
+
 		private string WritePlugin(string directoryName, string manifestJson)
 		{
 			string directory = Path.Combine(_tempRoot, directoryName);
@@ -129,6 +143,42 @@ namespace ForkPlus.Tests
 			Assert.False(viewer.MatchesExtension("a.other"));
 			Assert.False(viewer.MatchesExtension("noextension"));
 			Assert.False(viewer.MatchesExtension(null));
+		}
+
+		[Fact]
+		public void MatchesPath_WildcardClaimsAnythingOnlyWhenAllowed()
+		{
+			// 通配 "*" 是"二进制兜底"视图：只在宿主已确认该文件是二进制、且允许兜底时才命中。
+			PluginManifest manifest = PluginManifest.Parse(WildcardManifestJson(), _tempRoot, out string error);
+			Assert.Null(error);
+			PluginViewerDescriptor viewer = manifest.ViewersOrEmpty[0];
+
+			Assert.True(viewer.IsWildcard);
+			// 允许兜底：任何路径都命中，无扩展名的文件（Makefile）也覆盖。
+			Assert.True(viewer.MatchesPath("a.dat", allowWildcard: true));
+			Assert.True(viewer.MatchesPath("dir/Makefile", allowWildcard: true));
+			// 不允许兜底（PathHelper.IsImagePath 走的就是这条路）：通配必须完全不生效——
+			// 否则每个文本文件都会被判成"图片"，文本/二进制 diff 的分流会崩，
+			// "跳过加载超大未跟踪文件"的性能闸门也会跟着失效。
+			Assert.False(viewer.MatchesPath("a.dat", allowWildcard: false));
+			Assert.False(viewer.MatchesExtension("a.dat"));
+			Assert.False(viewer.MatchesExtension("dir/Makefile"));
+		}
+
+		[Theory]
+		[InlineData(@"""extensions"": [""png""]")] // 漏了点：会静默永不命中，故装载时就拒
+		[InlineData(@"""extensions"": [""*"", ""png""]")]
+		[InlineData(@"""extensions"": []")]
+		[InlineData(@"""extensions"": [""""]")]
+		public void Parse_InvalidExtensionEntries_AreRejectedAtLoad(string extensionsFragment)
+		{
+			string json = @"{ ""id"": ""a"", ""apiVersion"": " + PluginProtocol.Version
+				+ @", ""host"": { ""executable"": ""a.dll"" }, ""viewers"": [{ ""id"": ""v"", " + extensionsFragment + @" }] }";
+
+			PluginManifest manifest = PluginManifest.Parse(json, _tempRoot, out string error);
+
+			Assert.Null(manifest);
+			Assert.False(string.IsNullOrWhiteSpace(error));
 		}
 
 		// ---- 目录发现 ----

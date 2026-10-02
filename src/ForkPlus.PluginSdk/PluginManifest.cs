@@ -77,6 +77,21 @@ namespace ForkPlus.Plugins
 				{
 					return "plugin.json has a viewer entry without 'id'.";
 				}
+				if (viewer.ExtensionsOrEmpty.Count == 0)
+				{
+					return $"plugin.json viewer '{viewer.Id}' declares no extensions (use \"{PluginViewerDescriptor.WildcardExtension}\" to claim any file).";
+				}
+				foreach (string extension in viewer.ExtensionsOrEmpty)
+				{
+					// 只接受 ".png" 这类带点后缀或 "*"：写到 "png"（漏点）会静默永不命中，
+					// 这类拼写错误在插件侧很难自查，故在装载时就拒绝。
+					if (string.IsNullOrEmpty(extension)
+						|| (!string.Equals(extension, PluginViewerDescriptor.WildcardExtension, StringComparison.Ordinal)
+							&& !extension.StartsWith(".", StringComparison.Ordinal)))
+					{
+						return $"plugin.json viewer '{viewer.Id}' has an invalid extension '{extension}' (expected \".png\" style, or \"{PluginViewerDescriptor.WildcardExtension}\").";
+					}
+				}
 			}
 			return null;
 		}
@@ -150,6 +165,9 @@ namespace ForkPlus.Plugins
 	/// </summary>
 	public sealed class PluginViewerDescriptor
 	{
+		/// <summary>通配扩展名：声明它表示"愿意处理任何文件"，用作二进制兜底视图。</summary>
+		public const string WildcardExtension = "*";
+
 		/// <summary>视图 id（在插件内唯一）；宿主用它拼出全局注册 id。</summary>
 		[JsonProperty("id")]
 		public string Id { get; set; }
@@ -162,32 +180,65 @@ namespace ForkPlus.Plugins
 		[JsonProperty("priority")]
 		public int Priority { get; set; }
 
-		/// <summary>声明感兴趣的扩展名（小写，含点）。命中的文件才会询问该插件。</summary>
+		/// <summary>
+		/// 声明感兴趣的扩展名（小写，含点，如 ".png"）；或 <see cref="WildcardExtension"/> 表示通配。
+		/// 两者语义差别见 <see cref="MatchesPath"/>。
+		/// </summary>
 		[JsonProperty("extensions")]
 		public List<string> Extensions { get; set; }
 
 		public List<string> ExtensionsOrEmpty => Extensions ?? new List<string>();
 
-		/// <summary>该视图是否认领指定路径（仅按扩展名做廉价预筛，最终仍由插件 CanHandle 决定）。</summary>
-		public bool MatchesExtension(string path)
+		/// <summary>是否声明了通配 "*"（"任何文件都愿意看"，供二进制兜底视图使用）。</summary>
+		public bool IsWildcard
+		{
+			get
+			{
+				foreach (string candidate in ExtensionsOrEmpty)
+				{
+					if (string.Equals(candidate, WildcardExtension, StringComparison.Ordinal))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// 该视图是否认领指定路径（仅按扩展名做廉价预筛，最终仍由插件 CanHandle 决定）。
+		///
+		/// <paramref name="allowWildcard"/> 的区别很关键：为 false 时只认具体扩展名——宿主用它回答
+		/// "该文件是否按图片/字节内容处理"（PathHelper.IsImagePath）。通配视图若在这里也算数，
+		/// 就会把每个文本文件都判成"图片"，从而改变文本/二进制 diff 的分流，并让
+		/// "跳过加载超大未跟踪文件"的性能闸门失效。为 true 时再退一步接受 "*" 兜底，
+		/// 宿主只在已确认是二进制的分支里这样问。
+		/// </summary>
+		public bool MatchesPath(string path, bool allowWildcard)
 		{
 			if (string.IsNullOrEmpty(path))
 			{
 				return false;
 			}
 			string extension = Path.GetExtension(path);
-			if (string.IsNullOrEmpty(extension))
+			if (!string.IsNullOrEmpty(extension))
 			{
-				return false;
-			}
-			foreach (string candidate in ExtensionsOrEmpty)
-			{
-				if (string.Equals(candidate, extension, StringComparison.OrdinalIgnoreCase))
+				foreach (string candidate in ExtensionsOrEmpty)
 				{
-					return true;
+					if (string.Equals(candidate, extension, StringComparison.OrdinalIgnoreCase))
+					{
+						return true;
+					}
 				}
 			}
-			return false;
+			// 通配兜底：无扩展名的文件（Makefile / LICENSE）也应由 "*" 覆盖。
+			return allowWildcard && IsWildcard;
+		}
+
+		/// <summary>只按具体扩展名认领（不含通配兜底）。</summary>
+		public bool MatchesExtension(string path)
+		{
+			return MatchesPath(path, allowWildcard: false);
 		}
 	}
 }

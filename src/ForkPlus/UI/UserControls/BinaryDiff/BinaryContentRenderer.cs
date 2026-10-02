@@ -30,7 +30,15 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 			if (IsPluginPath(path, data))
 			{
-				return RenderPlugin(path, data, onlyFirstFrame: true, out _, out statusLabel);
+				Bitmap pluginBitmap = RenderPlugin(path, data, onlyFirstFrame: true, out _, out statusLabel);
+				if (pluginBitmap != null)
+				{
+					return pluginBitmap;
+				}
+				// v4.5.0：插件认领了却在渲染阶段失败（解码不了 / 进程超时 / 返回坏帧）时，
+				// 不能把这一侧留白——落回内置静态解码，宿主兜底才算真的兜住。
+				// （插件对此格式本就更强时会返回内容，走不到这里；走得到说明内置也解不出，
+				// 结果与修复前一致。）
 			}
 			return BinaryDiffUserControl.CreateBitmapSource(data);
 		}
@@ -51,7 +59,20 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			IBinaryViewer viewer = BinaryViewerRegistry.Resolve(new BinaryViewerRequest(path, data));
 			if (viewer.Kind == BinaryViewerKind.Plugin)
 			{
-				return RenderPlugin(path, data, onlyFirstFrame: false, out animated, out statusLabel);
+				Bitmap pluginBitmap = RenderPlugin(path, data, onlyFirstFrame: false, out animated, out statusLabel);
+				if (pluginBitmap != null)
+				{
+					return pluginBitmap;
+				}
+				// v4.5.0：插件认领了但渲染失败（解不出 / 超时 / 坏帧）——落回内置解码兜底，
+				// 而不是把这一侧留白。内置动图优先于静态图，故这里也先试动图。
+				AnimatedImage pluginFallback = AnimatedImage.TryDecode(data);
+				if (pluginFallback != null)
+				{
+					animated = pluginFallback;
+					return pluginFallback.Frames[0];
+				}
+				return BinaryDiffUserControl.CreateBitmapSource(data);
 			}
 			if (viewer.Kind == BinaryViewerKind.AnimatedImage)
 			{
@@ -75,7 +96,9 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		{
 			animated = null;
 			statusLabel = null;
-			PluginViewerHandle handle = PluginManager.Instance.FindViewer(path);
+			// 渲染用解析（显式扩展名优先，再退通配兜底）——与 PluginBinaryViewer 的判定同源，
+			// 否则会出现"注册表判给了插件，这里却找不到视图"的空渲染。
+			PluginViewerHandle handle = PluginManager.Instance.FindRenderViewer(path);
 			if (handle == null)
 			{
 				return null;
