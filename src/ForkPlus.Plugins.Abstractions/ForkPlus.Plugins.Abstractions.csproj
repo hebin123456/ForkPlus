@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 对比视图插件契约工程（v5.0.0 插件化第二期：一个插件一个 DLL）：
+         IDiffView* 契约 + PluginEnvironment 宿主能力桥 + PluginCompat/PluginLog 等
+         插件侧基础设施。宿主与所有插件工程（内置 Image/Hex + 第三方）都静态引用
+         本工程——它是进程内唯一的类型身份基准（动态加载的插件与宿主共享同一份）。
+         严禁引用 ForkPlus 主工程或具体插件工程的任何类型。 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Avalonia 版本必须与主工程完全一致（12.1.1）：契约含 Avalonia 类型（Control/IBrush），
+         与宿主版本漂移会在运行期出现 MissingMethodException 类崩溃（同 OxyPlot.Avalonia 教训）。-->
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- PluginSizeFormat 为 internal，测试工程经 InternalsVisibleTo 访问。 -->
+    <InternalsVisibleTo Include="ForkPlus.Plugins.Tests" />
+    <InternalsVisibleTo Include="ForkPlus.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="NLog" Version="6.1.3" />
+  </ItemGroup>
+</Project>

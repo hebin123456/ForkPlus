@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 对比视图共享组件工程（v5.0.0 插件化第二期）：宿主单文件视图
+         （BinaryContentUserControl 的缩放/动图播放、FileContentControl 的 Hex 模式）
+         与多个插件视图共用的 UI 组件——图片侧 ZoomPan/AnimatedImage/ImageData/
+         BinaryViewerRegistry/BinaryContentPanel（文件卡片+图片渲染单侧面板）/
+         DiffFallbackPanel，Hex 侧 HexEditor/HexContentControl/HexDiffUserControl。
+         宿主与插件工程都静态引用本工程（与 Abstractions 一样是进程内共享程序集，
+         不参与 plugins/ 动态分发）。命名空间保持 ForkPlus.Plugins.BuiltIn.* 不变
+         （ns 与程序集解耦，减少迁移面）。 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- HexFormatter / BinaryViewerRegistry 等含 internal 成员，测试工程经 InternalsVisibleTo 访问；
+         主测试工程（E2E 二进制对比用例）需访问 HexDiffUserControl / 视图内部字段，同等待遇。 -->
+    <InternalsVisibleTo Include="ForkPlus.Plugins.Tests" />
+    <InternalsVisibleTo Include="ForkPlus.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.Plugins.Abstractions\ForkPlus.Plugins.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <!-- HexEditor 派生自 AvaloniaEdit 的 TextEditor，版本与主工程一致。-->
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <!-- AnimatedImage 用 SKCodec 解 GIF/WebP/APNG。Avalonia 主包不传递 SkiaSharp
+         （宿主经 Avalonia.Desktop → Avalonia.Skia 12.1.1 解析到 3.119.4），
+         这里显式引用同一版本，避免与宿主加载的 SkiaSharp 漂移。-->
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+  </ItemGroup>
+</Project>

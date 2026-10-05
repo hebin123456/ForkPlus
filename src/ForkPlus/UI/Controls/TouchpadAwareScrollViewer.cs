@@ -102,7 +102,7 @@ namespace ForkPlus.UI.Controls
 		{
 			for (global::Avalonia.Visual v = source as global::Avalonia.Visual; v != null; v = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(v))
 			{
-				if (v is ForkPlus.UI.UserControls.BinaryDiff.IZoomableImage zoomable && zoomable.IsZoomable)
+				if (v is global::ForkPlus.Plugins.BuiltIn.ImageDiff.IZoomableImage zoomable && zoomable.IsZoomable)
 				{
 					return true;
 				}

@@ -1,4 +1,4 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:editorHex="clr-namespace:ForkPlus.UI.Controls.Editor.Hex" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:editor="clr-namespace:ForkPlus.UI.Controls.Editor" xmlns:editorHex="clr-namespace:ForkPlus.Plugins.BuiltIn.HexDiff;assembly=ForkPlus.Plugins.Ui" xmlns:usercontrols="clr-namespace:ForkPlus.UI.UserControls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 <!-- Migration note：WPF PopupAnimation 资源（Avalonia 无此类型）。原始片段：
   <PopupAnimation x:Key="MenuPopupAnimationKey">None</PopupAnimation>-->
 

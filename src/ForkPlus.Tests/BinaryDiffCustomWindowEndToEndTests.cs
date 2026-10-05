@@ -101,17 +101,19 @@ namespace ForkPlus.Tests
 					Dispatcher.UIThread.RunJobs();
 
 				control.Content = diffResult;
-				// v3.7.2：默认简略卡片视图，点击 Hex 后懒装配 HexDiffUserControl
-				ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl cards = null;
-				for (int i = 0; i < 50; i++)
+			// v3.7.2：默认简略卡片视图，点击 Hex 后懒装配 HexDiffUserControl
+			// v5.0.0：宿主子视图为 PluginDiffViewControl，卡片/Hex 控件在其内部挂载的
+			// 插件 HexDiffView（forkplus.hex 兜底）上。
+			ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView cards = null;
+				for (int i = 0; i < 50 && cards == null; i++)
 				{
 					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl b)
+					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.PluginDiffViewControl pluginHost)
 					{
-						cards = b;
-						break;
+						cards = pluginHost.GetVisualDescendants()
+							.OfType<ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView>().FirstOrDefault();
 					}
 				}
 				if (cards != null && cards.HexRadioButton.IsVisible)
@@ -123,7 +125,7 @@ namespace ForkPlus.Tests
 						Task.Delay(100).GetAwaiter().GetResult();
 						Dispatcher.UIThread.RunJobs();
 						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-						var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+						var eds = cards.GetVisualDescendants().OfType<ForkPlus.Plugins.BuiltIn.HexDiff.HexEditor>().ToArray();
 						if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
 						{
 							break;
@@ -132,7 +134,7 @@ namespace ForkPlus.Tests
 				}
 
 				object sub = control.CurrentSubView;
-				result[0] = sub is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl ? 1 : 0;
+				result[0] = sub is ForkPlus.UI.UserControls.BinaryDiff.PluginDiffViewControl ? 1 : 0;
 				result[1] = sub == null ? -1 : sub.GetType().Name.Length; // 占位：非 null
 
 					// 模板里确实存在 LayoutTransformControl（验证测试环境与真实主窗口结构一致）

@@ -2,6 +2,9 @@
 // 真实 git 仓库 + 修改过的二进制文件 → 走 CommitUserControl 同款
 // GetWorkingDirectoryFileChangesGitCommand → FileDiffControl.Content → 断言最终子视图。
 // 若走不到 HexDiff/BinaryDiff 而是空白 Fallback，报错信息会给出 diff 类型与数据细节。
+// v5.0.0：对比视图插件化——FileDiffControl 二进制子视图为 PluginDiffViewControl，
+//   内部路由挂载插件视图：非图片二进制 → forkplus.hex 兜底的 HexDiffView（文件卡片 +
+//   Hex 切换，原 BinaryDiffUserControl 行为）；HexEditor 来自插件共享组件工程。
 using System;
 using System.IO;
 using System.Linq;
@@ -12,6 +15,7 @@ using Avalonia.VisualTree;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
@@ -111,20 +115,19 @@ namespace ForkPlus.Tests
 				control.Content = diffResult;
 				// 二进制路径走 JobQueue + Dispatcher.Post；v3.7.2 起默认卡片视图（简略），
 				// 点击底部 Hex 按钮后才懒装配 HexDiffUserControl（内部 Task.Run）
-				BinaryDiffUserControl cards = null;
-				for (int i = 0; i < 50; i++)
+				HexDiffView cards = null;
+				for (int i = 0; i < 50 && cards == null; i++)
 				{
 					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					if (control.CurrentSubView is BinaryDiffUserControl b)
+					if (control.CurrentSubView is PluginDiffViewControl pluginHost)
 					{
-						cards = b;
-						break;
+						cards = pluginHost.GetVisualDescendants().OfType<HexDiffView>().FirstOrDefault();
 					}
 				}
 
-				string diag = "subView=" + (cards == null ? "<null-空白>" : "BinaryDiffUserControl");
+				string diag = "subView=" + (cards == null ? "<null-空白>" : "HexDiffView");
 				if (cards != null)
 				{
 					diag += ", Hex按钮可见=" + cards.HexRadioButton.IsVisible;
@@ -137,14 +140,14 @@ namespace ForkPlus.Tests
 							Task.Delay(100).GetAwaiter().GetResult();
 							Dispatcher.UIThread.RunJobs();
 							Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-							var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+							var eds = cards.GetVisualDescendants().OfType<HexEditor>().ToArray();
 							if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
 							{
 								break;
 							}
 						}
 					}
-					var hexEditors = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+					var hexEditors = cards.GetVisualDescendants().OfType<HexEditor>().ToArray();
 					for (int i = 0; i < Math.Min(2, hexEditors.Length); i++)
 					{
 						textLensHolder[i] = hexEditors[i].Text == null ? -1 : hexEditors[i].Text.Length;
@@ -160,11 +163,12 @@ namespace ForkPlus.Tests
 			}).GetAwaiter().GetResult();
 
 			string diag = diagHolder[0] ?? "<未执行>";
-			object subView = holder[0];
-			// v3.7.2 行为：二进制默认简略卡片视图（BinaryDiffUserControl），底部 Side-by-Side + Hex
-			// 两个切换按钮（图片场景另有 Swipe/Onion Skin）；点击 Hex 后进入 side-by-side 十六进制对比
-			Assert.True(subView is BinaryDiffUserControl,
-				"二进制 diff 应默认显示简略卡片视图（BinaryDiffUserControl），实际: " + diag);
+		object subView = holder[0];
+		// v3.7.2 行为：二进制默认简略卡片视图（v5.0.0 起 forkplus.hex 兜底的 HexDiffView），
+		// 底部 Side-by-Side + Hex 两个切换按钮（图片场景另有 Swipe/Onion Skin）；点击 Hex 后进入
+		// side-by-side 十六进制对比
+		Assert.True(subView is HexDiffView,
+			"二进制 diff 应默认显示简略卡片视图（HexDiffView，forkplus.hex 兜底），实际: " + diag);
 			Assert.True(diag.Contains("Hex按钮可见=True"),
 				"≤50MB 二进制应预载字节并提供 Hex 切换按钮，实际: " + diag);
 			Assert.True(diag.Contains("Hex容器可见=True"),

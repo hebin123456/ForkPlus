@@ -660,16 +660,23 @@ namespace ForkPlus.Tests
 						// ServiceLocator.Dispatcher?.Post 的回调被静默丢弃（修订列表搜索、各种防抖全部失效）。
 						// 这里补齐与生产一致的轻量服务（纯包装类，构造无副作用）。
 						if (!global::ForkPlus.Services.ServiceLocator.IsInitialized)
-						{
-							global::ForkPlus.Services.ServiceLocator.Initialize(
-								dispatcher: new global::ForkPlus.Services.Wpf.WpfDispatcher(Dispatcher.UIThread),
-								designMode: new global::ForkPlus.Services.Wpf.WpfDesignModeService(),
-								appContext: new global::ForkPlus.Services.Wpf.WpfAppContext(),
-								clipboard: new global::ForkPlus.Services.Wpf.WpfClipboardService(),
-								timer: new global::ForkPlus.Services.Wpf.WpfTimerService(),
-								toast: new global::ForkPlus.Services.Wpf.WpfToastNotificationService(),
-								windowManager: new global::ForkPlus.Services.Wpf.WpfWindowManagerService());
-						}
+					{
+						global::ForkPlus.Services.ServiceLocator.Initialize(
+							dispatcher: new global::ForkPlus.Services.Wpf.WpfDispatcher(Dispatcher.UIThread),
+							designMode: new global::ForkPlus.Services.Wpf.WpfDesignModeService(),
+							appContext: new global::ForkPlus.Services.Wpf.WpfAppContext(),
+							clipboard: new global::ForkPlus.Services.Wpf.WpfClipboardService(),
+							timer: new global::ForkPlus.Services.Wpf.WpfTimerService(),
+							toast: new global::ForkPlus.Services.Wpf.WpfToastNotificationService(),
+							windowManager: new global::ForkPlus.Services.Wpf.WpfWindowManagerService());
+					}
+					// v5.0.0 插件化：与生产 RunStartup 一致——先接宿主能力桥，再动态加载
+					// plugins/ 下的对比视图插件。测试输出目录同样拷贝了内置 Image/Hex 插件
+					// DLL（ForkPlus.Tests.csproj 的 CopyDiffViewPluginsForTests），e2e 因此走
+					// 与生产完全相同的"扫描 → 加载 → 反射注册 → 路由"链路；加载器按名优先
+					// 复用测试静态引用的程序集实例，类型身份与测试内直接构造保持一致。
+					global::ForkPlus.UI.Plugins.PluginEnvironmentBridge.Initialize();
+					global::ForkPlus.UI.Plugins.DiffViewPluginLoader.LoadDefault();
 						// E2E 拖拽（E2e29，2026-09-10）：headless 平台无 IPlatformDragSource——
 					// DragDrop.DoDragDropAsync 查不到服务直接 no-op，DragOver/Drop 永不触发。
 					// 注册进程内拖拽源（把后续指针事件转成拖放路由事件，语义对齐 DragDropDevice/

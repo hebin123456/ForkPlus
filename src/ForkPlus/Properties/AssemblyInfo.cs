@@ -15,19 +15,19 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-10-01，v4.3.2）：本版为图片对比视图里的动图（GIF / 动态 WebP /
-//   APNG）直接播放——
-//   1) 用 SkiaSharp 的 SKCodec 统一解码动图帧序列（Avalonia 自身 Bitmap 只解首帧），
-//      并排视图按当前帧渲染；帧数 / 总像素超阈值时退回静态首帧，避免内存爆掉。
-//   2) 各列底部居中悬浮播放控制条：播放/暂停、上一帧/下一帧、播放速度
-//      （0.5×/1×/2×）与帧序号；切视图/换文件自动暂停并释放帧内存。
-//   3) 动图关闭像素差异高亮（逐帧差异无意义）；控制条文案随 8 种界面语言发布。
-//   详见 RELEASE_NOTE v4.3.2。
+// 版本号说明（2026-10-05，v5.0.0）：本版为对比视图插件化架构——
+//   1) 对比视图拆为独立插件 DLL（plugins/ 目录动态加载，主程序不重新编译即可增删）：
+//      内置两个——图片对比（forkplus.image：并排/Swipe/洋葱皮/Hex，含动图播放与 LFS）；
+//      Hex 对比（forkplus.hex：二进制文件通配兜底，文件卡片 + Hex 切换）。
+//   2) 契约层（ForkPlus.Plugins.Abstractions）+ 共享组件层（ForkPlus.Plugins.Ui）+
+//      宿主能力桥（PluginEnvironment / IDiffViewHost）：插件不感知 Git 领域类型与主工程。
+//   3) 路由：用户绑定（DiffViewPluginRegistry.BindExtension）> 精确扩展名 > 通配兜底。
+//   行为与 v4.3.2 一致（图片对比器 + 十六进制对比器两套视图）。详见 RELEASE_NOTE v5.0.0。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
-//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "4.3.2"；
-//   程序集标识与文件版本同为 4.3.2（.0）。
-[assembly: AssemblyFileVersion("4.3.2")]
-[assembly: AssemblyInformationalVersion("4.3.2")]
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.0"；
+//   程序集标识与文件版本同为 5.0.0（.0）。
+[assembly: AssemblyFileVersion("5.0.0")]
+[assembly: AssemblyInformationalVersion("5.0.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("4.3.2.0")]
+[assembly: AssemblyVersion("5.0.0.0")]

@@ -1,10 +1,14 @@
 // 端到端诊断（2026-09-04，"二进制对比显示一片空白"续）：
-// 超 MaxHexDiffSize 的二进制文件走无字节回退分支 → BinaryDiffUserControl
-// （side-by-side 文件扩展名图标+大小视图）。该路径经过 BinaryContentUserControl.SetContent →
-// IconTools / FileHelper / FileSizeFormatter，任一抛异常都会让 initialize delegate
-// 中断，ShowSubView 换完子视图却没填内容 → 一片空白。
+// 超 MaxHexDiffSize 的二进制文件走无字节回退分支 → PluginDiffViewControl → 插件
+// HexDiffView（side-by-side 文件扩展名图标+大小视图）。该路径经过
+// BinaryContentPanel.SetContent → IconTools / FileHelper / PluginSizeFormat，
+// 任一抛异常都会让 initialize delegate 中断，ShowSubView 换完子视图却没填内容 → 一片空白。
 // v3.7.2：MaxHexDiffSize 10MB→50MB（OTF ~13MB 回归），本文件的回退路径改用 51MB；
 // 另增 13MB（OTF 实测尺寸）用例验证卡片视图 + "not LFS" 徽章 + Hex 切换。
+// v5.0.0：对比视图插件化——宿主子视图为 PluginDiffViewControl，内部路由挂载插件视图，
+// Hex 控件同样来自插件工程。
+// v5.0.0：非图片二进制由 Hex 插件兜底（forkplus.hex → HexDiffView，原 forkplus.binary
+// 职责并入）——卡片 + Side-by-Side/Hex 切换，与 4.3.2 行为一致。
 using System;
 using System.IO;
 using System.Linq;
@@ -16,8 +20,9 @@ using ForkPlus.Git;
 using ForkPlus.Settings;
 using ForkPlus.Git.Commands;
 using ForkPlus.Git.Diff;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using ForkPlus.UI.Controls;
-using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using Xunit;
@@ -119,9 +124,9 @@ namespace ForkPlus.Tests
 					object sub = control.CurrentSubView;
 					holder[0] = sub;
 					var subVisual = sub as Avalonia.Visual;
-					// BinaryDiffUserControl 内应有两个 BinaryContentUserControl，
+					// PluginDiffViewControl 内应有两个 BinaryContentPanel（插件），
 					// 且 FileContainer 可见、DescriprionTextBlock 有文件大小文本
-					var binControls = (subVisual?.GetVisualDescendants().OfType<BinaryContentUserControl>() ?? Enumerable.Empty<BinaryContentUserControl>()).ToArray();
+					var binControls = (subVisual?.GetVisualDescendants().OfType<BinaryContentPanel>() ?? Enumerable.Empty<BinaryContentPanel>()).ToArray();
 					string[] descs = binControls.Select(b =>
 					{
 						var tb = b.GetVisualDescendants().OfType<TextBlock>().ToArray();
@@ -136,9 +141,9 @@ namespace ForkPlus.Tests
 
 			string diag = diagHolder[0] ?? "<未执行>";
 			object subView = holder[0];
-			// >50MB → BinaryDiffUserControl（大小+扩展名图标 side-by-side）
-			Assert.True(subView is BinaryDiffUserControl,
-				"大文件二进制 diff 应显示 BinaryDiffUserControl，实际: " + diag);
+			// >50MB → PluginDiffViewControl（内部插件卡片视图：大小+扩展名图标 side-by-side）
+			Assert.True(subView is PluginDiffViewControl,
+				"大文件二进制 diff 应显示 PluginDiffViewControl，实际: " + diag);
 			// 描述文本包含文件大小（如 "51 MB"），非空 → 非空白
 			Assert.Contains("MB", diag);
 			Assert.True(diag.Contains("51"), "应显示文件大小，实际: " + diag);
@@ -155,7 +160,7 @@ namespace ForkPlus.Tests
 		// 修复回归（2026-09-16，"OTF 变更没有 hex 对比 + 缺 not LFS 徽章"）：实测 OTF 两侧
 		// 13,173,128 / 12,737,392 字节。原 MaxHexDiffSize=10MB 导致回退卡片视图且无 Hex
 		// 入口（工具栏仅图片显示）、徽章文本在迁移时丢失。修复后 13MB 应为：
-		// ① 卡片视图（BinaryDiffUserControl，旧/新 + "not LFS" 徽章文本）
+		// ① 卡片视图（v5.0.0 起 forkplus.hex 兜底的 HexDiffView，旧/新 + "not LFS" 徽章文本）
 		// ② 底部工具栏可见且 Hex 按钮可用（字节已预载），点击可切 hex 对比。
 		HeadlessAppBootstrap.EnsureStarted();
 		// 徽章文本随 UiLanguage 本地化（v3.7.2 "not LFS" 国际化）：固定 en 使断言确定性
@@ -193,20 +198,19 @@ namespace ForkPlus.Tests
 
 				control.Content = diffResult;
 				// 13MB 双侧 blob 预载 + 卡片视图装配（轮询至多 ~15s）
-				BinaryDiffUserControl cards = null;
-				for (int i = 0; i < 150; i++)
+				HexDiffView cards = null;
+				for (int i = 0; i < 150 && cards == null; i++)
 				{
 					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					if (control.CurrentSubView is BinaryDiffUserControl b)
+					if (control.CurrentSubView is PluginDiffViewControl pluginHost)
 					{
-						cards = b;
-						break;
+						cards = pluginHost.GetVisualDescendants().OfType<HexDiffView>().FirstOrDefault();
 					}
 				}
 
-				string diag = "subView=" + (cards == null ? "<null>" : "BinaryDiffUserControl")
+				string diag = "subView=" + (cards == null ? "<null>" : "HexDiffView")
 					+ ", tracked=" + binFile.Tracked;
 				if (cards != null)
 				{
@@ -254,8 +258,8 @@ namespace ForkPlus.Tests
 			}).GetAwaiter().GetResult();
 
 			string diag2 = diagHolder[0] ?? "<未执行>";
-			Assert.True(holder[0] is BinaryDiffUserControl,
-				"13MB（OTF 尺寸）二进制 diff 应显示卡片视图（旧/新），实际: " + diag2);
+		Assert.True(holder[0] is HexDiffView,
+			"13MB（OTF 尺寸）二进制 diff 应显示卡片视图（旧/新，forkplus.hex 兜底），实际: " + diag2);
 			Assert.True(diag2.Contains("notLfs 徽章数=2"),
 				"两侧都应显示 'not LFS' 徽章文本（迁移时模板文本丢失的回归），实际: " + diag2);
 			Assert.True(diag2.Contains("工具栏可见=True"), "非图片二进制也应显示视图切换工具栏，实际: " + diag2);

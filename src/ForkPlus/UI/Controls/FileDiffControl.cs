@@ -16,7 +16,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
-using ForkPlus.UI.Controls.Editor.Hex;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
@@ -242,7 +242,7 @@ namespace ForkPlus.UI.Controls
 						if (parsedLfsDiff2.HasValue)
 						{
 							ParsedLfsDiff parsedLfsDiff = parsedLfsDiff2.GetValueOrDefault();
-							ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+							ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 							{
 								c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 								{
@@ -324,7 +324,7 @@ namespace ForkPlus.UI.Controls
 									else
 									{
 										BinaryDiffContent binaryDiffContent = binaryDiffContentResult.Result;
-										ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+										ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 										{
 											c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 											{
@@ -362,11 +362,11 @@ namespace ForkPlus.UI.Controls
 							UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
 							// v3.7.2（"OTF 变更没有 hex 对比 + 缺 not LFS 徽章"）：二进制默认
 							// 卡片视图（旧/新 + LFS 徽章），后台预载的两侧字节传给
-							// BinaryDiffUserControl 供底部 Hex 切换（Side-by-Side + Hex 两个按钮，
+							// PluginDiffViewControl 供底部 Hex 切换（Side-by-Side + Hex 两个按钮，
 							// 图片场景另有 Swipe/Onion Skin）；>50MB 无字节时其 Hex 按钮自动隐藏。
 							// 对齐 3.13.2：徽章与 hex 对比入口并存。
 							HexDiffContent hexDiffContent2 = ((hexDiffContentResult != null && hexDiffContentResult.Succeeded) ? hexDiffContentResult.Result : null);
-							ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+							ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 							{
 								c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2, true, hexDiffContent2);
 								ShowHeaderIfAllowed(h, changedFile);
@@ -478,7 +478,7 @@ namespace ForkPlus.UI.Controls
 			BinaryDiffContent imageDiffContent = result as BinaryDiffContent;
 			if (imageDiffContent != null)
 			{
-				ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+				ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 				{
 					c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 					{
@@ -493,7 +493,7 @@ namespace ForkPlus.UI.Controls
 			UnknownBinaryDiffContent unknownBinaryDiffContent = result as UnknownBinaryDiffContent;
 			if (unknownBinaryDiffContent != null)
 			{
-				ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+				ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 				{
 					c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent);
 					ShowHeaderIfAllowed(h, changedFile);
@@ -504,7 +504,7 @@ namespace ForkPlus.UI.Controls
 			LfsDiffContent lfsDiffContent = result as LfsDiffContent;
 			if (lfsDiffContent != null)
 			{
-				ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+				ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 				{
 					c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 					{
@@ -614,7 +614,7 @@ namespace ForkPlus.UI.Controls
 			{
 				ShowSubView(() => new HexContentControl(), delegate(HexContentControl c, FileControlHeaderUserControl h)
 				{
-					c.SetContent(hexContent);
+					c.SetContent(hexContent.Path, hexContent.Data);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Hex);
 				});
 				return;

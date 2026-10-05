@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 内置图片对比插件（v5.0.0 插件化第二期：独立 DLL，动态加载）：
+         图片/GIF/动图对比视图（并排/Swipe/洋葱皮/Hex + LFS smudge）。
+         v5.0.0：二进制通配兜底移交 Hex 插件（forkplus.hex），本插件只认图片扩展名；
+         文件卡片/回退面板等共享组件在 ForkPlus.Plugins.Ui。
+         产物只拷主 DLL 到宿主 plugins/ 目录（ForkPlus.csproj 的 CopyDiffViewPlugins），
+         依赖（契约/共享组件/Avalonia/SkiaSharp）全部与宿主共享同一份，不做私有拷贝——
+         既保证类型身份统一，也避免 plugins/ 里出现版本漂移的重复程序集。
+         严禁引用 ForkPlus 主工程类型；宿主能力一律经 PluginEnvironment/IDiffViewHost。 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Avalonia 版本必须与主工程完全一致（12.1.1）：含 axaml 的插件若与宿主版本漂移，
+         会在运行期出现 XAML IL 加载/MissingMethodException 类崩溃（同 OxyPlot.Avalonia 教训）。-->
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 主测试工程（E2E 二进制对比用例）需访问插件视图的 x:Name 内部字段
+         （SideBySideRadioButton / HexDiffViewContainer 等），与插件测试工程同等待遇。 -->
+    <InternalsVisibleTo Include="ForkPlus.Plugins.Tests" />
+    <InternalsVisibleTo Include="ForkPlus.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.Plugins.Abstractions\ForkPlus.Plugins.Abstractions.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Ui\ForkPlus.Plugins.Ui.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+  </ItemGroup>
+</Project>

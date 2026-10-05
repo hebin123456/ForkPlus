@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 与被测 ForkPlus.Plugins.csproj 同 TFM（net10.0）。测试只覆盖纯逻辑
+         （插件契约/查看器路由/Hex 格式化/尺寸格式化），不实例化 Avalonia 控件，
+         无需 AppBuilder 初始化。SkiaSharp（AnimatedImage.IsAnimatedStream 用）
+         经 ProjectReference 传递引入，linux-x64/win-x64 均有原生 runtime。 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- v5.0.0：原单一 ForkPlus.Plugins 工程拆为四个——契约（Abstractions）、共享组件
+         （Ui）、图片/二进制插件（Image）、Hex 插件（Hex）。本测试工程覆盖纯逻辑
+         （插件契约/查看器路由/Hex 格式化/尺寸格式化），四个全部引用。 -->
+    <ProjectReference Include="..\ForkPlus.Plugins.Abstractions\ForkPlus.Plugins.Abstractions.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Ui\ForkPlus.Plugins.Ui.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Image\ForkPlus.Plugins.Image.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Hex\ForkPlus.Plugins.Hex.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- SkiaSharp 原生资产：插件工程只引 bare SkiaSharp（宿主经 Avalonia.Desktop 补原生库），
+         测试进程没有宿主，需自带各平台 native 才能跑 AnimatedImage.IsAnimatedStream（SKCodec）。
+         版本与插件/宿主的 SkiaSharp 3.119.4 对齐。-->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="3.119.4" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="3.119.4" />
+  </ItemGroup>
+</Project>

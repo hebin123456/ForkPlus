@@ -1274,6 +1274,13 @@ namespace ForkPlus
 			InitializeTheme();
 			RefreshWindowBorderBrush();
 			SubscribeToUserPreferences();
+			// v5.0.0：对比视图插件化——注入宿主能力（本地化/设置/剪贴板/Hex 偏好）到
+			// PluginEnvironment，插件工程经此取宿主服务而不引用主工程类型。
+			// 必须早于任何对比视图控件创建（DiffViewPluginRegistry 静态构造在首次 Resolve 触发）。
+			UI.Plugins.PluginEnvironmentBridge.Initialize();
+			// v5.0.0：动态加载对比视图插件——plugins/ 目录下一个 DLL 一个插件
+			//（内置 Image/Hex 两个 + 第三方），单个加载失败只记日志不阻断启动。
+			UI.Plugins.DiffViewPluginLoader.LoadDefault();
 			if (!Environment.Is64BitOperatingSystem)
 			{
 				new ForkPlus.UI.Dialogs.MessageBoxWindow("Unsupported Platform", "Currently Fork doesn't support 32-bit Windows", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();

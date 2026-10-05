@@ -5,6 +5,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Jobs;
 using ForkPlus.UI.Dialogs;
+using ForkPlus.UI.Plugins;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Threading;
@@ -59,7 +60,7 @@ namespace ForkPlus.UI.Controls
 								MemoryStream result = imageDataResponse.Result;
 								if (Path.GetExtension(_fileName) == ".tga" && result != null)
 								{
-									GitCommandResult<MemoryStream> gitCommandResult = BinaryDiffUserControl.DecodeImageData(result.ToArray());
+									GitCommandResult<MemoryStream> gitCommandResult = BiturboImageDecoder.DecodeImageData(result.ToArray());
 									if (gitCommandResult.Succeeded)
 									{
 										result = gitCommandResult.Result;
@@ -143,7 +144,7 @@ namespace ForkPlus.UI.Controls
 			MemoryStream result = gitCommandResult.Result;
 			if (Path.GetExtension(_fileName) == ".tga" && result != null)
 			{
-				GitCommandResult<MemoryStream> gitCommandResult2 = BinaryDiffUserControl.DecodeImageData(result.ToArray());
+				GitCommandResult<MemoryStream> gitCommandResult2 = BiturboImageDecoder.DecodeImageData(result.ToArray());
 				if (gitCommandResult2.Succeeded)
 				{
 					result = gitCommandResult2.Result;

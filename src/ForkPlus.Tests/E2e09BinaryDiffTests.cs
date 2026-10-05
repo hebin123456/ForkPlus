@@ -1,12 +1,17 @@
 // E2E 模块9（2026-09-05）：二进制 Diff（图片对比 + Hex 视图）。
-// 覆盖：Commit 视图图片 diff（FileDiffControl 二进制+IsImagePath 分发 → BinaryDiffUserControl）、
+// v5.0.0：对比视图插件化——FileDiffControl 二进制分发改挂 PluginDiffViewControl，其内部经
+//   DiffViewPluginRegistry 路由到插件视图；Hex 视图（HexDiffUserControl/HexEditor）同样来自插件工程。
+// v5.0.0：两个内置插件——图片（forkplus.image → BinaryDiffView，逻辑等价原
+//   BinaryDiffUserControl）+ Hex（forkplus.hex → HexDiffView，二进制通配兜底：默认文件卡片 +
+//   Side-by-Side/Hex 切换，原 forkplus.binary 职责并入）。
+// 覆盖：Commit 视图图片 diff（FileDiffControl 二进制+IsImagePath 分发 → forkplus.image/BinaryDiffView）、
 //   四视图切换（Side-by-Side/Swipe/Onion Skin/Hex RadioButton → ImageDiffSelectedItem_Changed）、
 //   Swipe 分割线真实拖拽（window 级指针事件 → GridSplitter → 列宽 → SizeChanged → RefreshClipX →
 //   OverlayImage.ClipX）、OnionSkin 透明度滑块（Slider.Value → ValueChanged → NewOpacity）、
 //   HighlightPixels 像素差异高亮（header 开关真实点击序 → 设置 + NotificationCenter 通知 →
 //   OverlayImage.HighlightImageDiff）、图片切 Hex 视图（懒创建 HexDiffUserControl + 双 HexEditor）、
-//   非图片二进制默认简略卡片视图 + 底部 Hex 切换（v3.7.2：Side-by-Side + Hex 两个按钮，
-//   Swipe/Onion Skin 隐藏）。
+//   非图片二进制默认简略卡片视图 + 底部 Hex 切换（forkplus.hex/HexDiffView：Side-by-Side +
+//   Hex 两个按钮，无 Swipe/Onion Skin）。
 // 截图 → docs/evidence/e2e/09-binarydiff/。
 // 测试经验（模块7/8 遗产）：改 ForkPlusSettings 后 finally 恢复 + Save() 落盘防污染；
 //   ToggleButton 生产点击序 = 先设 IsChecked 再 raise Click（UiClick.Click 只发事件）。
@@ -19,12 +24,12 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.Controls;
-using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
-using ForkPlus.UI.UserControls.BinaryDiff;
 using Xunit;
 
 namespace ForkPlus.Tests
@@ -32,8 +37,8 @@ namespace ForkPlus.Tests
 	[Collection("HeadlessAvalonia")]
 	public class E2e09BinaryDiffTests
 	{
-		/// <summary>Commit 视图选中 unstaged 文件并等待二进制子视图（BinaryDiffUserControl）装配。</summary>
-		private static BinaryDiffUserControl OpenCommitViewAndWaitBinaryDiff(string repo, string filePath, out MainWindow outWindow)
+		/// <summary>Commit 视图选中 unstaged 文件并等待插件二进制对比视图（BinaryDiffView）装配。</summary>
+		private static BinaryDiffView OpenCommitViewAndWaitBinaryDiff(string repo, string filePath, out MainWindow outWindow)
 		{
 			RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out MainWindow window);
 			outWindow = window;
@@ -47,12 +52,12 @@ namespace ForkPlus.Tests
 			}), "工作区状态未装配（未找到未暂存文件 " + filePath + "）");
 			stage.UnstagedFilesFileListUserControl.SelectFile(filePath);
 			Dispatcher.UIThread.RunJobs();
-			BinaryDiffUserControl binaryDiff = null;
+			BinaryDiffView binaryDiff = null;
 			Assert.True(UiClick.WaitFor(delegate
 			{
-				binaryDiff = UiClick.FindAll<BinaryDiffUserControl>(window).FirstOrDefault();
+				binaryDiff = UiClick.FindAll<BinaryDiffView>(window).FirstOrDefault();
 				return binaryDiff != null;
-			}), "选中 " + filePath + " 后应出现 BinaryDiffUserControl（二进制/图片分发路径）");
+			}), "选中 " + filePath + " 后应出现 BinaryDiffView（插件二进制/图片分发路径）");
 			return binaryDiff;
 		}
 
@@ -66,7 +71,7 @@ namespace ForkPlus.Tests
 				ForkPlusSettings.Default.ImageDiffHighlightPixels = false;
 				HeadlessAppBootstrap.Run(delegate
 				{
-					BinaryDiffUserControl binaryDiff = OpenCommitViewAndWaitBinaryDiff(repo, "img.png", out var window);
+					BinaryDiffView binaryDiff = OpenCommitViewAndWaitBinaryDiff(repo, "img.png", out var window);
 					try
 					{
 						// ===== 1) 双侧图片装配完成：视图切换按钮出现（RefreshViewModes）=====
@@ -214,21 +219,24 @@ namespace ForkPlus.Tests
 						stage.UnstagedFilesFileListUserControl.SelectFile("data.bin");
 						Dispatcher.UIThread.RunJobs();
 
-						// v3.7.2：非图片小二进制（256→512 字节）→ 默认简略卡片视图
-						//（BinaryDiffUserControl），底部 Side-by-Side + Hex 两个切换按钮
-						BinaryDiffUserControl cards = null;
-						Assert.True(UiClick.WaitFor(delegate
-						{
-							cards = UiClick.FindAll<BinaryDiffUserControl>(window).FirstOrDefault();
-							return cards != null;
-						}), "非图片二进制应默认显示简略卡片视图（BinaryDiffUserControl）");
-						// Swipe/Onion Skin 仅图片场景显示，此处应隐藏（只留并排 + 十六进制两个按钮）
-						Assert.True(!cards.SwipeRadioButton.IsVisible && !cards.OnionSkinRadioButton.IsVisible,
-							"非图片二进制应隐藏 Swipe/Onion Skin，只留 Side-by-Side + Hex");
-						Assert.True(cards.HexRadioButton.IsVisible,
-							"≤50MB 二进制预载字节后 Hex 按钮应可见");
-						Assert.True(UiClick.FindAll<HexDiffUserControl>(window).Count == 0,
-							"未点 Hex 前不应装配 HexDiffUserControl（懒加载）");
+						// v5.0.0：非图片小二进制（256→512 字节）→ Hex 插件兜底（forkplus.hex），
+					// 默认简略卡片视图（插件 HexDiffView），底部 Side-by-Side + Hex 两个切换按钮
+					HexDiffView cards = null;
+					Assert.True(UiClick.WaitFor(delegate
+					{
+						cards = UiClick.FindAll<HexDiffView>(window).FirstOrDefault();
+						return cards != null;
+					}), "非图片二进制应默认显示简略卡片视图（HexDiffView，forkplus.hex 兜底）");
+					// 初始应为 Side-by-Side 卡片视图（无 Swipe/Onion Skin——图片插件专属模式）
+					Assert.True(cards.SideBySideRadioButton.IsChecked.GetValueOrDefault(),
+						"初始应为 Side-by-Side 卡片视图（UpdateContent 重置）");
+					Assert.True(UiClick.FindAll<SwipeImageDiffUserControl>(window).Count == 0
+						&& UiClick.FindAll<OnionSkinImageDiffUserControl>(window).Count == 0,
+						"非图片二进制不应装配 Swipe/Onion Skin 视图（图片插件专属）");
+					Assert.True(cards.HexRadioButton.IsVisible,
+						"≤50MB 二进制预载字节后 Hex 按钮应可见");
+					Assert.True(UiClick.FindAll<HexDiffUserControl>(window).Count == 0,
+						"未点 Hex 前不应装配 HexDiffUserControl（懒加载）");
 
 						// 点击 Hex → 懒装配 HexDiffUserControl + 双 HexEditor
 						// 说明（2026-09-19）：git 状态刷新（SetDataAsync 重建 ChangedFile 触发

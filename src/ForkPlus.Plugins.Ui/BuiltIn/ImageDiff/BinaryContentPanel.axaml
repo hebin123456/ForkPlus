@@ -1,0 +1,163 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:pd="clr-namespace:ForkPlus.Plugins.BuiltIn.ImageDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.Plugins.BuiltIn.ImageDiff.BinaryContentPanel">
+  <!-- v5.0.0：自主工程 BinaryContentUserControl.axaml 迁移（插件化）。
+       v5.0.0：从 Image 插件移入共享组件工程（Ui）——图片插件（BinaryDiffView 的
+       并排/卡片视图）与 Hex 插件（HexDiffView 的文件卡片）共用同一面板。
+       fuc:DropDownButton（宿主控件）换成本地 Button + ContextMenu；
+       其余布局/主题资源与原版一致（DynamicResource 运行期从宿主 App 解析）。 -->
+  <UserControl.Styles>
+    <!-- 原 WPF LfsProgressBar Style（Theme/Styles/Progressbar.axaml）迁移：
+         ControlTheme 无 BasedOn 会失去 Fluent 模板，改用 Classes + Style 叠加到默认主题上 -->
+    <Style Selector="ProgressBar.lfs">
+      <Setter Property="Maximum" Value="100" />
+      <Setter Property="Height" Value="3" />
+      <Setter Property="MinWidth" Value="10" />
+      <Setter Property="MaxWidth" Value="100" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="{DynamicResource BinaryDiffProgressBackground}" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemAccentBrush}" />
+    </Style>
+  </UserControl.Styles>
+  <Grid Margin="0,0,0,22" MinHeight="20" HorizontalAlignment="Center" VerticalAlignment="Top">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="35" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid.Children>
+      <Grid Margin="0,10,0,6">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="48" />
+          <ColumnDefinition />
+          <ColumnDefinition Width="48" />
+        </Grid.ColumnDefinitions>
+        <Grid.Children>
+          <!-- 文本必须在用点以本地值给出（"LFS"/"not LFS" 为产品术语不翻译，见原版修复注释）。 -->
+          <TextBlock Grid.Column="0" x:Name="LfsLabel" Text="LFS" HorizontalAlignment="Left" Theme="{DynamicResource LfsLabel}" />
+          <TextBlock Grid.Column="0" x:Name="NotLfsLabel" Text="not LFS" Theme="{DynamicResource NotLfsLabel}" />
+          <TextBlock Grid.Column="1" Margin="4,0,4,0" HorizontalAlignment="Center" FontSize="13" FontWeight="Medium" x:Name="TitleTextBlock" />
+        </Grid.Children>
+      </Grid>
+      <Grid Grid.Row="1">
+        <Grid.Children>
+          <Border>
+            <Border.Child>
+              <Grid>
+                <Grid.Children>
+                  <Border BorderThickness="8,8,8,8" x:Name="ImageContainer">
+                    <Border.BorderBrush>
+                      <DynamicResource ResourceKey="BinaryDiffBackground" />
+                    </Border.BorderBrush>
+                    <Border.Child>
+                      <Border>
+                        <Border.BorderBrush>
+                          <DynamicResource ResourceKey="BinaryDiffBorder" />
+                        </Border.BorderBrush>
+                        <Border.BorderThickness>1</Border.BorderThickness>
+                        <Border.Background>
+                          <DynamicResource ResourceKey="TransparentVisualBrush" />
+                        </Border.Background>
+                        <Border.Child>
+                          <Grid>
+                            <Grid.Children>
+                              <pd:ZoomPanImageControl x:Name="ImageControl" />
+                              <ContentControl x:Name="PlaybackBarContainer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" IsVisible="False" />
+                            </Grid.Children>
+                          </Grid>
+                        </Border.Child>
+                      </Border>
+                    </Border.Child>
+                  </Border>
+                  <Border BorderThickness="0" Height="130" Width="110" CornerRadius="3" x:Name="FileContainer">
+                    <Border.Background>
+                      <DynamicResource ResourceKey="BinaryDiffBackground" />
+                    </Border.Background>
+                    <Border.Child>
+                      <Grid Height="130" Width="110" VerticalAlignment="Center">
+                        <Grid.Children>
+                          <Grid Margin="0,30,0,0">
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="44" />
+                              <RowDefinition Height="22" />
+                              <RowDefinition Height="14" />
+                              <RowDefinition Height="20" />
+                            </Grid.RowDefinitions>
+                            <Grid.Children>
+                              <Image Grid.Row="0" Width="32" Height="32" Margin="0" VerticalAlignment="Center" x:Name="FileIcon" />
+                              <Button Grid.Row="0" Margin="0" Click="ShowLfsImageButton_Click" x:Name="ShowLfsImageButton">
+                                <Button.Theme>
+                                  <DynamicResource ResourceKey="LfsImageButtonStyle" />
+                                </Button.Theme>
+                                <Image>
+                                  <Image.Source>
+                                    <DynamicResource ResourceKey="SearchIcon" />
+                                  </Image.Source>
+                                  <Image.Width>24</Image.Width>
+                                  <Image.Height>24</Image.Height>
+                                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                                  <Image.HorizontalAlignment>Center</Image.HorizontalAlignment>
+                                </Image>
+                              </Button>
+                              <Button Grid.Row="0" Margin="0" Click="CancelButton_Click" x:Name="CancelLfsButton">
+                                <Button.Theme>
+                                  <DynamicResource ResourceKey="LfsImageButtonStyle" />
+                                </Button.Theme>
+                                <Image>
+                                  <Image.Source>
+                                    <DynamicResource ResourceKey="CancelJobIcon" />
+                                  </Image.Source>
+                                  <Image.Width>24</Image.Width>
+                                  <Image.Height>24</Image.Height>
+                                  <Image.VerticalAlignment>Center</Image.VerticalAlignment>
+                                  <Image.HorizontalAlignment>Center</Image.HorizontalAlignment>
+                                </Image>
+                              </Button>
+                              <TextBlock Grid.Row="1" Margin="2,2,2,2" FontSize="13" HorizontalAlignment="Center" TextAlignment="Center" TextTrimming="CharacterEllipsis" x:Name="FileExtensionTextBlock">
+                                <TextBlock.Foreground>
+                                  <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+                                </TextBlock.Foreground>
+                              </TextBlock>
+                              <ProgressBar Grid.Row="2" Margin="2,4,2,0" VerticalAlignment="Center" x:Name="LfsProgressBar" Classes="lfs" />
+                            </Grid.Children>
+                          </Grid>
+                        </Grid.Children>
+                      </Grid>
+                    </Border.Child>
+                  </Border>
+                </Grid.Children>
+              </Grid>
+            </Border.Child>
+          </Border>
+        </Grid.Children>
+      </Grid>
+      <StackPanel Grid.Row="1" Margin="0,0,0,-22" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+        <StackPanel.Children>
+          <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="13" x:Name="DescriprionTextBlock">
+            <TextBlock.Foreground>
+              <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+            </TextBlock.Foreground>
+          </TextBlock>
+          <Button Margin="2,3,0,1" Padding="0,2,0,0" Height="14" Width="12" BorderThickness="0" x:Name="SaveAsDropDownButton" Focusable="False" Click="SaveAsDropDownButton_Click">
+            <Button.Background>
+              <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+            </Button.Background>
+            <Button.ContextMenu>
+              <ContextMenu>
+                <ContextMenu.Items>
+                  <MenuItem Header="Save As..." Click="SaveAsMenuItem_Click" x:Name="SaveAsMenuItem" />
+                </ContextMenu.Items>
+              </ContextMenu>
+            </Button.ContextMenu>
+            <Path HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center">
+              <Path.Fill>
+                <DynamicResource ResourceKey="ComboBox.Static.Glyph" />
+              </Path.Fill>
+              <Path.Data>
+                <DynamicResource ResourceKey="ArrowGeometry" />
+              </Path.Data>
+            </Path>
+          </Button>
+        </StackPanel.Children>
+      </StackPanel>
+    </Grid.Children>
+  </Grid>
+</UserControl>

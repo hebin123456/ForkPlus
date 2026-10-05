@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- 内置 Hex 对比插件（v5.0.0 插件化第二期：独立 DLL，动态加载）：
+         二进制文件的通配兜底（原 forkplus.binary 职责并入）——默认 side-by-side
+         文件卡片（BinaryContentPanel）+ Hex 对比切换（HexDiffUserControl 懒加载），
+         与图片插件里的「Hex」模式页共用同一渲染内核（ForkPlus.Plugins.Ui）。
+         严禁引用 ForkPlus 主工程类型；宿主能力一律经 PluginEnvironment/IDiffViewHost。 -->
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ForkPlus.Plugins.Tests" />
+    <InternalsVisibleTo Include="ForkPlus.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ForkPlus.Plugins.Abstractions\ForkPlus.Plugins.Abstractions.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Ui\ForkPlus.Plugins.Ui.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+  </ItemGroup>
+</Project>

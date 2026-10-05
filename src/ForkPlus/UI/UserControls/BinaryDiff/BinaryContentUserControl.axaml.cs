@@ -10,7 +10,9 @@ using Avalonia.Media.Imaging;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Plugins;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
@@ -118,7 +120,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				MemoryStream memoryStream = imageContent.Data;
 				if (Path.GetExtension(imageContent.Path) == ".tga" && memoryStream != null)
 				{
-					GitCommandResult<MemoryStream> gitCommandResult = BinaryDiffUserControl.DecodeImageData(memoryStream.ToArray());
+					GitCommandResult<MemoryStream> gitCommandResult = BiturboImageDecoder.DecodeImageData(memoryStream.ToArray());
 					if (gitCommandResult.Succeeded)
 					{
 						memoryStream = gitCommandResult.Result;
@@ -199,7 +201,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 		}
 
-		/// <param name="path">v4.4.0：仓库内路径，供查看器注册表按扩展名判定；未知时可不传。</param>
+		/// <param name="path">v5.0.0：仓库内路径，供查看器注册表按扩展名判定；未知时可不传。</param>
 		public void SetLfsImageData(MemoryStream memoryStream, [Null] global::Avalonia.Media.Imaging.Bitmap diffImageSource = null, [Null] string path = null)
 		{
 			DiffImageSource = diffImageSource;
@@ -212,7 +214,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 
 		private void RefreshImage(MemoryStream memoryStream, [Null] string path)
 		{
-			// v4.4.0：渲染方式改由查看器注册表判定（动图优先于静态图），不再在本控件里硬编码
+			// v5.0.0：渲染方式改由查看器注册表判定（动图优先于静态图），不再在本控件里硬编码
 			// 动图探测——新增格式只需往 BinaryViewerRegistry 注册查看器。
 			IBinaryViewer viewer = BinaryViewerRegistry.Resolve(new BinaryViewerRequest(path, memoryStream));
 			if (viewer.Kind == BinaryViewerKind.AnimatedImage)
@@ -226,7 +228,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				}
 			}
 			DetachAnimated();
-			global::Avalonia.Media.Imaging.Bitmap bitmapSource = BinaryDiffUserControl.CreateBitmapSource(memoryStream);
+		global::Avalonia.Media.Imaging.Bitmap bitmapSource = CreateBitmapSource(memoryStream);
 			long length = memoryStream.Length;
 			DescriprionTextBlock.Text = GetImageDescription(bitmapSource, length);
 			// v4.3.1：原 Viewbox 方案在此设 Image.Height / DiffImage.Height / ImageViewBox.MaxHeight
@@ -341,14 +343,31 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		}
 
 		private static string GetImageDescription([Null] global::Avalonia.Media.Imaging.Bitmap imageSource, long fileSize)
+	{
+		if (imageSource == null)
 		{
-			if (imageSource == null)
-			{
-				return "";
-			}
-			string arg = FileSizeFormatter.Format(fileSize);
-			return $"W: {imageSource.PixelSize.Width}px | H: {imageSource.PixelSize.Height}px ({arg})";
+			return "";
 		}
+		string arg = FileSizeFormatter.Format(fileSize);
+		return $"W: {imageSource.PixelSize.Width}px | H: {imageSource.PixelSize.Height}px ({arg})";
+	}
+
+	/// <summary>v5.0.0：原 BinaryDiffUserControl.CreateBitmapSource 迁入（该控件已删除）。
+	/// Avalonia Bitmap(Stream) 同步解码即统一 Bgra8888，无需 WPF 的格式转换链。</summary>
+	[Null]
+	private static global::Avalonia.Media.Imaging.Bitmap CreateBitmapSource(MemoryStream stream)
+	{
+		try
+		{
+			stream.Position = 0L;
+			return new global::Avalonia.Media.Imaging.Bitmap(stream);
+		}
+		catch (Exception ex)
+		{
+			Log.Error("Failed to create BitmapSource", ex);
+			return null;
+		}
+	}
 
 	}
 }

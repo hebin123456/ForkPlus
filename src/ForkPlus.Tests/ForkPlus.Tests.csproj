@@ -28,6 +28,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ForkPlus\ForkPlus.csproj" />
+    <!-- v5.0.0：E2E 二进制对比用例静态引用两个内置插件工程（访问 BinaryDiffView 的
+         x:Name 内部字段 / HexDiffUserControl 等）；运行期 HeadlessAppBootstrap 走与生产
+         相同的 DiffViewPluginLoader 动态加载链路（加载器按名复用这里的静态引用实例，
+         类型身份一致），测试输出目录 plugins/ 由 CopyDiffViewPluginsForTests 拷贝。-->
+    <ProjectReference Include="..\ForkPlus.Plugins.Image\ForkPlus.Plugins.Image.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Hex\ForkPlus.Plugins.Hex.csproj" />
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <!-- AutoUpdater（v4.1.0）：更新弹窗 E2E（UpdateAvailableWindowTests）用真实 updater
@@ -71,6 +77,13 @@
     <Copy SourceFiles="..\..\third_party\biturbo.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\biturbo.dll')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.so" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.so')" />
     <Copy SourceFiles="..\..\third_party\libbiturbo.dylib" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('..\..\third_party\libbiturbo.dylib')" />
+  </Target>
+  <!-- v5.0.0：对比视图插件 DLL 拷贝到测试输出目录 plugins/——HeadlessAppBootstrap 的
+       DiffViewPluginLoader.LoadDefault 与生产同路径扫描这里。只拷主 DLL（依赖与测试
+       宿主共享），加载器 Assembly.Load 按名优先复用静态引用实例，避免双份类型。-->
+  <Target Name="CopyDiffViewPluginsForTests" AfterTargets="Build">
+    <Copy SourceFiles="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll" DestinationFolder="$(TargetDir)plugins\" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll')" />
+    <Copy SourceFiles="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll" DestinationFolder="$(TargetDir)plugins\" SkipUnchangedFiles="true" Condition="Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll')" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.1" />

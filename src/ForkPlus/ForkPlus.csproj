@@ -119,6 +119,14 @@
          IconTools.cs / AiDevelopmentWindow.xaml.cs 使用 System.Drawing.Color 等仍可用。-->
   </ItemGroup>
   <ItemGroup>
+    <!-- v5.0.0：对比视图插件化（动态加载）——宿主只静态引用契约（Abstractions）与
+         共享视图组件（Ui：宿主单文件视图与各插件共用的 ZoomPan/AnimatedImage/Hex 系列）；
+         具体插件（Image/Hex/第三方）从输出目录 plugins/ 动态加载（DiffViewPluginLoader），
+         构建期仅保序 + 拷贝 DLL（见 CopyDiffViewPlugins），不参与宿主编译。-->
+    <ProjectReference Include="..\ForkPlus.Plugins.Abstractions\ForkPlus.Plugins.Abstractions.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Ui\ForkPlus.Plugins.Ui.csproj" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Image\ForkPlus.Plugins.Image.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\ForkPlus.Plugins.Hex\ForkPlus.Plugins.Hex.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.AskPass\ForkPlus.AskPass.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\ForkPlus.RI\ForkPlus.RI.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <!-- AutoUpdater（自动更新子进程，v4.1.0 起）：与 AskPass/RI 同模式——ReferenceOutputAssembly=false
@@ -190,6 +198,27 @@
     <!-- Unix (Linux/macOS): bash + curl（与 RestoreTokei/RestoreBiturbo 同模式，3 次重试指数退避；
          用反引号做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；MSBuild 属性正常展开）-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('../../third_party/nuget/$(OxyPlotAvaloniaAsset)')" Command="bash -c 'set -e; mkdir -p ../../third_party/nuget; url=&quot;$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)&quot;; out=&quot;../../third_party/nuget/$(OxyPlotAvaloniaAsset)&quot;; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from oxyplot-avalonia fork latest release&quot;'" />
+  </Target>
+  <!-- v5.0.0：对比视图插件 DLL 拷贝（一个插件一个 DLL → 输出目录 plugins/）。
+       只拷主 DLL，不拷插件的依赖（契约/共享组件/Avalonia/SkiaSharp 与宿主共享同一份），
+       避免 plugins/ 里出现重复程序集导致加载器类型身份漂移。
+       RID-specific publish 时插件输出在 bin\$(Configuration)\$(TargetFramework)\<RID>\ 子目录
+       （与 CollectHelperOutputs 的 HelperRidDir 同款两路径守卫）。清单收集放 Target 内
+       （执行期求值），保证全新 checkout 的构建顺序正确。-->
+  <Target Name="CollectDiffViewPluginDlls" Returns="@(_DiffViewPluginDlls)">
+    <PropertyGroup>
+      <DiffViewPluginRidDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</DiffViewPluginRidDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll" Condition="Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll')" />
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll" Condition="Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll')" />
+    </ItemGroup>
+  </Target>
+  <Target Name="CopyDiffViewPlugins" AfterTargets="Build" DependsOnTargets="CollectDiffViewPluginDlls">
+    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFolder="$(TargetDir)plugins\" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PublishDiffViewPlugins" AfterTargets="Publish" DependsOnTargets="CollectDiffViewPluginDlls">
+    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFolder="$(PublishDir)plugins\" SkipUnchangedFiles="true" />
   </Target>
   <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
        Migration note（CI）两点坑：

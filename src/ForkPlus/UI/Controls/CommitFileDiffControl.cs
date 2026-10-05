@@ -123,7 +123,7 @@ namespace ForkPlus.UI.Controls
 						if (parsedLfsDiff2.HasValue)
 						{
 							ParsedLfsDiff parsedLfsDiff = parsedLfsDiff2.GetValueOrDefault();
-							ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+							ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 							{
 								c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 								{

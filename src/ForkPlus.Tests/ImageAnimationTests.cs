@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using ForkPlus.Git;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using Xunit;
 
@@ -245,8 +246,9 @@ namespace ForkPlus.Tests
 		{
 			HeadlessAppBootstrap.Run(delegate
 			{
-				ImageData animated = ImageData.Create(new ImageContent("anim.gif", true, GifStream()));
-				ImageData still = ImageData.Create(new ImageContent("still.png", true, PngStream()));
+				// v5.0.0：ImageData 迁至插件工程，Create 直收字节流 + isLfs/isTracked 标记。
+				ImageData animated = ImageData.Create(GifStream(), isLfs: true, isTracked: true);
+				ImageData still = ImageData.Create(PngStream(), isLfs: true, isTracked: true);
 				Assert.True(animated.IsAnimated);   // → GetDiffImage 返回 null，关闭像素差异高亮
 				Assert.False(still.IsAnimated);
 			});

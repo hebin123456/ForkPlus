@@ -9,7 +9,7 @@
 //   - 共享状态语义：同一实例下不同尺寸图片在视口中心对应同一归一化图像坐标（中心点对齐）
 using System;
 using Avalonia;
-using ForkPlus.UI.UserControls.BinaryDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using Xunit;
 
 namespace ForkPlus.Tests

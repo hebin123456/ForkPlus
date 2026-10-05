@@ -6,6 +6,7 @@
 // 修复：Commonresources.axaml 定义 {x:Type HexEditor} 专属 ControlTheme，
 // HexEditor 构造函数取资源挂 Theme（与 CodeEditor 同模式）。
 // 本测试在两种容器下验证模板真正应用：视觉行构建（vlines>0）+ ScrollViewer 在树。
+// v5.0.0：HexDiffUserControl / HexEditor 迁移至插件工程（SetContent 直接收双侧字节流）。
 using System;
 using System.IO;
 using System.Linq;
@@ -13,8 +14,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ForkPlus.Git;
-using ForkPlus.UI.Controls.Editor.Hex;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using Xunit;
 
 namespace ForkPlus.Tests
@@ -22,11 +22,10 @@ namespace ForkPlus.Tests
 	[Collection("HeadlessAvalonia")]
 	public class HexEditorThemeAppliedTests
 	{
-		private static HexDiffContent MakeContent()
+		private static MemoryStream MakeBytes(int len, int seed)
 		{
-			byte[] src = Enumerable.Range(0, 512).Select(i => (byte)(i % 251)).ToArray();
-			byte[] dst = Enumerable.Range(0, 640).Select(i => (byte)((i * 7 + 13) % 253)).ToArray();
-			return new HexDiffContent(null, new MemoryStream(src), new MemoryStream(dst));
+			byte[] data = Enumerable.Range(0, len).Select(i => (byte)((i * seed + 13) % 253)).ToArray();
+			return new MemoryStream(data);
 		}
 
 		private static async Task PumpAsync(int ms)
@@ -55,7 +54,7 @@ namespace ForkPlus.Tests
 					: new ForkPlus.UI.CustomWindow { Width = 1000, Height = 600, Content = hex };
 				window.Show();
 				Dispatcher.UIThread.RunJobs();
-				hex.SetContent(MakeContent());
+				hex.SetContent(MakeBytes(512, 1), MakeBytes(640, 7));
 				await PumpAsync(400);
 
 				var editors = hex.GetVisualDescendants().OfType<HexEditor>().ToArray();

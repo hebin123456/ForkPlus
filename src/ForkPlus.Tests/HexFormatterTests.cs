@@ -1,4 +1,5 @@
-using ForkPlus.UI.Controls.Editor.Hex;
+// v5.0.0：HexFormatter 随二进制对比视图迁移至插件工程（internal，经 InternalsVisibleTo 访问）。
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using Xunit;
 
 namespace ForkPlus.Tests

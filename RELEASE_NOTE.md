@@ -2,6 +2,35 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.0.0
+
+> 对比视图重构为插件化架构：图片对比与 Hex 对比拆分为独立的插件 DLL，由主程序在启动时从 `plugins/` 目录动态加载——不重新编译主程序即可增删对比视图插件。内置两个插件（图片对比 + Hex 对比兜底），对比行为与 v4.3.2 保持一致。应用版本号升至 5.0.0。
+
+### 新增
+
+- **对比视图插件化（独立 DLL + 动态加载）**：新增契约工程 `ForkPlus.Plugins.Abstractions`（`IDiffViewPlugin` / `IDiffView` / `IDiffViewHost` / `DiffViewContext` 等类型）——插件不感知 Git 领域类型与主工程，一切宿主能力（本地化、设置、剪贴板、LFS smudge、保存对话框、文件图标）经 `PluginEnvironment` / `IDiffViewHost` 桥接注入。主程序启动时经 `DiffViewPluginLoader` 扫描 `plugins/` 目录，一个 DLL 一个插件，无需重新编译主程序即可放入第三方插件随读随用。
+- **内置图片对比插件（`forkplus.image`）**：图片 / GIF / 动图对比视图（并排 / 滑动 / 洋葱皮 / Hex 四模式，含动图播放、像素差异高亮、缩放平移与 LFS smudge），声明 `.bmp/.gif/.png/.jpg/.jpeg/.ico/.tga/.webp` 扩展名，优先级 100。
+- **内置 Hex 对比插件（`forkplus.hex`）**：二进制文件的通配兜底——任何未被专属插件认领的文件类型都由它接管：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章），宿主预载字节（≤50MB）时可切换 Hex 对比；不加载该 DLL 时同样显示文件卡片视图。
+- **插件路由与用户绑定**：`DiffViewPluginRegistry` 按「用户绑定 > 精确扩展名 > 通配兜底」路由文件到插件；用户可把任意扩展名绑定到指定插件（`BindExtension`），第三方插件以更高优先级或用户绑定即可覆盖内置插件。
+- **共享组件层（`ForkPlus.Plugins.Ui`）**：文件卡片面板（`BinaryContentPanel`）、回退面板（`DiffFallbackPanel`）、Hex 编辑内核（`HexDiffUserControl` / `HexEditor`）、动图播放组件等由图片插件与 Hex 插件共用，不再复制两份代码。
+
+### 内部重构
+
+- 宿主侧二进制对比分发改挂 `PluginDiffViewControl`，内部经注册表路由挂载插件视图；原 `BinaryDiffUserControl` 领域装配逻辑压平为 `DiffSideContent`（路径 + 懒加载字节 + LFS 引用）下发给插件。行为与 v4.3.2 一致：图片走图片对比器，其余二进制走 Hex 对比器（文件卡片 + Hex 切换）。
+
+### 测试
+
+- 新增 `ForkPlus.Plugins.Tests`：插件契约测试（扩展名表 / 优先级 / 通配兜底声明）、查看器注册表路由测试（动图优先于静态图、无字节走文件卡片兜底）、Hex 格式化与尺寸格式化测试；E2E 二进制对比用例（`E2e09` / `BinaryDiffLargeFileEndToEndTests` 等）更新为按插件路由断言（`HexDiffView` 兜底 + 插件 DLL 拷贝到测试输出 `plugins/` 目录经 `HeadlessAppBootstrap` 动态加载）。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.0.0-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.0.0-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.0.0-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.0.0-macos-arm64.zip` |
+
 ## v4.3.2
 
 > 图片对比视图支持直接播放动图：GIF / 动态 WebP / APNG 在并排视图中按帧自动播放，不再只显示首帧；每列图片区域底部居中悬浮播放控制条，提供播放/暂停、上一帧/下一帧、播放速度（0.5×/1×/2×）与帧序号；动图关闭像素差异高亮，切视图/换文件自动暂停并释放帧内存。应用版本号升至 4.3.2。

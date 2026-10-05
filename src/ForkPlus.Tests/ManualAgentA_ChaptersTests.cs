@@ -14,13 +14,14 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ForkPlus.Git;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using ForkPlus.Settings;
 using ForkPlus.UI;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
-using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
@@ -684,7 +685,7 @@ namespace ForkPlus.Tests
 				{
 					HeadlessAppBootstrap.Run(delegate
 					{
-						BinaryDiffUserControl binaryDiff = OpenCommitViewAndWaitBinaryDiff(imgRepo, "img.png", out var window);
+						BinaryDiffView binaryDiff = OpenCommitViewAndWaitBinaryDiff(imgRepo, "img.png", out var window);
 						try
 						{
 							// Side-by-Side(默认)
@@ -752,46 +753,48 @@ namespace ForkPlus.Tests
 				}
 
 				// ----- 2) 非图片二进制:简略卡片视图 + Hex 视图 -----
-				string binRepo = TestRepoFactory.CreateBinary();
-				try
+			string binRepo = TestRepoFactory.CreateBinary();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
 				{
-					HeadlessAppBootstrap.Run(delegate
+					HexDiffView cards = OpenCommitViewAndWaitHexDiff(binRepo, "data.bin", out var window);
+					try
 					{
-						BinaryDiffUserControl cards = OpenCommitViewAndWaitBinaryDiff(binRepo, "data.bin", out var window);
-						try
-						{
-							// 非图片二进制默认简略卡片视图(Side-by-Side + Hex 两个按钮,Swipe/Onion Skin 隐藏)
-							Assert.True(!cards.SwipeRadioButton.IsVisible && !cards.OnionSkinRadioButton.IsVisible,
-								"非图片二进制应隐藏 Swipe/Onion Skin");
-							ManualScreenshotHelper.Snap(window, "06-binary-card-view", "07-binary-diff");
+						// 非图片二进制默认简略卡片视图(forkplus.hex 兜底,Side-by-Side + Hex 两个按钮,
+						// 不装配 Swipe/Onion Skin——那是图片插件的视图)
+						Assert.True(UiClick.FindAll<SwipeImageDiffUserControl>(window).Count == 0
+							&& UiClick.FindAll<OnionSkinImageDiffUserControl>(window).Count == 0,
+							"非图片二进制不应装配 Swipe/Onion Skin 视图");
+						ManualScreenshotHelper.Snap(window, "06-binary-card-view", "07-binary-diff");
 
-							cards.HexRadioButton.IsChecked = true;
-							Dispatcher.UIThread.RunJobs();
-							Assert.True(UiClick.WaitFor(delegate
-							{
-								return cards.HexDiffViewContainer.IsVisible
-									&& UiClick.FindAll<HexEditor>(window).Count >= 2;
-							}), "Hex 视图应有双 HexEditor");
-							ManualScreenshotHelper.Snap(window, "07-binary-hex-view", "07-binary-diff");
-						}
-						finally
+						cards.HexRadioButton.IsChecked = true;
+						Dispatcher.UIThread.RunJobs();
+						Assert.True(UiClick.WaitFor(delegate
 						{
-							E2eMainWindowHarness.CloseRepositoryTab(window, binRepo);
-						}
-					});
-				}
-				finally
-				{
-					TestRepoFactory.Cleanup(binRepo);
-				}
-
-				// ----- 3) 大文件 diff(48KB→56KB,Hex 首屏截断出现"加载更多") -----
-				string bigRepo = TestRepoFactory.CreateLargeBinary();
-				try
-				{
-					HeadlessAppBootstrap.Run(delegate
+							return cards.HexDiffViewContainer.IsVisible
+								&& UiClick.FindAll<HexEditor>(window).Count >= 2;
+						}), "Hex 视图应有双 HexEditor");
+						ManualScreenshotHelper.Snap(window, "07-binary-hex-view", "07-binary-diff");
+					}
+					finally
 					{
-						BinaryDiffUserControl bigDiff = OpenCommitViewAndWaitBinaryDiff(bigRepo, "data.bin", out var window);
+						E2eMainWindowHarness.CloseRepositoryTab(window, binRepo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(binRepo);
+			}
+
+			// ----- 3) 大文件 diff(48KB→56KB,Hex 首屏截断出现"加载更多") -----
+			string bigRepo = TestRepoFactory.CreateLargeBinary();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					HexDiffView bigDiff = OpenCommitViewAndWaitHexDiff(bigRepo, "data.bin", out var window);
 						try
 						{
 							// 激活提交视图时可能已自动加载过一次同一文件，选中后又触发一次 diff
@@ -825,7 +828,7 @@ namespace ForkPlus.Tests
 				{
 					HeadlessAppBootstrap.Run(delegate
 					{
-						BinaryDiffUserControl gifDiff = OpenCommitViewAndWaitBinaryDiff(gifRepo, "anim.gif", out var window);
+						BinaryDiffView gifDiff = OpenCommitViewAndWaitBinaryDiff(gifRepo, "anim.gif", out var window);
 						try
 						{
 							Assert.True(UiClick.WaitFor(delegate
@@ -872,8 +875,8 @@ namespace ForkPlus.Tests
 
 		// ============================ 工具方法 ============================
 
-		/// <summary>Commit 视图选中 unstaged 文件并等待二进制子视图(BinaryDiffUserControl)装配。</summary>
-		private static BinaryDiffUserControl OpenCommitViewAndWaitBinaryDiff(string repo, string filePath, out MainWindow outWindow)
+		/// <summary>Commit 视图选中 unstaged 文件并等待插件二进制对比视图(BinaryDiffView)装配。</summary>
+		private static BinaryDiffView OpenCommitViewAndWaitBinaryDiff(string repo, string filePath, out MainWindow outWindow)
 		{
 			RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out MainWindow window);
 			outWindow = window;
@@ -887,13 +890,38 @@ namespace ForkPlus.Tests
 			}), "工作区状态未装配(未找到未暂存文件 " + filePath + ")");
 			stage.UnstagedFilesFileListUserControl.SelectFile(filePath);
 			Dispatcher.UIThread.RunJobs();
-			BinaryDiffUserControl binaryDiff = null;
+			BinaryDiffView binaryDiff = null;
 			Assert.True(UiClick.WaitFor(delegate
 			{
-				binaryDiff = UiClick.FindAll<BinaryDiffUserControl>(window).FirstOrDefault();
+				binaryDiff = UiClick.FindAll<BinaryDiffView>(window).FirstOrDefault();
 				return binaryDiff != null;
-			}), "选中 " + filePath + " 后应出现 BinaryDiffUserControl");
+			}), "选中 " + filePath + " 后应出现 BinaryDiffView");
 			return binaryDiff;
+		}
+
+		/// <summary>Commit 视图选中 unstaged 非图片二进制文件并等待插件 Hex 对比视图
+		/// (HexDiffView,forkplus.hex 兜底)装配。</summary>
+		private static HexDiffView OpenCommitViewAndWaitHexDiff(string repo, string filePath, out MainWindow outWindow)
+		{
+			RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out MainWindow window);
+			outWindow = window;
+			repoControl.ActivateCommitView();
+			Dispatcher.UIThread.RunJobs();
+			CommitUserControl commit = repoControl.Content.CommitUserControl;
+			StageFileUserControl stage = commit.StageFileUserControl;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				return stage.AllUnstagedFiles.Any(f => f.Path == filePath);
+			}), "工作区状态未装配(未找到未暂存文件 " + filePath + ")");
+			stage.UnstagedFilesFileListUserControl.SelectFile(filePath);
+			Dispatcher.UIThread.RunJobs();
+			HexDiffView hexDiff = null;
+			Assert.True(UiClick.WaitFor(delegate
+			{
+				hexDiff = UiClick.FindAll<HexDiffView>(window).FirstOrDefault();
+				return hexDiff != null;
+			}), "选中 " + filePath + " 后应出现 HexDiffView(forkplus.hex 兜底)");
+			return hexDiff;
 		}
 
 		/// <summary>程序化选区并强制渲染一帧,令选区浮窗(Stage/Discard 悬浮按钮)出现。</summary>

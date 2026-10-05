@@ -1,11 +1,12 @@
-// v4.4.0（二进制对比：查看器注册表架构）的测试。
+// v5.0.0（二进制对比：查看器注册表架构）的测试。
 // 覆盖注册表的判定与扩展点：
 //   1) 内置查看器按优先级解析——GIF 字节归动图、静态图字节归静态图、无字节归文件卡片兜底；
 //   2) 自定义查看器 Register 后可按优先级抢占内置实现，未命中时仍走内置链；
 //   3) ResetToDefaults 恢复内置链（Dispose 里再兜一次，避免自定义注册污染其它用例）。
+// v5.0.0：BinaryViewerRegistry 迁移至插件工程（ForkPlus.Plugins.BuiltIn.ImageDiff）。
 using System;
 using System.IO;
-using ForkPlus.UI.UserControls.BinaryDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using Xunit;
 
 namespace ForkPlus.Tests

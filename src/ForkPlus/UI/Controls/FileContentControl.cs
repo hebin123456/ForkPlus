@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.UI.Controls.Editor;
-using ForkPlus.UI.Controls.Editor.Hex;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
@@ -132,8 +132,8 @@ namespace ForkPlus.UI.Controls
 			if (hexContent != null)
 			{
 				ShowSubView(() => new HexContentControl(), delegate(HexContentControl c, FileControlHeaderUserControl h)
-				{
-					c.SetContent(hexContent);
+			{
+				c.SetContent(hexContent.Path, hexContent.Data);
 					ShowHeader(h, hexContent.Path, FileControlHeaderMode.Hex);
 				});
 				return;

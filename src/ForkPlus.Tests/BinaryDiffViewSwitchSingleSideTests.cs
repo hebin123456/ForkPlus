@@ -1,15 +1,19 @@
 // 回归测试（2026-09-18，"新增文件从十六进制切回并排模式左侧出现空文件"）：
-// BinaryDiffUserControl.ImageDiffSelectedItem_Changed 切回 Side-by-Side 时此前无条件
-// Show 左右两个内容控件——新增文件（仅 dst 内容，UpdateContent 已 Collapse 左侧）/
-// 删除文件（仅 src 内容）切 Hex 再切回后，无内容一侧的空面板被重新显示。
-// 修复后按 _srcBinaryContent/_dstBinaryContent 有无恢复可见性。
-// 直接驱动 UpdateDiff（生产路径：FileDiffControl → UpdateDiff(repoControl,
-// UnknownBinaryDiffContent, true, HexDiffContent)），不依赖真实 git 仓库。
+// 视图切回 Side-by-Side 时此前无条件 Show 左右两个内容控件——新增文件（仅 dst 内容，
+// UpdateContent 已 Collapse 左侧）/删除文件（仅 src 内容）切 Hex 再切回后，无内容一侧的
+// 空面板被重新显示。修复后按 _context.Src/Dst 有无恢复可见性。
+// v5.0.0：对比视图插件化——生产路径变为 FileDiffControl → PluginDiffViewControl.UpdateDiff
+//（repoControl, UnknownBinaryDiffContent, true, HexDiffContent）→ 插件视图；非图片二进制由
+// forkplus.hex 兜底的 HexDiffView 接管（ViewModeSelectedItem_Changed 同样按内容恢复可见性）。
+// 直接驱动 PluginDiffViewControl.UpdateDiff（签名不变），再取挂载的 HexDiffView 断言。
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using ForkPlus.Git;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using Xunit;
@@ -19,23 +23,24 @@ namespace ForkPlus.Tests
 	[Collection("HeadlessAvalonia")]
 	public class BinaryDiffViewSwitchSingleSideTests
 	{
-		/// <summary>装配 BinaryDiffUserControl 并走生产 UpdateDiff 路径（反射注入 GitModule，
-		/// 与 BinaryDiffEndToEndTests 同款；单边内容不会触发 LFS 分支，GitModule 仅作占位）。</summary>
-		private static BinaryDiffUserControl ShowBinaryDiffInWindow(ChangedFile changedFile,
+		/// <summary>装配 PluginDiffViewControl 并走生产 UpdateDiff 路径（反射注入 GitModule，
+		/// 与 BinaryDiffEndToEndTests 同款；单边内容不会触发 LFS 分支，GitModule 仅作占位），
+		/// 返回其内部路由挂载的插件 HexDiffView（forkplus.hex 兜底）。</summary>
+		private static HexDiffView ShowBinaryDiffInWindow(ChangedFile changedFile,
 			UnknownBinaryDiffContent unknownContent, HexDiffContent hexContent, out Window outWindow)
 		{
 			var repoControl = new RepositoryUserControl();
 			typeof(RepositoryUserControl).GetProperty("GitModule")!
 				.SetValue(repoControl, new GitModule(Directory.GetCurrentDirectory(),
 					Directory.GetCurrentDirectory(), null, null));
-			var binaryDiff = new BinaryDiffUserControl();
-			var window = new Window { Width = 900, Height = 500, Content = binaryDiff };
+			var diffHost = new PluginDiffViewControl();
+			var window = new Window { Width = 900, Height = 500, Content = diffHost };
 			window.Show();
 			Dispatcher.UIThread.RunJobs();
-			binaryDiff.UpdateDiff(repoControl, unknownContent, true, hexContent);
+			diffHost.UpdateDiff(repoControl, unknownContent, true, hexContent);
 			Dispatcher.UIThread.RunJobs();
 			outWindow = window;
-			return binaryDiff;
+		return diffHost.GetVisualDescendants().OfType<HexDiffView>().FirstOrDefault();
 		}
 
 		private static MemoryStream NewBytes(int count)
@@ -60,7 +65,8 @@ namespace ForkPlus.Tests
 						ChangeType.Added, staged: true, isNew: true, tracked: true);
 					var unknown = new UnknownBinaryDiffContent(changedFile, null, 64);
 					var hex = new HexDiffContent(changedFile, null, NewBytes(64));
-					BinaryDiffUserControl binaryDiff = ShowBinaryDiffInWindow(changedFile, unknown, hex, out window);
+					HexDiffView binaryDiff = ShowBinaryDiffInWindow(changedFile, unknown, hex, out window);
+					Assert.NotNull(binaryDiff);
 
 					// ===== 1) 初始并排卡片视图：左侧（old）应保持 Collapse，右侧（new）显示 =====
 					holder[0] = binaryDiff.SideBySideRadioButton.IsChecked.GetValueOrDefault();
@@ -112,7 +118,8 @@ namespace ForkPlus.Tests
 						ChangeType.Deleted, staged: true, isNew: false, tracked: true);
 					var unknown = new UnknownBinaryDiffContent(changedFile, 64, null);
 					var hex = new HexDiffContent(changedFile, NewBytes(64), null);
-					BinaryDiffUserControl binaryDiff = ShowBinaryDiffInWindow(changedFile, unknown, hex, out window);
+					HexDiffView binaryDiff = ShowBinaryDiffInWindow(changedFile, unknown, hex, out window);
+					Assert.NotNull(binaryDiff);
 
 					holder[0] = binaryDiff.SideBySideRadioButton.IsChecked.GetValueOrDefault();
 					holder[1] = binaryDiff.SrcFileContentUserControl.IsVisible;

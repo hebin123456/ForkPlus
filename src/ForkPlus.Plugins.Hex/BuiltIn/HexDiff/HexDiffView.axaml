@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:pd="clr-namespace:ForkPlus.Plugins.BuiltIn.ImageDiff;assembly=ForkPlus.Plugins.Ui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView">
+  <!-- v5.0.0：Hex 对比视图（forkplus.hex 插件，二进制文件通配兜底）。
+       布局对齐 4.3.2 二进制文件的非图片路径：默认 side-by-side 文件卡片
+       （BinaryContentPanel，共享组件），底部 Side-by-Side / Hex 切换按钮，
+       Hex 懒创建 HexDiffUserControl（共享渲染内核）。图片专属的 Swipe/洋葱皮/
+       像素差异高亮/缩放还原不在此视图（见图片插件 BinaryDiffView）。
+       主题资源与原版一致（DynamicResource 运行期从宿主 App 解析）。 -->
+  <Grid>
+    <Grid.Background>
+      <DynamicResource ResourceKey="BackgroundBrush" />
+    </Grid.Background>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.Children>
+      <pd:BinaryContentPanel Grid.Column="0" x:Name="SrcFileContentUserControl" />
+      <pd:BinaryContentPanel Grid.Column="1" x:Name="DstFileContentUserControl" />
+      <ContentControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="HexDiffViewContainer" />
+      <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Height="24" HorizontalAlignment="Center" x:Name="ViewModeButtonsContainer">
+        <StackPanel.Children>
+          <RadioButton Grid.Column="0" Grid.Row="0" IsCheckedChanged="ViewModeSelectedItem_Changed" x:Name="SideBySideRadioButton">Side-by-Side<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+          <RadioButton Grid.Column="1" Grid.Row="0" IsCheckedChanged="ViewModeSelectedItem_Changed" x:Name="HexRadioButton">Hex<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <pd:DiffFallbackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="FallbackUserControl" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

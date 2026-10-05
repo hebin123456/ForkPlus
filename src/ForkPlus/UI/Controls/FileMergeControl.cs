@@ -35,7 +35,7 @@ namespace ForkPlus.UI.Controls
 					{
 						break;
 					}
-					ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+					ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 					{
 						c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 						{
@@ -66,7 +66,7 @@ namespace ForkPlus.UI.Controls
 									else
 									{
 										BinaryDiffContent binaryDiffContent = binaryDiffContentResult.Result;
-										ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+										ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 										{
 											c.DiffImageSourceChanged += delegate(object s, bool diffImageExists)
 											{
@@ -96,7 +96,7 @@ namespace ForkPlus.UI.Controls
 								else
 								{
 									UnknownBinaryDiffContent unknownBinaryDiffContent2 = unknownBinaryDiffContentResult.Result;
-									ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+									ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 									{
 										c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent2, showTitle: false);
 										h.Hide();
@@ -156,7 +156,7 @@ namespace ForkPlus.UI.Controls
 				BinaryDiffContent imageDiffContent = result as BinaryDiffContent;
 				if (imageDiffContent != null)
 				{
-					ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+					ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 					{
 						c.UpdateDiff(repositoryUserControl, imageDiffContent, showTitle: false);
 						h.Collapse();
@@ -167,7 +167,7 @@ namespace ForkPlus.UI.Controls
 				UnknownBinaryDiffContent unknownBinaryDiffContent = result as UnknownBinaryDiffContent;
 				if (unknownBinaryDiffContent != null)
 				{
-					ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+					ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 					{
 						c.UpdateDiff(repositoryUserControl, unknownBinaryDiffContent, showTitle: false);
 						h.Collapse();
@@ -178,7 +178,7 @@ namespace ForkPlus.UI.Controls
 				LfsDiffContent lfsDiffContent = result as LfsDiffContent;
 				if (lfsDiffContent != null)
 				{
-					ShowSubView(() => new BinaryDiffUserControl(), delegate(BinaryDiffUserControl c, FileControlHeaderUserControl h)
+					ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
 					{
 						c.UpdateDiff(repositoryUserControl, lfsDiffContent, showTitle: false);
 						h.Collapse();

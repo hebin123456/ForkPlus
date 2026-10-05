@@ -2,10 +2,12 @@
 // 覆盖三层：
 //   1) 控件层：ZoomPanImageControl / OverlayImageControl 的 IsZoomable 与共享状态注入；
 //   2) 并排语义：两个控件共享同一 ImageZoomState 时，视口中心对应同一归一化图像坐标（中心点对齐）；
-//   3) 装配层：BinaryDiffUserControl 把同一 ImageZoomState 实例注入四个图片视图，
+//   3) 装配层：插件 BinaryDiffView 把同一 ImageZoomState 实例注入四个图片视图，
 //      并在缩放后于对比视图中间偏下悬浮显示"还原大小 (N%)"按钮（Hex 模式隐藏，不塞进底部工具条）、
 //      点击后还原为初始状态。
 // 纯布局数学见 ImageZoomStateTests（不依赖 headless）。
+// v5.0.0：ZoomPanImageControl / OverlayImageControl / ImageZoomState / BinaryDiffView
+//   均迁移至插件工程（ForkPlus.Plugins.BuiltIn.ImageDiff）。
 using System;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,7 +15,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ForkPlus.UI.UserControls.BinaryDiff;
+using ForkPlus.Plugins.BuiltIn.ImageDiff;
 using Xunit;
 
 namespace ForkPlus.Tests
@@ -131,11 +133,11 @@ namespace ForkPlus.Tests
 		}
 
 		[Fact]
-		public void BinaryDiffUserControl_InjectsSameZoomStateIntoAllImageViewModes()
+		public void BinaryDiffView_InjectsSameZoomStateIntoAllImageViewModes()
 		{
 			HeadlessAppBootstrap.Run(delegate
 			{
-				BinaryDiffUserControl control = new BinaryDiffUserControl();
+				BinaryDiffView control = new BinaryDiffView();
 				Window window = new Window { Width = 900.0, Height = 500.0, Content = control };
 				try
 				{
@@ -162,7 +164,7 @@ namespace ForkPlus.Tests
 		{
 			HeadlessAppBootstrap.Run(delegate
 			{
-				BinaryDiffUserControl control = new BinaryDiffUserControl();
+				BinaryDiffView control = new BinaryDiffView();
 				Window window = new Window { Width = 900.0, Height = 500.0, Content = control };
 				try
 				{

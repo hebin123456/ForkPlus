@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.Plugins.BuiltIn.ImageDiff.DiffFallbackPanel">
+  <!-- v5.0.0：自主工程 FallbackUserControl 的最小移植（插件化）——对比视图双侧无内容时的回退层，
+       仅保留图标 + 可选消息（原控件的按钮/标题能力对比视图用不到）。主题资源运行期从宿主 App 解析。
+       v5.0.0：从 Image 插件移入共享组件工程（Ui），图片/Hex 插件视图共用。 -->
+  <UserControl.Background>
+    <DynamicResource ResourceKey="FallbackBackgroundBrush" />
+  </UserControl.Background>
+  <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+    <DockPanel.Children>
+      <Image DockPanel.Dock="Top" Margin="0" Height="100" MaxWidth="100" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="FallbackImage">
+        <Image.Source>
+          <DynamicResource ResourceKey="FallbackIcon" />
+        </Image.Source>
+      </Image>
+      <TextBlock Margin="0,10,0,0" TextAlignment="Center" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap" x:Name="FallbackMessageTextBlock">
+        <TextBlock.Foreground>
+          <DynamicResource ResourceKey="ForegroundBrush.Gray" />
+        </TextBlock.Foreground>
+      </TextBlock>
+    </DockPanel.Children>
+  </DockPanel>
+</UserControl>

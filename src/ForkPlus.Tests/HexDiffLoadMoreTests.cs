@@ -4,6 +4,8 @@
 // 2) E2E（真实 FileDiffControl 路径 + 真实鼠标点击）：48KB→56KB 大二进制选中后出现
 //    "加载更多"按钮，坐标级 MouseDown/Up 点击（完整 hit-test 路由，暴露遮挡/命中失效），
 //    断言内容增长、追加段 offset 连续（0x4000 起）、按钮文案更新。
+// v5.0.0：HexDiffUserControl / HexEditor 迁移至插件工程（ForkPlus.Plugins.BuiltIn.HexDiff），
+//   E2E 的宿主子视图改为 PluginDiffViewControl（非图片二进制挂载插件 HexDiffView，forkplus.hex 兜底）。
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,10 +19,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using ForkPlus.Git;
+using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.Settings;
 using ForkPlus.UI;
-using ForkPlus.UI.Controls.Editor.Hex;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
 using ForkPlus.UI.UserControls.Preferences;
@@ -31,11 +32,10 @@ namespace ForkPlus.Tests
 	[Collection("HeadlessAvalonia")]
 	public class HexDiffLoadMoreTests
 	{
-		private static HexDiffContent MakeBigContent(int srcLen, int dstLen)
+		private static MemoryStream MakeBytes(int len, int seed)
 		{
-			byte[] src = Enumerable.Range(0, srcLen).Select(i => (byte)(i % 251)).ToArray();
-			byte[] dst = Enumerable.Range(0, dstLen).Select(i => (byte)((i * 7 + 13) % 253)).ToArray();
-			return new HexDiffContent(null, new MemoryStream(src), new MemoryStream(dst));
+			byte[] data = Enumerable.Range(0, len).Select(i => (byte)((i * seed + 13) % 253)).ToArray();
+			return new MemoryStream(data);
 		}
 
 		private static async Task PumpAsync(int ms)
@@ -81,7 +81,7 @@ namespace ForkPlus.Tests
 				Dispatcher.UIThread.RunJobs();
 
 				// 40KB src / 48KB dst：均 > 16KB 首屏截断阈值
-				hex.SetContent(MakeBigContent(40 * 1024, 48 * 1024));
+				hex.SetContent(MakeBytes(40 * 1024, 1), MakeBytes(48 * 1024, 7));
 				await PumpAsync(600);
 
 				var editors = hex.GetVisualDescendants().OfType<HexEditor>().ToArray();
@@ -197,12 +197,16 @@ namespace ForkPlus.Tests
 						// 控件，旧引用失效），并强制走 Hex 切换。装配信号用生产 ShowHexDiffView 必然
 						// 赋值的 HexDiffViewContainer.Content 是否为 HexDiffUserControl 来判断——
 						// headless 下容器 IsVisible 不一定反映（可见性不落地），但 SetContent 一定会发生。
-						BinaryDiffUserControl cards = null;
+						// v5.0.0：宿主子视图为 PluginDiffViewControl，Hex 相关控件在内部挂载的
+						// 插件 HexDiffView（forkplus.hex 兜底）上（HexRadioButton / HexDiffViewContainer）。
+						HexDiffView cards = null;
 						HexDiffUserControl hexDiff = null;
 						bool assembled = UiClick.WaitFor(delegate
 						{
 							var cand = UiClick.FindAll<ForkPlus.UI.Controls.FileDiffControl>(window)
-								.Select(f => f.CurrentSubView as BinaryDiffUserControl)
+								.Select(f => f.CurrentSubView as PluginDiffViewControl)
+								.Where(p => p != null)
+								.Select(p => p.GetVisualDescendants().OfType<HexDiffView>().FirstOrDefault())
 								.FirstOrDefault(b => b != null && b.HexRadioButton.IsVisible);
 							if (cand == null)
 							{

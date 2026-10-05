@@ -116,20 +116,22 @@ namespace ForkPlus.Tests
 
 				control.Content = diffResult;
 				// v3.7.2：默认简略卡片视图，点击 Hex 后懒装配 HexDiffUserControl
-				ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl cards = null;
-				for (int i = 0; i < 50; i++)
+				// v5.0.0：宿主子视图为 PluginDiffViewControl，卡片/Hex 控件在其内部挂载的
+				// 插件 HexDiffView（forkplus.hex 兜底）上。
+				ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView cards = null;
+				for (int i = 0; i < 50 && cards == null; i++)
 				{
 					Task.Delay(100).GetAwaiter().GetResult();
 					Dispatcher.UIThread.RunJobs();
 					Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl b)
+					if (control.CurrentSubView is ForkPlus.UI.UserControls.BinaryDiff.PluginDiffViewControl pluginHost)
 					{
-						cards = b;
-						break;
+						cards = pluginHost.GetVisualDescendants()
+							.OfType<ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView>().FirstOrDefault();
 					}
 				}
 
-				string diag = "subView=" + (cards == null ? "<null>" : "BinaryDiffUserControl");
+				string diag = "subView=" + (cards == null ? "<null>" : "HexDiffView");
 				if (cards != null && cards.HexRadioButton.IsVisible)
 				{
 					cards.HexRadioButton.IsChecked = true;
@@ -139,14 +141,14 @@ namespace ForkPlus.Tests
 						Task.Delay(100).GetAwaiter().GetResult();
 						Dispatcher.UIThread.RunJobs();
 						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
-						var eds = cards.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>().ToArray();
+						var eds = cards.GetVisualDescendants().OfType<ForkPlus.Plugins.BuiltIn.HexDiff.HexEditor>().ToArray();
 						if (eds.Length >= 2 && eds.All(e => !string.IsNullOrEmpty(e.Text)))
 						{
 							break;
 						}
 					}
 				}
-				var hexEditors = (cards?.GetVisualDescendants().OfType<ForkPlus.UI.Controls.Editor.Hex.HexEditor>() ?? Enumerable.Empty<ForkPlus.UI.Controls.Editor.Hex.HexEditor>()).ToArray();
+				var hexEditors = (cards?.GetVisualDescendants().OfType<ForkPlus.Plugins.BuiltIn.HexDiff.HexEditor>() ?? Enumerable.Empty<ForkPlus.Plugins.BuiltIn.HexDiff.HexEditor>()).ToArray();
 				for (int i = 0; i < Math.Min(2, hexEditors.Length); i++)
 				{
 					textLens[i] = hexEditors[i].Text == null ? -1 : hexEditors[i].Text.Length;
@@ -163,8 +165,8 @@ namespace ForkPlus.Tests
 
 			string diag = diagHolder[0] ?? "<未执行>";
 			object subView = holder[0];
-			Assert.True(subView is ForkPlus.UI.UserControls.BinaryDiff.BinaryDiffUserControl,
-				"提交历史的二进制 diff 应默认显示简略卡片视图，实际: " + diag);
+			Assert.True(subView is ForkPlus.Plugins.BuiltIn.HexDiff.HexDiffView,
+			"提交历史的二进制 diff 应默认显示简略卡片视图（HexDiffView，forkplus.hex 兜底），实际: " + diag);
 			Assert.True(diag.Contains("Hex按钮可见=True") && diag.Contains("Hex容器可见=True"),
 				"点击 Hex 后应进入十六进制对比视图，实际: " + diag);
 			Assert.True(textLens[0] > 0 || textLens[1] > 0,

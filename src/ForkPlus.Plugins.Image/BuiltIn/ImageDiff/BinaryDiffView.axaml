@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:pd="clr-namespace:ForkPlus.Plugins.BuiltIn.ImageDiff;assembly=ForkPlus.Plugins.Ui" xmlns:img="clr-namespace:ForkPlus.Plugins.BuiltIn.ImageDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.Plugins.BuiltIn.ImageDiff.BinaryDiffView">
+  <!-- v5.0.0：自主工程 BinaryDiffUserControl.axaml 迁移（插件化），实现 IDiffView。
+       布局/主题资源与原版一致（DynamicResource 运行期从宿主 App 解析）。 -->
+  <UserControl.Resources>
+    <!-- v4.3.1：图片对比的「还原大小 (N%)」悬浮按钮样式——压在图片之上的半透明胶囊。
+         不用默认按钮底色（会与图片撞色/被吞掉），改用中性深底 + 细描边 + 投影：
+         任何图片背景上都读得清。高度 28、上下内边距 0（避免默认模板的垂直裁剪）。 -->
+    <ControlTheme x:Key="ImageZoomResetButton" TargetType="Button">
+      <Setter Property="Background" Value="#B3000000" />
+      <Setter Property="Foreground" Value="#FFFFFFFF" />
+      <Setter Property="BorderBrush" Value="#40FFFFFF" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14,0" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Pill" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+              <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Color="{DynamicResource DropShadowColor}" Opacity="0.35" OffsetY="2" />
+              </Border.Effect>
+              <ContentPresenter Focusable="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+      <Style Selector="^:pointerover /template/ Border#Pill">
+        <Setter Property="Background" Value="#D9000000" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#Pill">
+        <Setter Property="Background" Value="#F2000000" />
+      </Style>
+    </ControlTheme>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.Background>
+      <DynamicResource ResourceKey="BackgroundBrush" />
+    </Grid.Background>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <Grid.Children>
+      <pd:BinaryContentPanel Grid.Column="0" x:Name="SrcFileContentUserControl" />
+      <pd:BinaryContentPanel Grid.Column="1" x:Name="DstFileContentUserControl" />
+      <img:SwipeImageDiffUserControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="SwipeImageDiffView" />
+      <img:OnionSkinImageDiffUserControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="OnionSkinImageDiffView" />
+      <ContentControl Grid.Column="0" Grid.ColumnSpan="2" x:Name="HexDiffViewContainer" />
+      <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Height="24" HorizontalAlignment="Center" x:Name="ViewModeButtonsContainer">
+        <StackPanel.Children>
+          <RadioButton Grid.Column="0" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="SideBySideRadioButton">Side-by-Side<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+          <RadioButton Grid.Column="1" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="SwipeRadioButton">Swipe<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+          <RadioButton Grid.Column="2" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="OnionSkinRadioButton">Onion Skin<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+          <RadioButton Grid.Column="3" Grid.Row="0" IsCheckedChanged="ImageDiffSelectedItem_Changed" x:Name="HexRadioButton">Hex<RadioButton.VerticalAlignment>Top</RadioButton.VerticalAlignment><RadioButton.Theme><StaticResource ResourceKey="RevisionDetailsBarButton" /></RadioButton.Theme></RadioButton>
+        </StackPanel.Children>
+      </StackPanel>
+      <!-- v4.3.1：图片被滚轮缩放/拖动后，在对比视图中间偏下悬浮一枚「还原大小 (N%)」胶囊。
+           文案含动态百分比，由代码按当前语言生成；Margin 上边距 90 → 视觉下移约 45px。
+           仅并排/滑动/洋葱皮显示（Hex 不可缩放，选中时由代码隐藏）。 -->
+      <Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ResetZoomButton" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,90,0,0" IsVisible="False" Click="ResetZoomButton_Click" Theme="{StaticResource ImageZoomResetButton}" />
+      <pd:DiffFallbackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="FallbackUserControl" />
+    </Grid.Children>
+  </Grid>
+</UserControl>

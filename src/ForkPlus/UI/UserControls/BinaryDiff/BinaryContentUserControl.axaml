@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.BinaryContentUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fuub="clr-namespace:ForkPlus.UI.UserControls.BinaryDiff" xmlns:plug="clr-namespace:ForkPlus.Plugins.BuiltIn.ImageDiff;assembly=ForkPlus.Plugins.Ui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.BinaryDiff.BinaryContentUserControl" xmlns:fuc="clr-namespace:ForkPlus.UI.Controls">
   <UserControl.Styles>
     <!-- 原 WPF LfsProgressBar Style（Theme/Styles/Progressbar.axaml）迁移：
          ControlTheme 无 BasedOn 会失去 Fluent 模板，改用 Classes + Style 叠加到默认主题上 -->
@@ -65,7 +65,7 @@
                             <Grid.Children>
                               <!-- v4.3.1：Viewbox（只能自适应缩放）替换为可缩放/平移的图片控件，
                                    滚轮缩放、放大后拖动平移由控件自身处理；缩放状态与其它视图共享。 -->
-                              <fuub:ZoomPanImageControl x:Name="ImageControl" />
+                              <plug:ZoomPanImageControl x:Name="ImageControl" />
                               <!-- v4.3.2：动图播放控制条（代码构建），悬浮在本列图片区域底部居中；
                                    仅当该侧是动图时显示，静态图始终隐藏。 -->
                               <ContentControl x:Name="PlaybackBarContainer" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,14" IsVisible="False" />
