@@ -600,6 +600,27 @@ namespace ForkPlus.Tests
 							Assert.Equal(PreferencesLocalization.Translate("General", "zh-Hans"),
 								window.GeneralTabItem.Header);
 							ManualScreenshotHelper.Snap(window, "01-preferences-general", "21-preferences");
+
+							// ----- 逐标签页截图（简体中文界面，供手册「设置标签页」逐页配图）-----
+							// 顺序与 XAML 中 PreferencesTabControl 的标签页一致；General 已由
+							// 01-preferences-general 覆盖，此处从 Commit 起逐个切换并截图。
+							var tabShots = new (string Name, TabItem Tab)[]
+							{
+								("05-commit-tab", window.CommitTabItem),
+								("06-ai-review-tab", window.AiReviewTabItem),
+								("07-git-tab", window.GitTabItem),
+								("08-credentials-tab", window.CredentialsTabItem),
+								("09-integration-tab", window.IntegrationTabItem),
+								("10-custom-commands-tab", window.CustomCommandsTab),
+								("11-import-export-tab", window.ImportExportTab),
+								("12-plugins-tab", window.PluginsTabItem)
+							};
+							foreach (var shot in tabShots)
+							{
+								window.PreferencesTabControl.SelectedItem = shot.Tab;
+								RunJobs();
+								ManualScreenshotHelper.Snap(window, shot.Name, "21-preferences");
+							}
 						}
 						finally
 						{

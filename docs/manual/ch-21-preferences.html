@@ -23,17 +23,19 @@
   <p>「偏好设置」集中管理 ForkPlus 的全局配置，通过「偏好设置」菜单打开。窗口顶部以多个标签页组织设置项，改动即时生效。本手册重点介绍其中的<strong>切换界面语言</strong>与<strong>切换主题</strong>。</p>
 
   <h2>设置标签页</h2>
-  <p>偏好设置窗口包含多个标签页，可按功能域快速定位：</p>
+  <p>偏好设置窗口共 <strong>9 个标签页</strong>，可按功能域快速定位：</p>
   <ul>
     <li><strong>通用（General）</strong>：界面语言、差异视图外观、提交排序、Git 行为（自动拉取、提交后推送等）。</li>
-    <li><strong>提交（Commit）</strong>：提交相关默认行为。</li>
-    <li><strong>Git</strong>：Git 核心参数与行为。</li>
-    <li><strong>集成（Integration）</strong>：与外部工具/服务的集成。</li>
+    <li><strong>提交（Commit）</strong>：提交相关默认行为（拼写检查、提交信息长度提醒等）。</li>
+    <li><strong>AI 增强（AI Enhancement）</strong>：AI 提交/审查/开发助手服务配置。</li>
+    <li><strong>Git</strong>：Git 核心参数与行为、全局身份、外部 git 实例。</li>
+    <li><strong>凭据（Credentials）</strong>：管理已记忆的账号与凭据。</li>
+    <li><strong>集成（Integration）</strong>：与外部工具/服务的集成（如问题跟踪器）。</li>
     <li><strong>自定义命令（Custom Commands）</strong>：管理自定义的 Git 命令菜单。</li>
-    <li><strong>AI 增强（AI）</strong>：AI 提交/审查/开发助手服务配置。</li>
     <li><strong>导入/导出（Import/Export）</strong>：设置与快捷键的导入导出。</li>
     <li><strong>插件（Plugins）</strong>：查看/启用/禁用对比视图插件、重新加载插件（无需重启，详见 <a href="ch-26-plugin-mechanism.html">第 26 章</a>）。</li>
   </ul>
+  <p>各标签页界面见下文「<a href="#tab-overview">各标签页一览</a>」。</p>
 
   <figure>
     <img src="screenshots/21-preferences/01-preferences-general.png" alt="偏好设置 - 通用页" loading="lazy">
@@ -89,6 +91,49 @@
   </figure>
 
   <div class="tip"><strong>小贴士：</strong>主题选择会持久化，并在新开窗口/标签页中保持一致。若希望跟随系统外观，可在主题菜单中选用「随系统」的选项。</div>
+
+  <h2 id="tab-overview">各标签页一览</h2>
+  <p>下面按标签页顺序展示 9 个设置页的界面（简体中文）。「通用」页见上文图 21-1，其余各页如下：</p>
+
+  <figure>
+    <img src="screenshots/21-preferences/05-commit-tab.png" alt="偏好设置 - 提交页" loading="lazy">
+    <figcaption>图 21-6　「提交（Commit）」页：提交信息拼写检查、长度提醒等提交相关默认行为</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/06-ai-review-tab.png" alt="偏好设置 - AI 增强页" loading="lazy">
+    <figcaption>图 21-7　「AI 增强（AI Enhancement）」页：AI 提交/审查/开发助手服务地址、重试与超时、自定义技能</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/07-git-tab.png" alt="偏好设置 - Git 页" loading="lazy">
+    <figcaption>图 21-8　「Git」页：全局身份（user.name/email）、外部 git 实例选择与 AI 归属开关</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/08-credentials-tab.png" alt="偏好设置 - 凭据页" loading="lazy">
+    <figcaption>图 21-9　「凭据（Credentials）」页：管理 ForkPlus 记忆的账号与访问凭据</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/09-integration-tab.png" alt="偏好设置 - 集成页" loading="lazy">
+    <figcaption>图 21-10　「集成（Integration）」页：与外部工具/服务（如问题跟踪器）的集成配置</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/10-custom-commands-tab.png" alt="偏好设置 - 自定义命令页" loading="lazy">
+    <figcaption>图 21-11　「自定义命令（Custom Commands）」页：新增/编辑/删除自定义 Git 命令菜单</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/11-import-export-tab.png" alt="偏好设置 - 导入导出页" loading="lazy">
+    <figcaption>图 21-12　「导入/导出（Import/Export）」页：导出/导入设置与快捷键</figcaption>
+  </figure>
+
+  <figure>
+    <img src="screenshots/21-preferences/12-plugins-tab.png" alt="偏好设置 - 插件页" loading="lazy">
+    <figcaption>图 21-13　「插件（Plugins）」页：查看插件名称/版本/描述/匹配扩展名与优先级，启用禁用与「重新加载插件」；图中内置图片对比与 Hex 对比插件均为 v1.0.0</figcaption>
+  </figure>
 
   <h2>其他通用设置示例</h2>
   <ul>
