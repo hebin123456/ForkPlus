@@ -311,6 +311,13 @@ jobs:
   #               E2eStageScrollbarRefresh 显式并入 e2e-3；AskPass/RI/AutoUpdaterTests
   #               三个秒级小工程（10+6+54 用例）搭最轻的 e2e-1 凑平衡（core-a 的纯
   #               否定式 filter 同步排除三工程，防 solution 级命令重叠吸入）。
+  #   plugins   ：v5.0.0 新增独立测试工程 ForkPlus.Plugins.Tests（命名空间
+  #               ForkPlus.Plugins.Tests.*，42 用例）。该命名空间不以 "ForkPlus.Tests."
+  #               开头，core-a 的纯否定式 filter 下的 --list-tests 枚举在 CI 上不稳定
+  #               （实测只列出 6/42，实际 Run tests 却全跑 42 → 守卫虚报缺失 36）。
+  #               故改为显式正向前缀 `FullyQualifiedName~ForkPlus.Plugins` 并入 e2e-1，
+  #               并在 core-a 同步加 `!~ForkPlus.Plugins` 排除，避免重叠。今后插件测试
+  #               工程沿用 ForkPlus.Plugins.* 命名空间即可自动被 e2e-1 吸入。
   #   e2e-3      在 2026-09-19(v4.1.6) 起把前缀扩到 E2e3（E2e30+ 模块并入本片）：新增的
   #               E2e30RemoveRemoteTests 曾落在所有分片 filter 之外——E2e2 前缀覆盖不到
   #               E2e3x，且 core 片负匹配 `!~E2e` 把它排除，导致"分片完整性守卫"红灯
@@ -346,13 +353,13 @@ jobs:
       matrix:
         include:
           - shard: e2e-1
-            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e0|FullyQualifiedName~ForkPlus.AskPass|FullyQualifiedName~ForkPlus.RI|FullyQualifiedName~ForkPlus.AutoUpdaterTests"
+            test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e0|FullyQualifiedName~ForkPlus.AskPass|FullyQualifiedName~ForkPlus.RI|FullyQualifiedName~ForkPlus.AutoUpdaterTests|FullyQualifiedName~ForkPlus.Plugins"
           - shard: e2e-2
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e1"
           - shard: e2e-3
             test-filter: "FullyQualifiedName~ForkPlus.Tests.E2e2|FullyQualifiedName~ForkPlus.Tests.E2e3|FullyQualifiedName~ForkPlus.Tests.E2eInfra|FullyQualifiedName~ForkPlus.Tests.E2eStage"
           - shard: core-a
-            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.Tests.Manual)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
+            test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName!~ForkPlus.Tests.Manual)&(FullyQualifiedName!~ForkPlus.AskPass)&(FullyQualifiedName!~ForkPlus.RI)&(FullyQualifiedName!~ForkPlus.AutoUpdaterTests)&(FullyQualifiedName!~ForkPlus.Plugins)&(FullyQualifiedName!~ForkPlus.Tests.T)&(FullyQualifiedName!~ForkPlus.Tests.U)&(FullyQualifiedName!~ForkPlus.Tests.V)&(FullyQualifiedName!~ForkPlus.Tests.W)"
           - shard: core-b
             test-filter: "(FullyQualifiedName!~ForkPlus.Tests.E2e)&(FullyQualifiedName~ForkPlus.Tests.T|FullyQualifiedName~ForkPlus.Tests.U|FullyQualifiedName~ForkPlus.Tests.V|FullyQualifiedName~ForkPlus.Tests.W)"
     steps:
