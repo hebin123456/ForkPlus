@@ -20,6 +20,12 @@ namespace ForkPlus.UI.Plugins
 		/// <summary>用户绑定：扩展名（小写含点）→ 插件 Id。覆盖一切自动路由。</summary>
 		private static readonly Dictionary<string, string> UserBindings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
+		/// <summary>
+		/// v5.0.1：被用户禁用的插件 Id 集合。禁用只把插件排除出路由，注册条目仍保留
+		/// （偏好设置 → 插件页需要展示其名称/版本/描述，可随时重新启用）。
+		/// </summary>
+		private static readonly HashSet<string> DisabledIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
 		/// <summary>注册插件（同 Id 替换），并按优先级降序保持顺序（同级则后注册的排在后面）。</summary>
 		public static void Register(IDiffViewPlugin plugin)
 		{
@@ -39,13 +45,79 @@ namespace ForkPlus.UI.Plugins
 			}
 		}
 
-		/// <summary>清空全部插件与用户绑定（诊断/测试用；正常流程插件由加载器注册）。</summary>
+		/// <summary>清空全部插件、用户绑定与禁用标记（诊断/测试用；正常流程插件由加载器注册）。</summary>
 		public static void Clear()
 		{
 			lock (SyncRoot)
 			{
 				Plugins.Clear();
 				UserBindings.Clear();
+				DisabledIds.Clear();
+			}
+		}
+
+		/// <summary>
+		/// v5.0.1：仅清空已注册插件，保留用户绑定与禁用标记。
+		/// 供「重新加载插件」重建注册表时使用（禁用状态跨重载保持）。
+		/// </summary>
+		public static void ClearPlugins()
+		{
+			lock (SyncRoot)
+			{
+				Plugins.Clear();
+			}
+		}
+
+		/// <summary>v5.0.1：插件是否参与路由（未被禁用即启用）。</summary>
+		public static bool IsEnabled(string pluginId)
+		{
+			if (string.IsNullOrEmpty(pluginId))
+			{
+				return false;
+			}
+			lock (SyncRoot)
+			{
+				return !DisabledIds.Contains(pluginId);
+			}
+		}
+
+		/// <summary>v5.0.1：启用/禁用插件（只影响路由，注册条目保留）。</summary>
+		public static void SetEnabled(string pluginId, bool enabled)
+		{
+			if (string.IsNullOrEmpty(pluginId))
+			{
+				return;
+			}
+			lock (SyncRoot)
+			{
+				if (enabled)
+				{
+					DisabledIds.Remove(pluginId);
+				}
+				else
+				{
+					DisabledIds.Add(pluginId);
+				}
+			}
+		}
+
+		/// <summary>v5.0.1：用持久化的禁用列表整体覆盖当前禁用标记（启动/重载前调用）。</summary>
+		public static void SetDisabledIds(IEnumerable<string> pluginIds)
+		{
+			lock (SyncRoot)
+			{
+				DisabledIds.Clear();
+				if (pluginIds == null)
+				{
+					return;
+				}
+				foreach (string pluginId in pluginIds)
+				{
+					if (!string.IsNullOrEmpty(pluginId))
+					{
+						DisabledIds.Add(pluginId);
+					}
+				}
 			}
 		}
 
@@ -115,7 +187,7 @@ namespace ForkPlus.UI.Plugins
 			if (boundId != null)
 			{
 				IDiffViewPlugin bound = FindPluginById(boundId, snapshot);
-				if (bound != null && bound.CanHandle(request))
+				if (bound != null && IsEnabled(bound.Id) && bound.CanHandle(request))
 				{
 					return bound;
 				}
@@ -125,7 +197,7 @@ namespace ForkPlus.UI.Plugins
 			{
 				foreach (IDiffViewPlugin plugin in snapshot)
 				{
-					if (HasExtension(plugin, extension) && plugin.CanHandle(request))
+					if (IsEnabled(plugin.Id) && HasExtension(plugin, extension) && plugin.CanHandle(request))
 					{
 						return plugin;
 					}
@@ -134,7 +206,7 @@ namespace ForkPlus.UI.Plugins
 			// 3) 通配兜底（按优先级）
 			foreach (IDiffViewPlugin plugin2 in snapshot)
 			{
-				if (HasWildcard(plugin2) && plugin2.CanHandle(request))
+				if (IsEnabled(plugin2.Id) && HasWildcard(plugin2) && plugin2.CanHandle(request))
 				{
 					return plugin2;
 				}

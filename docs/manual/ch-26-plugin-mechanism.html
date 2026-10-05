@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.0.0</p>
+  <p>ForkPlus 用户手册 · 版本 v5.0.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -18,7 +18,7 @@
   <a href="ch-26-plugin-mechanism.html" class="active">对比视图插件</a>
 </nav>
 <main class="manual-main">
-  <p>从 <strong>v5.0.0</strong> 起，ForkPlus 把「对比视图」重构为<strong>插件化架构</strong>：原先写死在主程序里的<strong>图片对比</strong>与 <strong>Hex 对比</strong>拆分为两个独立的插件 DLL，由主程序在启动时从 <code>plugins/</code> 目录<strong>动态加载</strong>。这样一来，<strong>不重新编译主程序即可增删对比视图插件</strong>，第三方也能以插件形式为新的文件类型提供专属对比视图。本章说明插件如何认领文件、如何路由、如何安装，以及内置插件的行为。</p>
+  <p>从 <strong>v5.0.0</strong> 起，ForkPlus 把「对比视图」重构为<strong>插件化架构</strong>：原先写死在主程序里的<strong>图片对比</strong>与 <strong>Hex 对比</strong>拆分为两个独立的插件 DLL，由主程序在启动时从 <code>plugins/</code> 目录<strong>动态加载</strong>。这样一来，<strong>不重新编译主程序即可增删对比视图插件</strong>，第三方也能以插件形式为新的文件类型提供专属对比视图。v5.0.1 起，偏好设置新增<strong>「插件」管理页</strong>——可查看插件名称、版本号与描述，启用/禁用插件，并<strong>重新加载插件</strong>（无需重启）。本章说明插件如何认领文件、如何路由、如何在偏好设置里管理，以及内置插件的行为。</p>
 
   <h2>为什么插件化</h2>
   <ul>
@@ -32,16 +32,18 @@
   <p>ForkPlus 自带两个内置对比视图插件，覆盖了绝大多数场景：</p>
   <table>
     <thead>
-      <tr><th>插件 ID</th><th>认领范围</th><th>说明</th></tr>
+      <tr><th>插件 ID</th><th>名称 / 版本</th><th>认领范围</th><th>说明</th></tr>
     </thead>
     <tbody>
       <tr>
         <td><code>forkplus.image</code></td>
+        <td>图片对比<br><code>1.0.0</code></td>
         <td>精确扩展名：<code>.bmp</code> <code>.gif</code> <code>.png</code> <code>.jpg</code> <code>.jpeg</code> <code>.ico</code> <code>.tga</code> <code>.webp</code></td>
         <td><strong>图片对比插件</strong>：并排 / 滑动 / 洋葱皮 / Hex 四种模式，含动图播放、像素差异高亮、缩放平移与 LFS smudge；优先级 100。</td>
       </tr>
       <tr>
         <td><code>forkplus.hex</code></td>
+        <td>十六进制对比<br><code>1.0.0</code></td>
         <td>通配兜底：任何未被专属插件认领的文件类型</td>
         <td><strong>Hex 对比插件</strong>：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章）；宿主预载字节（≤50MB）时可切换到 Hex 对比。</td>
       </tr>
@@ -87,10 +89,20 @@
   </ul>
   <p>内置的图片插件与 Hex 插件共用一层<strong>共享组件</strong>（<code>ForkPlus.Plugins.Ui</code>）：文件卡片面板（<code>BinaryContentPanel</code>）、回退面板（<code>DiffFallbackPanel</code>）、Hex 编辑内核（<code>HexDiffUserControl</code> / <code>HexEditor</code>）、动图播放组件等不再复制两份代码，而是由两个插件共同引用。</p>
 
+  <h2>插件管理器（偏好设置 → 插件）</h2>
+  <p>从 <strong>v5.0.1</strong> 起，可在「偏好设置 → 插件」页集中管理对比视图插件，无需手工改文件、也无需重启：</p>
+  <ul>
+    <li><strong>查看插件信息</strong>：每个插件展示<strong>名称、版本号、描述</strong>，以及它认领的<strong>匹配扩展名</strong>与<strong>优先级</strong>；加载失败的 DLL 会单独列出并标明失败原因，不影响其他插件。</li>
+    <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。</li>
+    <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 目录</strong>——放入或删除插件 DLL 后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
+    <li><strong>打开插件目录</strong>：点击「打开插件目录」直接定位到 <code>plugins/</code>，方便投放或替换插件 DLL。</li>
+  </ul>
+  <div class="note"><strong>说明：</strong>插件的名称、版本号与描述由插件自身通过 <code>IPluginMetadata</code> 契约提供；未实现该接口的插件会回退显示为「显示名 + 程序集版本 + 空描述」，不会因此无法加载。</div>
+
   <h2>安装第三方插件</h2>
   <ol>
-    <li>把插件 <strong>DLL 放入程序的 <code>plugins/</code> 目录</strong>（一个 DLL 对应一个插件）。</li>
-    <li>重启 ForkPlus，<code>DiffViewPluginLoader</code> 会在启动时<strong>扫描并加载</strong>该目录下的插件。</li>
+    <li>把插件 <strong>DLL 放入程序的 <code>plugins/</code> 目录</strong>（一个 DLL 对应一个插件；也可在偏好设置 → 插件页点「打开插件目录」定位）。</li>
+    <li>在「偏好设置 → 插件」页点击<strong>「重新加载插件」</strong>即可立即加载，<strong>无需重启 ForkPlus</strong>（<code>DiffViewPluginLoader</code> 会重扫描该目录）。</li>
     <li>如插件声明的扩展名与内置插件冲突，可让插件声明<strong>更高优先级</strong>，或把扩展名<strong>绑定</strong>到该插件来指定使用。</li>
   </ol>
   <div class="tip"><strong>小贴士：</strong>开发插件时以 <code>ForkPlus.Plugins.Abstractions</code> 为唯一依赖，不要直接引用主工程——所有需要的能力都从 <code>IDiffViewHost</code> 获取，这样插件才能独立分发、独立升级。</div>

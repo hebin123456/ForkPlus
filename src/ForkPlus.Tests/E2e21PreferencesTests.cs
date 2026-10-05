@@ -242,8 +242,9 @@ namespace ForkPlus.Tests
 					var window = NewPrefsWindow();
 					try
 					{
-						// —— 8 tab 结构 + 本地化标题/按钮（2026-09-07 Credentials 页：凭据记忆管理） ——
-					Assert.Equal(8, window.PreferencesTabControl.Items.Count);
+						// —— 9 tab 结构 + 本地化标题/按钮（2026-09-07 Credentials 页：凭据记忆管理；
+					//    5.0.1 Plugins 页：对比视图插件管理） ——
+					Assert.Equal(9, window.PreferencesTabControl.Items.Count);
 					Assert.Equal(Tr("General"), window.GeneralTabItem.Header);
 					Assert.Equal(Tr("Commit"), window.CommitTabItem.Header);
 					Assert.Equal(Tr("AI Enhancement"), window.AiReviewTabItem.Header);
@@ -252,6 +253,7 @@ namespace ForkPlus.Tests
 					Assert.Equal(Tr("Integration"), window.IntegrationTabItem.Header);
 					Assert.Equal(Tr("Custom Commands"), window.CustomCommandsTab.Header);
 					Assert.Equal(Tr("Import/Export"), window.ImportExportTab.Header);
+					Assert.Equal(Tr("Plugins"), window.PluginsTabItem.Header);
 						Assert.Equal(Tr("Preferences"), window.Title);
 						Assert.Equal(Tr("Close"), FooterOf(window).SubmitButton.Content as string);
 

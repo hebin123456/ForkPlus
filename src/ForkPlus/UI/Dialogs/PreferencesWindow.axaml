@@ -30,6 +30,9 @@
       <TabItem Header="Import/Export" x:Name="ImportExportTab">
         <preferences:ImportExportUserControl Margin="0,10,0,0" x:Name="ImportExportUserControl" />
       </TabItem>
+      <TabItem Header="Plugins" x:Name="PluginsTabItem">
+        <preferences:PluginsUserControl Margin="0,10,0,0" x:Name="PluginsUserControl" />
+      </TabItem>
     </controls:ModernTabControl>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

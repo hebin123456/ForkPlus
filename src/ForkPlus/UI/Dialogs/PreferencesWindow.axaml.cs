@@ -70,6 +70,7 @@ namespace ForkPlus.UI.Dialogs
 			CredentialsUserControl.Initialize(this);
 			CustomCommandsUserControl.InitializeGlobal(this);
 			ImportExportUserControl.Initialize(this);
+			PluginsUserControl.Initialize(this);
 			ApplyLocalization();
 			_initialised = true;
 		}
@@ -94,6 +95,7 @@ namespace ForkPlus.UI.Dialogs
 			IntegrationTabItem.Header = PreferencesLocalization.Translate("Integration", language);
 			CustomCommandsTab.Header = PreferencesLocalization.Translate("Custom Commands", language);
 			ImportExportTab.Header = PreferencesLocalization.Translate("Import/Export", language);
+			PluginsTabItem.Header = PreferencesLocalization.Translate("Plugins", language);
 			ApplySelectedTabLocalization(language);
 		}
 
@@ -126,6 +128,10 @@ namespace ForkPlus.UI.Dialogs
 				if (selectedTab.Content is CredentialsUserControl credentialsUserControl)
 				{
 					credentialsUserControl.ApplyLocalization();
+				}
+				if (selectedTab.Content is PluginsUserControl pluginsUserControl)
+				{
+					pluginsUserControl.ApplyLocalization();
 				}
 				_localizedTabLanguages[selectedTab] = language;
 			}

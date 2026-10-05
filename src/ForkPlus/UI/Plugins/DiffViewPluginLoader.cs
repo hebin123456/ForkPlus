@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using ForkPlus.Plugins;
+using ForkPlus.Plugins.Abstractions;
+using ForkPlus.Settings;
 
 namespace ForkPlus.UI.Plugins
 {
@@ -26,16 +30,151 @@ namespace ForkPlus.UI.Plugins
 	{
 		private static bool _resolvingHooked;
 
+		/// <summary>v5.0.1：加载失败记录（DLL 文件名 → 错误信息），坏插件单独标记、不连坐。</summary>
+		private static readonly List<KeyValuePair<string, string>> LoadFailures = new List<KeyValuePair<string, string>>();
+
+		private static readonly object CatalogSyncRoot = new object();
+
 		/// <summary>本次进程经加载器注册成功的插件个数（诊断用）。</summary>
 		public static int RegisteredCount { get; private set; }
 
 		/// <summary>默认插件目录：可执行文件旁的 plugins/。</summary>
 		public static string DefaultPluginDirectory => Path.Combine(AppContext.BaseDirectory, "plugins");
 
-		/// <summary>扫描默认插件目录（App 启动期调用一次）。</summary>
+		/// <summary>
+		/// 扫描默认插件目录（App 启动期调用一次）。先套用持久化的禁用列表，
+		/// 再扫描注册——禁用状态跨进程会话保持。
+		/// </summary>
 		public static void LoadDefault()
 		{
+			ApplyDisabledPluginsFromSettings();
 			LoadFromDirectory(DefaultPluginDirectory);
+		}
+
+		/// <summary>
+		/// v5.0.1：重新加载插件（偏好设置 → 插件页的「重新加载插件」按钮）。
+		/// 语义：重建注册表 + 重新扫描 plugins/ 目录 → 新增/删除插件与启禁用立即生效，
+		/// 无需重启 ForkPlus。禁用状态与用户绑定跨重载保持。
+		///
+		/// 边界（沿用 v5.0.0 加载器约束）：宿主用默认 AssemblyLoadContext，
+		/// 同名程序集无法卸载——用新版本 DLL 覆盖同名插件后，同进程内不保证生效
+		/// （真·DLL 热替换需 collectible ALC，非本版本范围）。
+		/// </summary>
+		public static void Reload()
+		{
+			DiffViewPluginRegistry.ClearPlugins();
+			lock (CatalogSyncRoot)
+			{
+				LoadFailures.Clear();
+			}
+			RegisteredCount = 0;
+			LoadFromDirectory(DefaultPluginDirectory);
+			Log.Info($"Diff view plugins reloaded: {RegisteredCount} registered, {LoadFailures.Count} failure(s)");
+		}
+
+		/// <summary>v5.0.1：用持久化的禁用列表覆盖注册表禁用标记。</summary>
+		public static void ApplyDisabledPluginsFromSettings()
+		{
+			DiffViewPluginRegistry.SetDisabledIds(ForkPlusSettings.Default.DisabledDiffViewPlugins);
+		}
+
+		/// <summary>v5.0.1：启用/禁用插件并持久化（只影响路由，注册条目保留）。</summary>
+		public static void SetPluginEnabled(string pluginId, bool enabled)
+		{
+			if (string.IsNullOrEmpty(pluginId))
+			{
+				return;
+			}
+			DiffViewPluginRegistry.SetEnabled(pluginId, enabled);
+			List<string> disabled = new List<string>(ForkPlusSettings.Default.DisabledDiffViewPlugins ?? new string[0]);
+			disabled.RemoveAll((string id) => string.Equals(id, pluginId, StringComparison.OrdinalIgnoreCase));
+			if (!enabled)
+			{
+				disabled.Add(pluginId);
+			}
+			ForkPlusSettings.Default.DisabledDiffViewPlugins = disabled.ToArray();
+			ForkPlusSettings.Default.Save();
+		}
+
+		/// <summary>
+		/// v5.0.1：插件信息快照（供偏好设置 → 插件页展示）。
+		/// 成功注册的插件按注册优先序列出（含禁用项），失败的 DLL 追加在末尾。
+		/// </summary>
+		public static DiffViewPluginInfo[] GetPluginInfos()
+		{
+			List<DiffViewPluginInfo> result = new List<DiffViewPluginInfo>();
+			foreach (IDiffViewPlugin plugin in DiffViewPluginRegistry.GetRegisteredPlugins())
+			{
+				bool enabled = DiffViewPluginRegistry.IsEnabled(plugin.Id);
+				result.Add(new DiffViewPluginInfo(
+					plugin.Id,
+					ResolveDisplayName(plugin),
+					ResolveVersion(plugin),
+					ResolveDescription(plugin),
+					plugin.Priority,
+					plugin.FileExtensions,
+					enabled ? DiffViewPluginStatus.Enabled : DiffViewPluginStatus.Disabled,
+					string.Empty));
+			}
+			KeyValuePair<string, string>[] failures;
+			lock (CatalogSyncRoot)
+			{
+				failures = LoadFailures.ToArray();
+			}
+			foreach (KeyValuePair<string, string> failure in failures)
+			{
+				result.Add(new DiffViewPluginInfo(
+					string.Empty,
+					Path.GetFileNameWithoutExtension(failure.Key),
+					"—",
+					string.Empty,
+					0,
+					new string[0],
+					DiffViewPluginStatus.Failed,
+					failure.Value));
+			}
+			return result.ToArray();
+		}
+
+		/// <summary>v5.0.1：确保插件目录存在（「打开插件目录」前调用）。</summary>
+		public static string EnsurePluginDirectory()
+		{
+			string directory = DefaultPluginDirectory;
+			if (!Directory.Exists(directory))
+			{
+				Directory.CreateDirectory(directory);
+			}
+			return directory;
+		}
+
+		private static string ResolveDisplayName(IDiffViewPlugin plugin)
+		{
+			if (plugin is IPluginMetadata metadata && !string.IsNullOrWhiteSpace(metadata.DisplayName))
+			{
+				return metadata.DisplayName;
+			}
+			string key = plugin.DisplayNameKey;
+			string translated = string.IsNullOrEmpty(key) ? null : PluginEnvironment.Translate(key);
+			if (!string.IsNullOrWhiteSpace(translated))
+			{
+				return translated;
+			}
+			return string.IsNullOrEmpty(key) ? plugin.Id : key;
+		}
+
+		private static string ResolveVersion(IDiffViewPlugin plugin)
+		{
+			if (plugin is IPluginMetadata metadata && !string.IsNullOrWhiteSpace(metadata.Version))
+			{
+				return metadata.Version;
+			}
+			Version version = plugin.GetType().Assembly.GetName().Version;
+			return version != null ? version.ToString(3) : "1.0.0";
+		}
+
+		private static string ResolveDescription(IDiffViewPlugin plugin)
+		{
+			return plugin is IPluginMetadata metadata ? (metadata.Description ?? string.Empty) : string.Empty;
 		}
 
 		/// <summary>扫描指定目录下的所有 DLL 并注册其中发现的对比视图插件。</summary>
@@ -86,7 +225,7 @@ namespace ForkPlus.UI.Plugins
 			try
 			{
 				Assembly assembly = LoadAssembly(path);
-				int count = RegisterPluginsFrom(assembly);
+				int count = RegisterPluginsFrom(assembly, path);
 				RegisteredCount += count;
 				if (count == 0)
 				{
@@ -96,6 +235,16 @@ namespace ForkPlus.UI.Plugins
 			catch (Exception ex)
 			{
 				Log.Error($"Failed to load diff view plugin '{path}'", ex);
+				RecordFailure(path, ex.Message);
+			}
+		}
+
+		/// <summary>v5.0.1：记录一次加载失败（供偏好页展示，坏插件不影响其他插件）。</summary>
+		private static void RecordFailure(string path, string message)
+		{
+			lock (CatalogSyncRoot)
+			{
+				LoadFailures.Add(new KeyValuePair<string, string>(Path.GetFileName(path), message ?? string.Empty));
 			}
 		}
 
@@ -114,7 +263,7 @@ namespace ForkPlus.UI.Plugins
 		}
 
 		/// <summary>扫描程序集中带无参构造的 IDiffViewPlugin 实现，实例化并注册（单个失败不连坐）。</summary>
-		private static int RegisterPluginsFrom(Assembly assembly)
+		private static int RegisterPluginsFrom(Assembly assembly, string path)
 		{
 			Type[] types;
 			try
@@ -136,23 +285,25 @@ namespace ForkPlus.UI.Plugins
 				{
 					continue;
 				}
-				if (!typeof(global::ForkPlus.Plugins.Abstractions.IDiffViewPlugin).IsAssignableFrom(type))
+				if (!typeof(IDiffViewPlugin).IsAssignableFrom(type))
 				{
 					continue;
 				}
 				if (type.GetConstructor(Type.EmptyTypes) == null)
 				{
 					Log.Error("Diff view plugin '" + type.FullName + "' has no parameterless constructor");
+					RecordFailure(path, "插件类型缺少无参构造函数：" + type.FullName);
 					continue;
 				}
 				try
 				{
-					DiffViewPluginRegistry.Register((global::ForkPlus.Plugins.Abstractions.IDiffViewPlugin)Activator.CreateInstance(type));
+					DiffViewPluginRegistry.Register((IDiffViewPlugin)Activator.CreateInstance(type));
 					count++;
 				}
 				catch (Exception ex)
 				{
 					Log.Error($"Failed to instantiate diff view plugin '{type.FullName}'", ex);
+					RecordFailure(path, "插件实例化失败：" + ex.Message);
 				}
 			}
 			return count;

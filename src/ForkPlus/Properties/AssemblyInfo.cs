@@ -15,19 +15,18 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-10-05，v5.0.0）：本版为对比视图插件化架构——
-//   1) 对比视图拆为独立插件 DLL（plugins/ 目录动态加载，主程序不重新编译即可增删）：
-//      内置两个——图片对比（forkplus.image：并排/Swipe/洋葱皮/Hex，含动图播放与 LFS）；
-//      Hex 对比（forkplus.hex：二进制文件通配兜底，文件卡片 + Hex 切换）。
-//   2) 契约层（ForkPlus.Plugins.Abstractions）+ 共享组件层（ForkPlus.Plugins.Ui）+
-//      宿主能力桥（PluginEnvironment / IDiffViewHost）：插件不感知 Git 领域类型与主工程。
-//   3) 路由：用户绑定（DiffViewPluginRegistry.BindExtension）> 精确扩展名 > 通配兜底。
-//   行为与 v4.3.2 一致（图片对比器 + 十六进制对比器两套视图）。详见 RELEASE_NOTE v5.0.0。
+// 版本号说明（2026-10-05，v5.0.1）：在 v5.0.0 插件化架构之上新增「插件管理器」——
+//   1) 偏好设置新增「插件」页：展示每个对比视图插件的名称/版本号/描述/匹配扩展名/优先级，
+//      支持启用/禁用（即时生效并持久化，禁用仅退出路由、条目保留）与「重新加载插件」
+//      （重建注册表 + 重扫描 plugins/ 目录，无需重启 ForkPlus）。
+//   2) 插件元数据契约 IPluginMetadata（名称/版本/描述）；内置图片对比与 Hex 对比插件
+//      版本号 1.0.0，名称/描述为中文（元数据国际化留待后续版本）。
+//   3) 版本号 5.0.1 为 v5.0.0 的补丁迭代（功能新增 + 无破坏性变更）。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
-//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.0"；
-//   程序集标识与文件版本同为 5.0.0（.0）。
-[assembly: AssemblyFileVersion("5.0.0")]
-[assembly: AssemblyInformationalVersion("5.0.0")]
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.1"；
+//   程序集标识与文件版本同为 5.0.1（.0）。
+[assembly: AssemblyFileVersion("5.0.1")]
+[assembly: AssemblyInformationalVersion("5.0.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.0.0.0")]
+[assembly: AssemblyVersion("5.0.1.0")]

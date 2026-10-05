@@ -1,0 +1,18 @@
+<UserControl xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.UserControls.Preferences.PluginsUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls">
+  <Grid Width="680">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <TextBlock Grid.Row="0" Text="对比视图插件会在打开文件差异时按文件扩展名自动匹配。此处可查看插件名称、版本号与描述，启用或禁用插件，并在放入新插件后重新加载（无需重启 ForkPlus）。" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,10" x:Name="DescriptionTextBlock" />
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+      <Button Content="重新加载插件" Click="ReloadButton_Click" x:Name="ReloadButton" />
+      <Button Content="打开插件目录" Click="OpenDirectoryButton_Click" x:Name="OpenDirectoryButton" />
+      <TextBlock x:Name="StatusTextBlock" VerticalAlignment="Center" FontSize="12" Opacity="0.7" />
+    </StackPanel>
+    <ScrollViewer Grid.Row="2" MaxHeight="320" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel x:Name="PluginsListPanel" />
+    </ScrollViewer>
+  </Grid>
+</UserControl>

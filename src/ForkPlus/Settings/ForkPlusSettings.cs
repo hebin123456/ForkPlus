@@ -997,6 +997,8 @@ namespace ForkPlus.Settings
 		private int _hexViewBytesPerRow;
 		private bool _hexViewShowAscii;
 		private bool _hexViewShowOffset;
+		// v5.0.1：被禁用的对比视图插件 Id 列表（偏好设置 → 插件页的启用/禁用开关持久化）
+		private string[] _disabledDiffViewPlugins;
 
 		private bool _disableSyntaxHighlighting;
 
@@ -1899,6 +1901,22 @@ namespace ForkPlus.Settings
 			set
 			{
 				_hexViewShowOffset = value;
+			}
+		}
+
+		/// <summary>
+		/// v5.0.1：被禁用的对比视图插件 Id 列表（偏好设置 → 插件页开关持久化）。
+		/// 禁用只把插件排除出路由，插件条目与元数据仍在偏好页展示。
+		/// </summary>
+		public string[] DisabledDiffViewPlugins
+		{
+			get
+			{
+				return _disabledDiffViewPlugins ?? new string[0];
+			}
+			set
+			{
+				_disabledDiffViewPlugins = value ?? new string[0];
 			}
 		}
 
@@ -2856,6 +2874,7 @@ namespace ForkPlus.Settings
 			int hexViewBytesPerRow = json["HexViewBytesPerRow"]?.Value<int>() ?? 16;
 			bool hexViewShowAscii = json["HexViewShowAscii"]?.Value<bool>() ?? true;
 			bool hexViewShowOffset = json["HexViewShowOffset"]?.Value<bool>() ?? true;
+			string[] disabledDiffViewPlugins = JsonHelper.DecodeStringArray(json["DisabledDiffViewPlugins"] as JArray) ?? new string[0];
 			bool disableSyntaxHighlighting = json["DisableSyntaxHighlighting"]?.Value<bool>() ?? false;
 			int maxCommitCount = json["MaxCommitCount"]?.Value<int>() ?? 50000;
 			int layoutScaling = json["LayoutScaling"]?.Value<int>() ?? 100;
@@ -3002,6 +3021,7 @@ namespace ForkPlus.Settings
 				HexViewBytesPerRow = hexViewBytesPerRow,
 				HexViewShowAscii = hexViewShowAscii,
 				HexViewShowOffset = hexViewShowOffset,
+				DisabledDiffViewPlugins = disabledDiffViewPlugins,
 				DisableSyntaxHighlighting = disableSyntaxHighlighting,
 				MaxCommitCount = maxCommitCount,
 				LayoutScaling = layoutScaling,
@@ -3416,6 +3436,10 @@ namespace ForkPlus.Settings
 			{
 				"HexViewShowOffset",
 				new JValue(target.HexViewShowOffset)
+			},
+			{
+				"DisabledDiffViewPlugins",
+				JsonHelper.EncodeStringArray(target.DisabledDiffViewPlugins)
 			},
 				{
 				"DisableSyntaxHighlighting",

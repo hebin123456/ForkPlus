@@ -12,12 +12,20 @@ namespace ForkPlus.Plugins.BuiltIn.HexDiff
 	/// 以更高优先级或用户绑定（DiffViewPluginRegistry.BindExtension）覆盖本兜底。
 	/// 渲染内核与图片插件的「Hex」模式页共用同一 ForkPlus.Plugins.Ui 组件
 	///（HexDiffUserControl / BinaryContentPanel）。
+	/// v5.0.1：实现 <see cref="IPluginMetadata"/>，向偏好设置 → 插件页提供名称/版本/描述。
 	/// </summary>
-	public sealed class HexDiffPlugin : IDiffViewPlugin
+	public sealed class HexDiffPlugin : IDiffViewPlugin, IPluginMetadata
 	{
 		public string Id => "forkplus.hex";
 
 		public string DisplayNameKey => "Hex";
+
+		/// <summary>v5.0.1：插件元数据——名称/版本/描述（固定中文，国际化后续版本实现）。</summary>
+		public string Version => "1.0.0";
+
+		public string DisplayName => "十六进制对比";
+
+		public string Description => "逐字节十六进制对比；作为通配兜底，未被其他插件认领的文件类型都显示文件卡片。";
 
 		/// <summary>通配兜底：取最低优先级，任何精确扩展名插件（如图片）都先于它。</summary>
 		public int Priority => 0;
