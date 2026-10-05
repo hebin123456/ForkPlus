@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v4.3.2</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,11 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.0.0 更新</h2>
+  <ul>
+    <li><strong>对比视图插件化</strong>：图片对比与 Hex 对比从主程序拆分为<strong>独立的插件 DLL</strong>，由主程序启动时从 <code>plugins/</code> 目录<strong>动态加载</strong>——不重新编译主程序即可增删对比视图插件。内置图片对比插件（<code>forkplus.image</code>）与 Hex 对比兜底插件（<code>forkplus.hex</code>），对比行为与 v4.3.2 保持一致。文件按「<strong>用户绑定 &gt; 精确扩展名 &gt; 通配兜底</strong>」路由到插件，第三方插件以更高优先级或用户绑定即可覆盖内置插件。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+  </ul>
 
   <h2>v4.3.2 更新</h2>
   <ul>
@@ -176,10 +181,15 @@
       <h3>通用对话框与工具</h3>
       <p>消息框、AskPass、自定义颜色、关于与通知中心</p>
     </a>
+    <a class="chapter-card" href="ch-26-plugin-mechanism.html">
+      <span class="num">CH-26</span>
+      <h3>对比视图插件机制</h3>
+      <p>图片/Hex 对比拆分为独立插件 DLL、启动动态加载、路由规则与第三方插件</p>
+    </a>
   </div>
 </main>
 <footer class="manual-footer">
-  ForkPlus 用户手册 · 生成于 2026-09-30
+  ForkPlus 用户手册 · 生成于 2026-10-05
 </footer>
 </body>
 </html>
