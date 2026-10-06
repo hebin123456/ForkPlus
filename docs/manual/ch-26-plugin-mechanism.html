@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.0.1</p>
+  <p>ForkPlus 用户手册 · 版本 v5.0.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -96,11 +96,13 @@
     <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。</li>
     <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 目录</strong>——放入或删除插件 DLL 后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
     <li><strong>打开插件目录</strong>：点击「打开插件目录」直接定位到 <code>plugins/</code>，方便投放或替换插件 DLL。</li>
+    <li><strong>下载最新插件（v5.0.2）</strong>：点击页内的<strong>「下载最新插件」超链接</strong>，直达 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins 的 Releases 页面</a>，一键获取最新插件。</li>
   </ul>
   <div class="note"><strong>说明：</strong>插件的名称、版本号与描述由插件自身通过 <code>IPluginMetadata</code> 契约提供；未实现该接口的插件会回退显示为「显示名 + 程序集版本 + 空描述」，不会因此无法加载。</div>
 
   <h2>安装第三方插件</h2>
   <ol>
+    <li>到 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins 的 Releases 页面</a>下载最新插件（偏好设置 → 插件页的「下载最新插件」超链接可直达）。</li>
     <li>把插件 <strong>DLL 放入程序的 <code>plugins/</code> 目录</strong>（一个 DLL 对应一个插件；也可在偏好设置 → 插件页点「打开插件目录」定位）。</li>
     <li>在「偏好设置 → 插件」页点击<strong>「重新加载插件」</strong>即可立即加载，<strong>无需重启 ForkPlus</strong>（<code>DiffViewPluginLoader</code> 会重扫描该目录）。</li>
     <li>如插件声明的扩展名与内置插件冲突，可让插件声明<strong>更高优先级</strong>，或把扩展名<strong>绑定</strong>到该插件来指定使用。</li>

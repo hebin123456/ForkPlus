@@ -2458,6 +2458,8 @@
     "Reflog Timeline": "Reflog 时间轴",
     "Resolving Conflicts": "解决冲突",
     "Make It Yours": "随心定制",
+    "Diff View Plugins": "对比视图插件",
+    "Diff views are pluggable since v5.0.0: image and Hex comparison ship as separate plugin DLLs loaded from the plugins/ folder. Open Preferences > Plugins to see each plugin's name, version and description, enable or disable it, or reload plugins after dropping in a new DLL — no restart needed. Grab the latest plugins from the ForkPlus-Plugins releases page.": "自 v5.0.0 起，对比视图可插件化：图片与 Hex 对比作为独立插件 DLL，启动时从 plugins/ 目录动态加载。打开 偏好设置 > 插件，可查看每个插件的名称、版本号与描述，启用或禁用，或在放入新 DLL 后重新加载——无需重启。更多插件请到 ForkPlus-Plugins 的 Releases 页面下载。",
     "ForkPlus ships with git mm built in: a lean workflow that keeps a main repository and its sub repositories in sync. Switch to the git mm workspace, then use Sync git mm to pull all sub repos consistently or Upload git mm to push their changes together (requires git-mm 3.x).": "ForkPlus 内置 git mm：一套让主仓库与子仓库保持同步的精益工作流。切换到 git mm 工作区后，用 Sync git mm 统一拉取所有子仓，或用 Upload git mm 把变更一起推送（需要 git-mm 3.x）。",
     "Open Repository Treemap... for a size map of your repository: every rectangle is a file or folder, sized by its footprint on disk. Click a rectangle to drill down into a folder and discover what really eats your space.": "打开 Repository Treemap...（仓库树图）查看仓库的尺寸地图：每个矩形代表一个文件或文件夹，按磁盘占用确定大小。点击矩形可逐级钻取，找出真正占空间的内容。",
     "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.": "Repository Statistics...（仓库统计）按语言统计代码、注释和空行行数——由 tokei 驱动，支持 200+ 种语言——并以饼图直观展示。可在工作区、分支或标签之间切换 ref 进行对比。",

@@ -236,6 +236,34 @@
         <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly." />
       </StackPanel>
       <StackPanel x:Name="StepPanel11" IsVisible="False">
+        <TextBlock Text="Diff View Plugins" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
+        <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Left" Margin="0,2,0,8" Width="300">
+          <StackPanel Spacing="7">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="forkplus.image  v1.0.0" FontSize="12" FontFamily="Consolas" VerticalAlignment="Center" />
+              <Border Grid.Column="1" Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Padding="8,2">
+                <TextBlock Text="ON" FontSize="11" Foreground="{DynamicResource BackgroundBrush}" />
+              </Border>
+            </Grid>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="forkplus.hex  v1.0.0" FontSize="12" FontFamily="Consolas" VerticalAlignment="Center" />
+              <Border Grid.Column="1" Background="{DynamicResource AccentColorBrush}" CornerRadius="3" Padding="8,2">
+                <TextBlock Text="ON" FontSize="11" Foreground="{DynamicResource BackgroundBrush}" />
+              </Border>
+            </Grid>
+          </StackPanel>
+        </Border>
+        <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="Diff views are pluggable since v5.0.0: image and Hex comparison ship as separate plugin DLLs loaded from the plugins/ folder. Open Preferences > Plugins to see each plugin's name, version and description, enable or disable it, or reload plugins after dropping in a new DLL — no restart needed. Grab the latest plugins from the ForkPlus-Plugins releases page." />
+      </StackPanel>
+      <StackPanel x:Name="StepPanel12" IsVisible="False">
         <TextBlock Text="You're All Set" FontSize="15" FontWeight="Medium" Margin="0,0,0,6" />
         <TextBlock TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource ForkPlusDialogDescriptionForeground}" Text="That's the basics. You can revisit this tour anytime via Help > Getting Started, and customize themes, languages and everything else in Preferences. Happy committing!" />
       </StackPanel>

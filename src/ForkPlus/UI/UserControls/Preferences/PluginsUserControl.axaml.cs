@@ -21,7 +21,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 	///   禁用仅退出路由，条目保留、可随时恢复；
 	/// - 「重新加载插件」：重建注册表并重扫描 plugins/ 目录，新增/删除插件与启禁用立即生效，
 	///   无需重启 ForkPlus（用户绑定与禁用状态跨重载保持）；
-	/// - 「打开插件目录」：定位到 plugins/ 目录便于投放第三方插件。
+	/// - 「打开插件目录」：定位到 plugins/ 目录便于投放第三方插件；
+	/// - v5.0.2「下载最新插件」超链接：直达 ForkPlus-Plugins 的 Releases 页面
+	///   （https://github.com/hebin123456/ForkPlus-Plugins/releases）获取最新插件。
 	///
 	/// v5.0.1 文案固定中文，元数据国际化留待后续版本。
 	/// </summary>

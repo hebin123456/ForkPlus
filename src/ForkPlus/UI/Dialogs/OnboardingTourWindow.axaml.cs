@@ -6,8 +6,9 @@ using ForkPlus.UI.UserControls.Preferences;
 namespace ForkPlus.UI.Dialogs
 {
 	/// <summary>
-	/// 新手引导向导：6 步卡片式介绍核心界面（欢迎 / 工具栏 / 分支侧栏 / 提交历史与
-	/// Diff / 提交区 / 结束）。首次启动未完成引导时由 <see cref="OnboardingManager"/>
+	/// 新手引导向导：13 步卡片式介绍核心界面（欢迎 / 工具栏 / 分支侧栏 / 提交历史与
+	/// Diff / 提交区 / git mm / 仓库树图 / 仓库统计 / Reflog / 解决冲突 / 个性化 /
+	/// 对比视图插件 / 结束）。首次启动未完成引导时由 <see cref="OnboardingManager"/>
 	/// 自动弹出；帮助菜单"Getting Started"可随时手动重看。
 	/// 布局：步骤内容区 + 自建 footer（Back / Next→Finish / Skip Tour）。不复用基类
 	/// ForkPlusDialogFooter，因为向导需要 Back 按钮且 Next 按钮文本随步骤在
@@ -19,10 +20,10 @@ namespace ForkPlus.UI.Dialogs
 	/// </summary>
 	public partial class OnboardingTourWindow : ForkPlusDialogWindow
 	{
-		/// <summary>步骤总数：欢迎/工具栏/分支侧栏/历史与 Diff/提交区/git mm/树图/统计/Reflog/冲突/个性化/结束。</summary>
-		private const int StepCount = 12;
+		/// <summary>步骤总数：欢迎/工具栏/分支侧栏/历史与 Diff/提交区/git mm/树图/统计/Reflog/冲突/个性化/对比视图插件/结束。</summary>
+		private const int StepCount = 13;
 
-		/// <summary>步骤内容面板（XAML 里 StepPanel0..StepPanel11 的有序引用）。</summary>
+		/// <summary>步骤内容面板（XAML 里 StepPanel0..StepPanel12 的有序引用）。</summary>
 		private StackPanel[] _stepPanels;
 
 		/// <summary>当前步骤索引（0 起，供测试断言翻页行为）。</summary>
@@ -34,7 +35,8 @@ namespace ForkPlus.UI.Dialogs
 			_stepPanels = new StackPanel[]
 			{
 				StepPanel0, StepPanel1, StepPanel2, StepPanel3, StepPanel4, StepPanel5,
-				StepPanel6, StepPanel7, StepPanel8, StepPanel9, StepPanel10, StepPanel11
+				StepPanel6, StepPanel7, StepPanel8, StepPanel9, StepPanel10, StepPanel11,
+				StepPanel12
 			};
 			DialogTitle = PreferencesLocalization.Current("Getting Started");
 			// 用自建 footer（Back/Next/Skip），不用基类 Submit/Cancel 两按钮 footer

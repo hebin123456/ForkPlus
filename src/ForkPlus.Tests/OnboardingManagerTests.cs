@@ -5,7 +5,7 @@
 // ShowWindowForTests（用例结束必须复位，静态钩子泄漏会毒化同进程后续用例）。
 // 设置自恢复：还原 OnboardingCompleted 单例值与 settings.json 磁盘内容（对齐
 // ReleaseNotesManagerTests 的收尾口径）。
-// 另含 OnboardingTourWindow UI 冒烟：12 步翻页（Back/Next/Finish 随步骤切换）、
+// 另含 OnboardingTourWindow UI 冒烟：13 步翻页（Back/Next/Finish 随步骤切换）、
 // 步骤指示器与按钮文案的 zh-Hans 本地化、Skip 关窗；以及 headless 看门狗兜底
 // 关闭回归（CI 全新 runner 无 settings.json，首开 MainWindow 的用例必触发首启
 // 弹窗，模态无人关闭死锁整分片——防线与 ReleaseNotesWindow 同款）。
@@ -127,7 +127,7 @@ namespace ForkPlus.Tests
 
 				// 初始第 1 步：指示器本地化、Back 隐藏、Next 文案本地化
 				Assert.Equal(0, window.CurrentStep);
-				Assert.Equal("第 1 步，共 12 步", window.StepIndicatorText);
+				Assert.Equal("第 1 步，共 13 步", window.StepIndicatorText);
 				Assert.False(window.BackButton.IsVisible, "第一步不应显示 Back");
 				Assert.Equal("下一步", window.NextButton.Content as string);
 
@@ -136,7 +136,7 @@ namespace ForkPlus.Tests
 				Dispatcher.UIThread.RunJobs();
 				Assert.Equal(1, window.CurrentStep);
 				Assert.True(window.BackButton.IsVisible);
-				Assert.Equal("第 2 步，共 12 步", window.StepIndicatorText);
+				Assert.Equal("第 2 步，共 13 步", window.StepIndicatorText);
 
 				// Back → 回到第 1 步
 				window.BackButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -145,14 +145,14 @@ namespace ForkPlus.Tests
 				Assert.False(window.BackButton.IsVisible);
 
 				// 连点 Next 走到最后一步：末步 Next 变 Finish（zh-Hans = "完成"，既有键）
-				for (int i = 0; i < 11; i++)
+				for (int i = 0; i < 12; i++)
 				{
 					window.NextButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 					Dispatcher.UIThread.RunJobs();
 				}
-				Assert.Equal(11, window.CurrentStep);
+				Assert.Equal(12, window.CurrentStep);
 				Assert.Equal("完成", window.NextButton.Content as string);
-				Assert.Equal("第 12 步，共 12 步", window.StepIndicatorText);
+				Assert.Equal("第 13 步，共 13 步", window.StepIndicatorText);
 
 					// 末步再点 Next → CloseWithOk 关窗
 					window.NextButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
