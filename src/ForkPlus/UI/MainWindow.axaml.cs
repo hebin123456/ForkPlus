@@ -185,6 +185,9 @@ namespace ForkPlus.UI
 
 		private void ApplyLocalizationCore()
 	{
+		// v5.0.3：向插件广播语言热切换——插件据此重刷自带本地化资源（含元数据多语言）。
+		// 放在扇出其他控件之前，保证未挂载/缓存的插件实例也能收到语言变更。
+		global::ForkPlus.Plugins.PluginEnvironment.RaiseLanguageChanged(ForkPlusSettings.Default.UiLanguage);
 		_menuManager?.ApplyLocalization();
 		Toolbar.ApplyLocalization();
 		TabManager?.RefreshTabTitles();

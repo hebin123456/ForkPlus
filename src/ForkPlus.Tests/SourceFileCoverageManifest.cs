@@ -1217,6 +1217,8 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/Plugins/DiffViewPluginLoader.cs",
 				"src/ForkPlus/UI/Plugins/DiffViewPluginRegistry.cs",
 				"src/ForkPlus/UI/Plugins/PluginEnvironmentBridge.cs",
+				"src/ForkPlus/UI/Plugins/PluginPackageInstaller.cs",
+				"src/ForkPlus/UI/Plugins/PluginUninstaller.cs",
 				"src/ForkPlus/UI/ProgressBarExtensions.cs",
 				"src/ForkPlus/UI/QuickLaunch/CommandProviderItem.cs",
 				"src/ForkPlus/UI/QuickLaunch/DefaultCommandProvider.cs",

@@ -1278,6 +1278,8 @@ namespace ForkPlus
 			// PluginEnvironment，插件工程经此取宿主服务而不引用主工程类型。
 			// 必须早于任何对比视图控件创建（DiffViewPluginRegistry 静态构造在首次 Resolve 触发）。
 			UI.Plugins.PluginEnvironmentBridge.Initialize();
+			// v5.0.3：先清理上次卸载时被占用、延迟删除的插件文件（须早于扫描加载）。
+			UI.Plugins.PluginUninstaller.ProcessPendingDeletions();
 			// v5.0.0：动态加载对比视图插件——plugins/ 目录下一个 DLL 一个插件
 			//（内置 Image/Hex 两个 + 第三方），单个加载失败只记日志不阻断启动。
 			UI.Plugins.DiffViewPluginLoader.LoadDefault();

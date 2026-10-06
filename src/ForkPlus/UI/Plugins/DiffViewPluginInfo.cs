@@ -40,7 +40,13 @@ namespace ForkPlus.UI.Plugins
 		/// <summary>是否允许切换启用/禁用（加载失败的插件不可切换）。</summary>
 		public bool CanToggle => Status != DiffViewPluginStatus.Failed;
 
-		public DiffViewPluginInfo(string id, string name, string version, string description, int priority, IReadOnlyList<string> fileExtensions, DiffViewPluginStatus status, string error)
+		/// <summary>v5.0.3：是否为宿主自带的内置插件（内置插件不可卸载）。</summary>
+		public bool IsBuiltIn { get; }
+
+		/// <summary>v5.0.3：是否允许卸载（内置插件与加载失败的条目不可卸载）。</summary>
+		public bool CanUninstall => !IsBuiltIn && Status != DiffViewPluginStatus.Failed && !string.IsNullOrEmpty(Id);
+
+		public DiffViewPluginInfo(string id, string name, string version, string description, int priority, IReadOnlyList<string> fileExtensions, DiffViewPluginStatus status, string error, bool isBuiltIn = false)
 		{
 			Id = id ?? string.Empty;
 			Name = name ?? string.Empty;
@@ -50,6 +56,7 @@ namespace ForkPlus.UI.Plugins
 			FileExtensions = fileExtensions ?? new string[0];
 			Status = status;
 			Error = error ?? string.Empty;
+			IsBuiltIn = isBuiltIn;
 		}
 	}
 }

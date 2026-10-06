@@ -33,6 +33,15 @@ namespace ForkPlus.UI.Plugins
 		/// <summary>v5.0.1：加载失败记录（DLL 文件名 → 错误信息），坏插件单独标记、不连坐。</summary>
 		private static readonly List<KeyValuePair<string, string>> LoadFailures = new List<KeyValuePair<string, string>>();
 
+		/// <summary>v5.0.3：插件 Id → 插件所在 DLL 的完整路径（供卸载/依赖清理精确定位文件）。</summary>
+		private static readonly Dictionary<string, string> PluginSourceFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+		/// <summary>
+		/// v5.0.3：内置插件 Id——随主程序分发（ForkPlus.Plugins.Image / Hex 两个 DLL），
+		/// 在偏好设置 → 插件页不可卸载（避免用户误删导致内置对比能力缺失）。
+		/// </summary>
+		public static readonly string[] BuiltInPluginIds = new string[2] { "forkplus.image", "forkplus.hex" };
+
 		private static readonly object CatalogSyncRoot = new object();
 
 		/// <summary>本次进程经加载器注册成功的插件个数（诊断用）。</summary>
@@ -66,10 +75,51 @@ namespace ForkPlus.UI.Plugins
 			lock (CatalogSyncRoot)
 			{
 				LoadFailures.Clear();
+				PluginSourceFiles.Clear();
 			}
 			RegisteredCount = 0;
 			LoadFromDirectory(DefaultPluginDirectory);
 			Log.Info($"Diff view plugins reloaded: {RegisteredCount} registered, {LoadFailures.Count} failure(s)");
+		}
+
+		/// <summary>v5.0.3：插件是否内置（内置插件不可卸载）。</summary>
+		public static bool IsBuiltInPlugin(string pluginId)
+		{
+			if (string.IsNullOrEmpty(pluginId))
+			{
+				return false;
+			}
+			foreach (string id in BuiltInPluginIds)
+			{
+				if (string.Equals(id, pluginId, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/// <summary>v5.0.3：取插件所在 DLL 的完整路径（插件未注册/无来源记录时返回 null）。</summary>
+		[Null]
+		public static string GetPluginSourceFile(string pluginId)
+		{
+			if (string.IsNullOrEmpty(pluginId))
+			{
+				return null;
+			}
+			lock (CatalogSyncRoot)
+			{
+				return PluginSourceFiles.TryGetValue(pluginId, out string path) ? path : null;
+			}
+		}
+
+		/// <summary>v5.0.3：已注册插件 Id → 来源 DLL 路径的快照。</summary>
+		public static Dictionary<string, string> GetPluginSourceFiles()
+		{
+			lock (CatalogSyncRoot)
+			{
+				return new Dictionary<string, string>(PluginSourceFiles, StringComparer.OrdinalIgnoreCase);
+			}
 		}
 
 		/// <summary>v5.0.1：用持久化的禁用列表覆盖注册表禁用标记。</summary>
@@ -114,7 +164,8 @@ namespace ForkPlus.UI.Plugins
 					plugin.Priority,
 					plugin.FileExtensions,
 					enabled ? DiffViewPluginStatus.Enabled : DiffViewPluginStatus.Disabled,
-					string.Empty));
+					string.Empty,
+					IsBuiltInPlugin(plugin.Id)));
 			}
 			KeyValuePair<string, string>[] failures;
 			lock (CatalogSyncRoot)
@@ -149,9 +200,14 @@ namespace ForkPlus.UI.Plugins
 
 		private static string ResolveDisplayName(IDiffViewPlugin plugin)
 		{
-			if (plugin is IPluginMetadata metadata && !string.IsNullOrWhiteSpace(metadata.DisplayName))
+			if (plugin is IPluginMetadata metadata)
 			{
-				return metadata.DisplayName;
+				// v5.0.3：按宿主当前界面语言取多语言名称（未覆写时默认返回英文原文）。
+				string localized = metadata.GetDisplayName(PluginEnvironment.CurrentLanguage);
+				if (!string.IsNullOrWhiteSpace(localized))
+				{
+					return localized;
+				}
 			}
 			string key = plugin.DisplayNameKey;
 			string translated = string.IsNullOrEmpty(key) ? null : PluginEnvironment.Translate(key);
@@ -174,7 +230,12 @@ namespace ForkPlus.UI.Plugins
 
 		private static string ResolveDescription(IDiffViewPlugin plugin)
 		{
-			return plugin is IPluginMetadata metadata ? (metadata.Description ?? string.Empty) : string.Empty;
+			if (plugin is IPluginMetadata metadata)
+			{
+				// v5.0.3：按宿主当前界面语言取多语言描述（未覆写时默认返回英文原文）。
+				return metadata.GetDescription(PluginEnvironment.CurrentLanguage) ?? string.Empty;
+			}
+			return string.Empty;
 		}
 
 		/// <summary>扫描指定目录下的所有 DLL 并注册其中发现的对比视图插件。</summary>
@@ -187,11 +248,20 @@ namespace ForkPlus.UI.Plugins
 			}
 			HookResolving(directory);
 			string[] dllFiles = Directory.GetFiles(directory, "*.dll");
+			int skipped = 0;
 			foreach (string dllFile in dllFiles)
 			{
+				// v5.0.3：已被卸载但因文件占用延迟到重启删除的插件，本次重载先跳过，
+				// 避免"卸载后又立刻被重新注册"（下次启动 ProcessPendingDeletions 真正删除）。
+				if (PluginUninstaller.IsPendingDeletion(dllFile))
+				{
+					skipped++;
+					Log.Info("Skipped pending-deletion plugin file: " + Path.GetFileName(dllFile));
+					continue;
+				}
 				LoadAssemblyFile(dllFile);
 			}
-			Log.Info($"Diff view plugins loaded from '{directory}': {RegisteredCount} registered, {dllFiles.Length} file(s) scanned");
+			Log.Info($"Diff view plugins loaded from '{directory}': {RegisteredCount} registered, {dllFiles.Length} file(s) scanned, {skipped} pending-deletion skipped");
 		}
 
 		/// <summary>
@@ -231,6 +301,12 @@ namespace ForkPlus.UI.Plugins
 				{
 					Log.Info("No IDiffViewPlugin in '" + Path.GetFileName(path) + "' (dependency library, skipped)");
 				}
+			}
+			catch (BadImageFormatException)
+			{
+				// v5.0.3：插件包里的原生依赖（如 pdfium.dll）无程序集元数据，读取 AssemblyName
+				// 时会抛此异常——静默跳过，不记为「加载失败」，避免安装官方插件包后列表出现噪声。
+				Log.Info("Non-managed DLL in plugin directory (skipped): " + Path.GetFileName(path));
 			}
 			catch (Exception ex)
 			{
@@ -297,7 +373,13 @@ namespace ForkPlus.UI.Plugins
 				}
 				try
 				{
-					DiffViewPluginRegistry.Register((IDiffViewPlugin)Activator.CreateInstance(type));
+					IDiffViewPlugin plugin = (IDiffViewPlugin)Activator.CreateInstance(type);
+					DiffViewPluginRegistry.Register(plugin);
+					// v5.0.3：记录插件 Id → 来源 DLL 路径，供卸载精确定位文件。
+					lock (CatalogSyncRoot)
+					{
+						PluginSourceFiles[plugin.Id] = path;
+					}
 					count++;
 				}
 				catch (Exception ex)

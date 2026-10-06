@@ -4,15 +4,21 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
-    <TextBlock Grid.Row="0" Text="对比视图插件会在打开文件差异时按文件扩展名自动匹配。此处可查看插件名称、版本号与描述，启用或禁用插件，并在放入新插件后重新加载（无需重启 ForkPlus）。更多插件可在 ForkPlus-Plugins 的 Releases 页面下载。" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,6" x:Name="DescriptionTextBlock" />
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+    <TextBlock Grid.Row="0" Text="对比视图插件会在打开文件差异时按文件扩展名自动匹配。此处可查看插件名称、版本号与描述，启用或禁用插件，安装或批量卸载第三方插件（内置插件不可卸载）。更多插件可在 ForkPlus-Plugins 的 Releases 页面下载。" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,6" x:Name="DescriptionTextBlock" />
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+      <Button Content="安装插件..." Click="InstallButton_Click" x:Name="InstallButton" ToolTip.Tip="从插件压缩包（zip）安装插件到 plugins/ 目录" />
       <Button Content="重新加载插件" Click="ReloadButton_Click" x:Name="ReloadButton" />
       <Button Content="打开插件目录" Click="OpenDirectoryButton_Click" x:Name="OpenDirectoryButton" />
       <HyperlinkButton x:Name="DownloadPluginsHyperlink" Content="下载最新插件" NavigateUri="https://github.com/hebin123456/ForkPlus-Plugins/releases" VerticalAlignment="Center" ToolTip.Tip="前往 ForkPlus-Plugins 的 Releases 页面下载最新插件" />
+    </StackPanel>
+    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+      <CheckBox x:Name="SelectAllCheckBox" Content="全选" IsCheckedChanged="SelectAllCheckBox_Changed" VerticalAlignment="Center" />
+      <Button Content="卸载选中" Click="UninstallButton_Click" x:Name="UninstallButton" IsEnabled="False" ToolTip.Tip="卸载勾选的第三方插件（内置插件不可卸载）" />
       <TextBlock x:Name="StatusTextBlock" VerticalAlignment="Center" FontSize="12" Opacity="0.7" />
     </StackPanel>
-    <ScrollViewer Grid.Row="2" MaxHeight="320" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer Grid.Row="3" MaxHeight="320" HorizontalScrollBarVisibility="Disabled">
       <StackPanel x:Name="PluginsListPanel" />
     </ScrollViewer>
   </Grid>

@@ -37,6 +37,9 @@ namespace ForkPlus.UI.Plugins
 					PreferencesLocalization.ApplyCurrent(avaloniaObject);
 				}
 			};
+			// v5.0.3：向插件下发当前界面语言 code（缺省英文）——插件据此选取自带的多语言资源；
+			// 语言热切换由 MainWindow.ApplyLocalizationCore 触发 PluginEnvironment.RaiseLanguageChanged。
+			PluginEnvironment.CurrentLanguageHandler = () => ForkPlusSettings.Default.UiLanguage;
 			// ---- 图片差异高亮开关（偏好 + 实时变更通知） ----
 			PluginEnvironment.HighlightImageDiffHandler = () => ForkPlusSettings.Default.ImageDiffHighlightPixels;
 			global::ForkPlus.NotificationCenter.Current.ImageDiffHighlightPixelsChanged += delegate (object sender, global::ForkPlus.UI.EventArgs<bool> e)

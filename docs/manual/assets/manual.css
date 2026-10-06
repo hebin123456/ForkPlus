@@ -158,6 +158,19 @@ figure figcaption code { font-size: 12px; }
 }
 .manual-main tr:nth-child(even) td { background: #fafbfc; }
 
+/* v5.0.3：内置插件表列宽固定 + 长词换行，避免窄屏（手机版）被长插件 ID / 扩展名撑开页面 */
+.manual-main table.plugin-table { table-layout: fixed; }
+.manual-main table.plugin-table th,
+.manual-main table.plugin-table td {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.manual-main table.plugin-table .col-id { width: 20%; }
+.manual-main table.plugin-table .col-name { width: 15%; }
+.manual-main table.plugin-table .col-scope { width: 31%; }
+.manual-main table.plugin-table .col-desc { width: 34%; }
+
 /* ===== 提示框 ===== */
 .tip, .warn, .note {
   border-radius: 8px;

@@ -42,6 +42,41 @@ namespace ForkPlus.Plugins
 			}
 		}
 
+		// ---- 界面语言（v5.0.3：宿主下发当前语言 code，缺省英文） ----
+
+		/// <summary>v5.0.3：缺省界面语言 code（宿主未注入语言时使用）。</summary>
+		public const string DefaultLanguage = "en";
+
+		/// <summary>
+		/// v5.0.3：当前界面语言 code（宿主注入，取宿主 UiLanguage；未注入/空值回退
+		/// <see cref="DefaultLanguage"/> 即英文）。插件据此选取自带的本地化资源——
+		/// 例如 <c>IPluginMetadata.GetDisplayName(language)</c> 的多语言名称/描述。
+		/// </summary>
+		public static Func<string> CurrentLanguageHandler { get; set; }
+
+		/// <summary>v5.0.3：当前界面语言 code，缺省为英文（"en"）。</summary>
+		public static string CurrentLanguage
+		{
+			get
+			{
+				string language = CurrentLanguageHandler?.Invoke();
+				return string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language;
+			}
+		}
+
+		/// <summary>
+		/// v5.0.3：界面语言热切换通知（宿主在语言切换时触发，参数为新语言 code）。
+		/// 插件订阅后重刷自带的本地化资源；宿主每次切换必然触发，
+		/// 未挂载的插件视图也不会漏掉语言变更。
+		/// </summary>
+		public static event Action<string> LanguageChanged;
+
+		/// <summary>v5.0.3：由宿主触发语言热切换通知（空值按缺省英文处理）。</summary>
+		public static void RaiseLanguageChanged(string language)
+		{
+			LanguageChanged?.Invoke(string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language);
+		}
+
 		// ---- 图片差异高亮开关（偏好设置 → 实时生效） ----
 
 		/// <summary>当前「高亮差异像素」偏好值（宿主注入；未注入时默认 false）。</summary>
