@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.2</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.3</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,14 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.0.3 更新</h2>
+  <ul>
+    <li><strong>插件多语言</strong>：宿主把当前界面语言下发给插件（缺省英文），插件可提供本地化的名称与描述，界面语言切换时插件视图随之刷新；内置的图片对比与 Hex 对比插件已提供 8 种语言的名称/描述。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>压缩包安装插件</strong>：偏好设置 → 插件页新增<strong>「安装插件...」</strong>，选择从 ForkPlus-Plugins Releases 下载的插件 zip 后自动解压安装到 <code>plugins/</code> 并重新加载，无需手工解压、无需重启。详见<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>与<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>批量卸载插件</strong>：偏好设置 → 插件页新增勾选框、「全选」与<strong>「卸载选中」</strong>按钮，可一次卸载多个第三方插件；<strong>内置的图片对比与 Hex 对比插件受保护，不可卸载</strong>。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.0.3，偏好设置各标签页插图按最新界面重新生成。详见<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>。</li>
+  </ul>
 
   <h2>v5.0.2 更新</h2>
   <ul>
