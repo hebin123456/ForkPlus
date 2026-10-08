@@ -2,6 +2,29 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.0.4
+
+> 修复内置对比视图插件漏发的热修复：v5.0.3 四平台发布包均未包含 `plugins/` 目录，导致宿主启动后一个插件都加载不到（偏好设置 → 插件页为空）。本版修正发布打包逻辑并补上 CI 发布门禁。应用版本号升至 5.0.4。
+
+### 修复
+
+- **内置插件漏发**：v5.0.3 的发布包里没有 `plugins/` 目录，内置的图片对比（`ForkPlus.Plugins.Image`）与 Hex 对比（`ForkPlus.Plugins.Hex`）两个插件 DLL 均未被分发。宿主启动时从可执行文件旁的 `plugins/` 动态加载插件，目录不存在即注册 0 个插件——表现为「一个插件都显示不出来」。
+  - 根因：[ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj) 的插件拷贝目标只按 RID 子目录（如 `bin/Release/net10.0/win-x64/`）查找插件 DLL，而插件是类库工程、产物实际落在无 RID 的 `bin/Release/net10.0/` 根目录，导致 `Exists` 守卫恒为 false、`Copy` 空转，`publish/` 里既无 `plugins/` 目录也无插件 DLL，且构建全程不报错、静默漏发。
+  - 修正：拷贝目标改为「先查 RID 路径，不存在则回退到根目录」，两类构建布局都能正确收集；该问题与平台无关，四平台一并修复。
+
+### 构建
+
+- **发布门禁**：CI 的 `Verify critical outputs` 步骤新增断言，`plugins/ForkPlus.Plugins.Image.dll` 与 `plugins/ForkPlus.Plugins.Hex.dll` 必须存在于发布目录，缺失即红灯——同类漏发回归不再静默通过构建。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.0.4-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.0.4-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.0.4-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.0.4-macos-arm64.zip` |
+
 ## v5.0.3
 
 > 插件体系三项增强：插件支持多语言（宿主把当前界面语言下发给插件，缺省英文）；偏好设置 → 插件页新增「安装插件...」，可直接安装插件压缩包（zip）；新增「卸载选中」支持批量卸载第三方插件，内置的图片/Hex 两个插件受保护不可卸载。应用版本号升至 5.0.3。

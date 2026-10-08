@@ -241,11 +241,17 @@ jobs:
           # Windows 的 apphost 带 .exe 扩展名，Unix 是无扩展名可执行文件
           if [ "${{ matrix.name }}" = "windows-x64" ]; then ext=".exe"; else ext=""; fi
           missing=0
+          # 内置对比视图插件必须随包分发（宿主启动期从可执行文件旁 plugins/ 动态加载）：
+          # v5.0.3 曾因 ForkPlus.csproj 的插件拷贝目标只按 RID 子目录找源文件（类库产物
+          # 实际落在无 RID 的 net10.0/ 根目录）→ Copy 空转 → 发布包无 plugins/ 目录 →
+          # 宿主一个插件都加载不到，且构建全程绿灯、静默漏发。此处断言插件 DLL 存在，
+          # 让同类回归在 CI 直接红灯。
           for f in ForkPlus.dll ForkPlus.runtimeconfig.json \
                    "ForkPlus.AskPass${ext}" ForkPlus.AskPass.dll ForkPlus.AskPass.runtimeconfig.json ForkPlus.AskPass.deps.json \
                    "ForkPlus.RI${ext}" ForkPlus.RI.dll ForkPlus.RI.runtimeconfig.json ForkPlus.RI.deps.json \
                    "ForkPlus.AutoUpdater${ext}" ForkPlus.AutoUpdater.dll ForkPlus.AutoUpdater.runtimeconfig.json ForkPlus.AutoUpdater.deps.json \
-                   Docs/RELEASE_NOTE.md OxyPlot.Avalonia.dll; do
+                   Docs/RELEASE_NOTE.md OxyPlot.Avalonia.dll \
+                   plugins/ForkPlus.Plugins.Image.dll plugins/ForkPlus.Plugins.Hex.dll; do
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
           done
           case "${{ matrix.name }}" in
