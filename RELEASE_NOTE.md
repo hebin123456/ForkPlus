@@ -4,13 +4,16 @@
 
 ## v5.0.4
 
-> 修复内置对比视图插件漏发的热修复：v5.0.3 四平台发布包均未包含 `plugins/` 目录，导致宿主启动后一个插件都加载不到（偏好设置 → 插件页为空）。本版修正发布打包逻辑并补上 CI 发布门禁。应用版本号升至 5.0.4。
+> 修复对比视图插件加载的热修复：v5.0.3 四平台发布包均未包含 `plugins/` 目录，导致宿主启动后一个插件都加载不到（偏好设置 → 插件页为空）；同时修复从 ForkPlus-Plugins 安装的第三方插件因契约程序集版本漂移而无法被识别的问题。应用版本号升至 5.0.4。
 
 ### 修复
 
 - **内置插件漏发**：v5.0.3 的发布包里没有 `plugins/` 目录，内置的图片对比（`ForkPlus.Plugins.Image`）与 Hex 对比（`ForkPlus.Plugins.Hex`）两个插件 DLL 均未被分发。宿主启动时从可执行文件旁的 `plugins/` 动态加载插件，目录不存在即注册 0 个插件——表现为「一个插件都显示不出来」。
   - 根因：[ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj) 的插件拷贝目标只按 RID 子目录（如 `bin/Release/net10.0/win-x64/`）查找插件 DLL，而插件是类库工程、产物实际落在无 RID 的 `bin/Release/net10.0/` 根目录，导致 `Exists` 守卫恒为 false、`Copy` 空转，`publish/` 里既无 `plugins/` 目录也无插件 DLL，且构建全程不报错、静默漏发。
   - 修正：拷贝目标改为「先查 RID 路径，不存在则回退到根目录」，两类构建布局都能正确收集；该问题与平台无关，四平台一并修复。
+- **插件仓插件识别不出来**：从 ForkPlus-Plugins Releases 安装的插件（v1.0.7 及更早）在偏好设置 → 插件页里一个都不显示，且不报错——内置的图片/Hex 插件却正常。
+  - 根因：插件仓 CI 用发布版本号做 `VERSION` 环境变量，而 MSBuild 会把它读作 `Version` 属性，连带把插件编译时引用的契约程序集 `ForkPlus.Plugins.Abstractions` 的 AssemblyVersion 抬到 `1.0.7.0`；宿主进程内加载的是 `1.0.0.0`。.NET 默认绑定要求「已加载版本 ≥ 请求版本」，请求版本更高时绑定直接失败，插件的 `IDiffViewPlugin` 类型因而加载不了（类型加载失败不进入「加载失败」列表，所以既看不见插件、也没有任何错误提示）。
+  - 修正（两处配合）：宿主 [DiffViewPluginLoader.cs](src/ForkPlus/UI/Plugins/DiffViewPluginLoader.cs) 的程序集解析钩子在默认绑定失败时，回退到进程内已加载的同名程序集，复用宿主同一份类型身份——**已发布的 v1.0.7 旧插件包无需重装即可被识别**；插件仓 v1.0.8 起把契约的 AssemblyVersion 钉死为 `1.0.0.0`，并给 CI 版本变量改名以从源头消除版本漂移。
 
 ### 构建
 

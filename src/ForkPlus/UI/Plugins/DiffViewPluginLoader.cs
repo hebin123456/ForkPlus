@@ -280,6 +280,18 @@ namespace ForkPlus.UI.Plugins
 			{
 				try
 				{
+					// v5.0.4：插件编译时引用的契约/共享组件可能带自身版本号（插件仓 CI 用 VERSION
+					// 环境变量同时当发布版本与程序集版本，编出的 ForkPlus.Plugins.Abstractions 记为
+					// 1.0.7.0），而宿主进程内已加载的同名程序集是 1.0.0.0。默认绑定要求已加载版本
+					// ≥ 请求版本，请求版本更高时直接失败——插件的 IDiffViewPlugin 类型随之加载不了，
+					// 表现在插件页里「插件仓的插件一个都看不见」（且因是类型加载失败、不进失败列表，
+					// 连报错也没有）。契约/共享组件不下发到 plugins/，此处回退到进程内已加载的同名
+					// 程序集，复用宿主同一份类型身份，保证 is/as 判定与契约一致。
+					Assembly loaded = FindLoadedAssembly(name.Name);
+					if (loaded != null)
+					{
+						return loaded;
+					}
 					string candidate = Path.Combine(directory, name.Name + ".dll");
 					return File.Exists(candidate) ? context.LoadFromAssemblyPath(candidate) : null;
 				}
@@ -288,6 +300,22 @@ namespace ForkPlus.UI.Plugins
 					return null;
 				}
 			};
+		}
+
+		/// <summary>
+		/// v5.0.4：按简单名查找进程内已加载的程序集（含默认与自定义 ALC），
+		/// 供 <see cref="HookResolving"/> 在默认绑定因版本号不匹配失败时复用同一份类型身份。
+		/// </summary>
+		private static Assembly FindLoadedAssembly(string simpleName)
+		{
+			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+			{
+				if (string.Equals(assembly.GetName().Name, simpleName, StringComparison.OrdinalIgnoreCase))
+				{
+					return assembly;
+				}
+			}
+			return null;
 		}
 
 		private static void LoadAssemblyFile(string path)
