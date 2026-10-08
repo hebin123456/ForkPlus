@@ -138,17 +138,28 @@ namespace ForkPlus.UI.Dialogs
 			_untrackedFiles = untrackedFiles;
 			base.DialogTitle = PreferencesLocalization.Current("Add .gitignore Template");
 			base.SubmitButtonTitle = PreferencesLocalization.Current("Add");
-			base.DescriptionTextBlock.Inlines.Clear();
-			base.DescriptionTextBlock.Inlines.Add(new Run("Choose "));
-			// Migration note：WPF Hyperlink(Run) → Avalonia HyperlinkButton（Content 承载 Run）。
-                        global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
-                        {
-                                Content = new Run(".gitignore"),
-                                NavigateUri = new Uri("https://git-scm.com/docs/gitignore")
-                        };
-{                       global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(hyperlink, this.TryFindResource("BlueUnderlineHyperlinkStyle"));
-}			base.DescriptionTextBlock.Inlines.Add(hyperlink);
-			base.DescriptionTextBlock.Inlines.Add(new Run(" template for your project"));
+			// 修复（2026-10-08，"建议添加 .gitignore 的通知条点『Add .gitignore…』没反应"）：
+			// 原代码在构造函数里直接访问 base.DescriptionTextBlock——Avalonia 下 dialog chrome
+			// （Title/Description 行）延迟到 Initialized/内容变更后的 Dispatcher 回调才创建，
+			// 构造期该字段恒为 null → DescriptionTextBlock.Inlines 抛 NRE，点击按钮时构造函数
+			// 崩溃、窗口打不开（表现为"没反应"）。改走 CustomizeDescriptionTextBlock 的 pending
+			// 机制（构造期安全，chrome 就绪后回放）；并在回调里强制 IsVisible=true——否则
+			// AddDialogHeader 会因描述文本为空把该行设为隐藏。
+			CustomizeDescriptionTextBlock(delegate(TextBlock textBlock)
+			{
+				textBlock.IsVisible = true;
+				textBlock.Inlines.Clear();
+				textBlock.Inlines.Add(new Run("Choose "));
+				// Migration note：WPF Hyperlink(Run) → Avalonia HyperlinkButton（Content 承载 Run）。
+				global::Avalonia.Controls.HyperlinkButton hyperlink = new global::Avalonia.Controls.HyperlinkButton
+				{
+					Content = new Run(".gitignore"),
+					NavigateUri = new Uri("https://git-scm.com/docs/gitignore")
+				};
+				global::ForkPlus.UI.WpfCompat.StyleCompat.SetStyle(hyperlink, this.TryFindResource("BlueUnderlineHyperlinkStyle"));
+				textBlock.Inlines.Add(hyperlink);
+				textBlock.Inlines.Add(new Run(" template for your project"));
+			});
 			LoadTemplates();
 			BuildTemplateList();
 			PreselectTemplates();
