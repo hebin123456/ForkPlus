@@ -103,7 +103,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 			}
 			else if (diffContent is UnknownBinaryDiffContent unknownBinaryDiffContent)
 			{
-				// v3.7.2：宿主对 ≤50MB 非 LFS 二进制预载的字节（供 Hex 模式增量渲染）
+				// v3.7.2（v5.0.5 阈值提到 100MB）：宿主对 ≤100MB 非 LFS 二进制预载的字节（供 Hex 模式增量渲染）
 				if (hexContent != null)
 				{
 					hexSrc = hexContent.SrcData;

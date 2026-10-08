@@ -1112,6 +1112,7 @@
     "Loading LFS files...": "LFS ファイルを読み込み中...",
     "Loading binary info for '{0}'": "'{0}' のバイナリ情報を読み込み中",
     "Loading changed files": "変更ファイルを読み込み中",
+    "Loading content for '{0}'": "'{0}' の内容を読み込み中",
     "Loading image content for '{0}'": "'{0}' の画像内容を読み込み中",
     "Loading repositories...": "リポジトリを読み込み中...",
     "Loading submodule content for '{0}'": "'{0}' のサブモジュール内容を読み込み中",

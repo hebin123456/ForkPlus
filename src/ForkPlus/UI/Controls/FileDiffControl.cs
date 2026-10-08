@@ -19,6 +19,7 @@ using ForkPlus.UI.Controls.Editor.Diff;
 using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
+using ForkPlus.UI.Plugins;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.UI.Helpers;
 using ForkPlus.Services;
@@ -257,6 +258,12 @@ namespace ForkPlus.UI.Controls
 							return;
 						}
 					}
+					// v5.0.5：插件显式认领（用户绑定 / 精确扩展名，如 .json / .dbc / .cer）时，
+					// 文本差异同样转交插件对比视图；无人认领则继续走内置文本编辑器。
+					if (TryShowClaimedPluginDiffView(repositoryUserControl, diff2, parsedDiffContent.GitModule, changedFile))
+					{
+						return;
+					}
 					if (!loadLargeDiff && IsLargeOrMinified(diff2))
 					{
 						ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)
@@ -363,7 +370,7 @@ namespace ForkPlus.UI.Controls
 							// v3.7.2（"OTF 变更没有 hex 对比 + 缺 not LFS 徽章"）：二进制默认
 							// 卡片视图（旧/新 + LFS 徽章），后台预载的两侧字节传给
 							// PluginDiffViewControl 供底部 Hex 切换（Side-by-Side + Hex 两个按钮，
-							// 图片场景另有 Swipe/Onion Skin）；>50MB 无字节时其 Hex 按钮自动隐藏。
+							// 图片场景另有 Swipe/Onion Skin）；>100MB 无字节时其 Hex 按钮自动隐藏。
 							// 对齐 3.13.2：徽章与 hex 对比入口并存。
 							HexDiffContent hexDiffContent2 = ((hexDiffContentResult != null && hexDiffContentResult.Succeeded) ? hexDiffContentResult.Result : null);
 							ShowSubView(() => new PluginDiffViewControl(), delegate(PluginDiffViewControl c, FileControlHeaderUserControl h)
@@ -842,8 +849,10 @@ namespace ForkPlus.UI.Controls
 	/// <summary>v3.1.0：Hex Diff 自动加载阈值。两侧 blob 大小均不超过此值时自动加载字节并启用 Hex Diff 视图。
 	/// v3.7.2：10MB→50MB。OTF/字体等常见二进制资产普遍在 10–40MB（实测 13MB OTF 曾被
 	/// 误判回退 BinaryDiff 双栏卡片视图且无 Hex 入口）；HexDiffUserControl 为增量渲染（首屏 16KB、
-	/// 按需加载更多、MD5 后台计算），50MB 不会卡 UI，仅内存常驻两侧字节数组。</summary>
-	private const long MaxHexDiffSize = 50 * 1024 * 1024;
+	/// 按需加载更多、MD5 后台计算），不会卡 UI，仅内存常驻两侧字节数组。
+	/// v5.0.5：50MB→100MB。该阈值同时是非图片二进制（压缩包/Office/PDF 等）插件视图的
+	/// 字节供给开关——50MB 时常见压缩包超限即整侧「内容不可用」，提高到 100MB。</summary>
+	private const long MaxHexDiffSize = 100 * 1024 * 1024;
 
 	/// <summary>v3.1.0：判断 UnknownBinaryDiffContent 是否可以升级为 HexDiffContent（两侧大小均不超过阈值且非空）。</summary>
 	private static bool CanLoadHexDiff(UnknownBinaryDiffContent content)
@@ -902,6 +911,98 @@ namespace ForkPlus.UI.Controls
 			dstData?.Dispose();
 			return GitCommandResult<HexDiffContent>.Failure(ex);
 		}
+	}
+
+	/// <summary>
+	/// v5.0.5：为「文本差异被插件显式认领」的场景加载两侧内容。复用 <see cref="LoadHexDiffContent"/>
+	/// 的 BlobTarget 判定（staged → 目标 blob；否则读工作区文件；纯新增/纯删除的一侧跳过，保持 null），
+	/// 产出 <see cref="BinaryDiffContent"/> 交给 <see cref="PluginDiffViewControl"/>——其 BuildContext
+	/// 会把字节投影为插件侧 DiffSideContent（非 LFS 文本不会被误判成 LFS 指针，解析失败即走普通字节侧）。
+	/// </summary>
+	private static GitCommandResult<BinaryDiffContent> LoadClaimedDiffContent(Diff diff, GitModule gitModule, ChangedFile changedFile, JobMonitor monitor)
+	{
+		string srcObject = diff.SrcObject;
+		string dstObject = diff.DstObject;
+		Sha? srcSha = srcObject != null ? Sha.Parse(srcObject) : (Sha?)null;
+		Sha? dstSha = dstObject != null ? Sha.Parse(dstObject) : (Sha?)null;
+		if ((srcSha == null || srcSha.GetValueOrDefault() == Sha.Zero) && (dstSha == null || dstSha.GetValueOrDefault() == Sha.Zero))
+		{
+			return GitCommandResult<BinaryDiffContent>.Failure(new GitCommandError.ParseError("Can not find src/dst in diff for plugin view"));
+		}
+		MemoryStream srcData = null;
+		MemoryStream dstData = null;
+		try
+		{
+			if (srcSha.HasValue && srcSha.GetValueOrDefault() != Sha.Zero)
+			{
+				if (monitor.IsCanceled) return GitCommandResult<BinaryDiffContent>.Failure(new GitCommandError.Cancelled());
+				GitCommandResult<MemoryStream> srcResult = new GetBlobGitCommand().Execute(gitModule, new BlobTarget.Blob(srcSha.GetValueOrDefault()));
+				if (!srcResult.Succeeded) return GitCommandResult<BinaryDiffContent>.Failure(srcResult.Error);
+				srcData = srcResult.Result;
+			}
+			if (dstSha.HasValue && dstSha.GetValueOrDefault() != Sha.Zero)
+			{
+				if (monitor.IsCanceled) return GitCommandResult<BinaryDiffContent>.Failure(new GitCommandError.Cancelled());
+				BlobTarget dstTarget = (!changedFile.Tracked || !changedFile.Staged)
+					? (BlobTarget)new BlobTarget.Unstaged(changedFile.Path)
+					: (BlobTarget)new BlobTarget.Blob(dstSha.GetValueOrDefault());
+				GitCommandResult<MemoryStream> dstResult = new GetBlobGitCommand().Execute(gitModule, dstTarget);
+				if (!dstResult.Succeeded) return GitCommandResult<BinaryDiffContent>.Failure(dstResult.Error);
+				dstData = dstResult.Result;
+			}
+			return GitCommandResult<BinaryDiffContent>.Success(new BinaryDiffContent(changedFile, srcData, dstData));
+		}
+		catch (Exception ex)
+		{
+			srcData?.Dispose();
+			dstData?.Dispose();
+			return GitCommandResult<BinaryDiffContent>.Failure(ex);
+		}
+	}
+
+	/// <summary>
+	/// v5.0.5：文本差异的插件接管入口。插件经 <see cref="DiffViewPluginRegistry.ResolveClaimed"/>
+	/// 显式认领该文件（用户绑定或精确扩展名声明，如 .json → 结构化对比、.dbc → DBC 对比、
+	/// .cer → 证书对比）时，后台加载两侧字节并转由 <see cref="PluginDiffViewControl"/> 渲染，
+	/// 返回 true（调用方不再走文本编辑器）。无人认领、宿主上下文缺失或 gitModule 为空时返回
+	/// false，调用方继续内置文本视图；字节加载失败则按既有二进制路径同款 ShowErrorView 呈现。
+	/// </summary>
+	protected bool TryShowClaimedPluginDiffView(RepositoryUserControl repositoryUserControl, Diff diff, GitModule gitModule, ChangedFile changedFile)
+	{
+		if (repositoryUserControl == null || gitModule == null || changedFile == null)
+		{
+			return false;
+		}
+		if (DiffViewPluginRegistry.ResolveClaimed(changedFile.Path) == null)
+		{
+			return false;
+		}
+		_activeRefreshJob?.Monitor.Cancel();
+		_activeRefreshJob = repositoryUserControl.JobQueue.Add(PreferencesLocalization.FormatCurrent("Loading content for '{0}'", changedFile.Path), delegate (JobMonitor monitor)
+		{
+			GitCommandResult<BinaryDiffContent> claimedContentResult = LoadClaimedDiffContent(diff, gitModule, changedFile, monitor);
+			base.Dispatcher.Post(delegate
+			{
+				if (!monitor.IsCanceled)
+				{
+					_activeRefreshJob = null;
+					if (!claimedContentResult.Succeeded)
+					{
+						ShowErrorView(claimedContentResult.Error);
+					}
+					else
+					{
+						BinaryDiffContent claimedContent = claimedContentResult.Result;
+						ShowSubView(() => new PluginDiffViewControl(), delegate (PluginDiffViewControl c, FileControlHeaderUserControl h)
+						{
+							c.UpdateDiff(repositoryUserControl, claimedContent);
+							ShowHeaderIfAllowed(h, changedFile);
+						});
+					}
+				}
+			});
+		}, JobFlags.Hidden);
+		return true;
 	}
 
 	private static GitCommandResult<SubmoduleDiffContent> LoadSubmoduleDiffContent(Diff diff, GitModule gitModule, SubmoduleChangedFile submoduleChangedFile, JobMonitor monitor)

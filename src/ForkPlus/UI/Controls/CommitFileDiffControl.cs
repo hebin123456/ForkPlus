@@ -138,6 +138,12 @@ namespace ForkPlus.UI.Controls
 							return;
 						}
 					}
+					// v5.0.5：插件显式认领（用户绑定 / 精确扩展名，如 .json / .dbc / .cer）时，
+					// 文本差异同样转交插件对比视图；无人认领则继续走内置文本编辑器。
+					if (TryShowClaimedPluginDiffView(repositoryUserControl, diff2, parsedDiffContent.GitModule, changedFile))
+					{
+						return;
+					}
 					if (!loadLargeDiff && IsLargeOrMinified(diff2))
 					{
 						ShowSubView(() => new FallbackUserControl(), delegate(FallbackUserControl c, FileControlHeaderUserControl h)

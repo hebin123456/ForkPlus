@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.3</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.5</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,13 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.0.5 更新</h2>
+  <ul>
+    <li><strong>文本差异接入对比视图插件</strong>：此前宿主只对<strong>二进制</strong>差异查询插件路由，<code>.json</code> / <code>.dbc</code> / <code>.cer</code> 这类纯文本文件固定走内置文本编辑器，插件声明了扩展名也不会被使用。现在文本差异也会查询插件路由：默认仍是内置文本编辑器，只有当插件被<strong>用户绑定</strong>、或以<strong>精确扩展名</strong>声明认领时才接管（通配兜底不参与）。为文本文件启用专属插件视图<strong>无需修改仓库的 <code>.gitattributes</code></strong>。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>非图片二进制字节供给阈值 50MB → 100MB</strong>：压缩包 / Office / PDF 等插件视图的字节供给上限提高，常见压缩包不再因超限而整侧「内容不可用」。详见<a href="ch-07-binary-diff.html">第 7 章 · 二进制对比</a>。</li>
+    <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.0.5，第 26 章补充「文本差异的插件接管」规则。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+  </ul>
 
   <h2>v5.0.3 更新</h2>
   <ul>

@@ -4,6 +4,7 @@
 // BinaryContentPanel.SetContent → IconTools / FileHelper / PluginSizeFormat，
 // 任一抛异常都会让 initialize delegate 中断，ShowSubView 换完子视图却没填内容 → 一片空白。
 // v3.7.2：MaxHexDiffSize 10MB→50MB（OTF ~13MB 回归），本文件的回退路径改用 51MB；
+// v5.0.5：MaxHexDiffSize 50MB→100MB（压缩包/Office/PDF 等插件视图的字节供给上限），回退路径改用 101MB；
 // 另增 13MB（OTF 实测尺寸）用例验证卡片视图 + "not LFS" 徽章 + Hex 切换。
 // v5.0.0：对比视图插件化——宿主子视图为 PluginDiffViewControl，内部路由挂载插件视图，
 // Hex 控件同样来自插件工程。
@@ -80,8 +81,8 @@ namespace ForkPlus.Tests
 		public void LargeBinaryFile_Modified_WorkingDirDiff_ShowsBinaryDiffViewWithContent()
 		{
 			HeadlessAppBootstrap.EnsureStarted();
-			// >50MB（新 MaxHexDiffSize）：超出阈值 → CanLoadHexDiff=false → 回退 BinaryDiffUserControl
-			string repoRoot = CreateLargeBinaryTestRepo(51 * 1024 * 1024);
+			// >100MB（新 MaxHexDiffSize）：超出阈值 → CanLoadHexDiff=false → 回退 BinaryDiffUserControl
+			string repoRoot = CreateLargeBinaryTestRepo(101 * 1024 * 1024);
 			try
 			{
 				var module = new GitModule(repoRoot, Path.Combine(repoRoot, ".git"), null, null);
@@ -113,7 +114,7 @@ namespace ForkPlus.Tests
 					Dispatcher.UIThread.RunJobs();
 
 				control.Content = diffResult;
-				// 51MB 双侧 blob 读取较慢，轮询至多 ~30s 等 ShowSubView 完成
+				// 101MB 回退路径只取 blob 大小（不读字节），轮询至多 ~30s 等 ShowSubView 完成
 				for (int i = 0; i < 300 && control.CurrentSubView == null; i++)
 				{
 					Task.Delay(100).GetAwaiter().GetResult();
@@ -141,12 +142,12 @@ namespace ForkPlus.Tests
 
 			string diag = diagHolder[0] ?? "<未执行>";
 			object subView = holder[0];
-			// >50MB → PluginDiffViewControl（内部插件卡片视图：大小+扩展名图标 side-by-side）
+			// >100MB → PluginDiffViewControl（内部插件卡片视图：大小+扩展名图标 side-by-side）
 			Assert.True(subView is PluginDiffViewControl,
 				"大文件二进制 diff 应显示 PluginDiffViewControl，实际: " + diag);
-			// 描述文本包含文件大小（如 "51 MB"），非空 → 非空白
+			// 描述文本包含文件大小（如 "101 MB"），非空 → 非空白
 			Assert.Contains("MB", diag);
-			Assert.True(diag.Contains("51"), "应显示文件大小，实际: " + diag);
+			Assert.True(diag.Contains("101"), "应显示文件大小，实际: " + diag);
 		}
 		finally
 		{

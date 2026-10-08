@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.0.3</p>
+  <p>ForkPlus 用户手册 · 版本 v5.0.5</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -51,7 +51,7 @@
         <td><code>forkplus.hex</code></td>
         <td>十六进制对比<br><code>1.0.0</code></td>
         <td>通配兜底：任何未被专属插件认领的文件类型</td>
-        <td><strong>Hex 对比插件</strong>：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章）；宿主预载字节（≤50MB）时可切换到 Hex 对比。</td>
+        <td><strong>Hex 对比插件</strong>：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章）；宿主预载字节（v5.0.5 起 ≤100MB）时可切换到 Hex 对比。</td>
       </tr>
     </tbody>
   </table>
@@ -82,6 +82,15 @@
     <li><strong>通配兜底</strong>：以上都不命中时，交给声明为通配兜底的 Hex 对比插件。</li>
   </ol>
   <div class="note"><strong>说明：</strong>第三方插件只要声明<strong>更高的优先级</strong>，或通过<strong>用户绑定</strong>，即可覆盖内置插件的行为。</div>
+
+  <h3>文本差异的插件接管（v5.0.5）</h3>
+  <p>上述优先级对<strong>二进制</strong>与<strong>文本</strong>差异都适用，但「无人认领」时的默认行为不同：</p>
+  <ul>
+    <li><strong>二进制差异</strong>：未命中用户绑定 / 精确扩展名时，落到通配兜底的 Hex 对比插件。</li>
+    <li><strong>文本差异</strong>：默认仍由<strong>内置文本编辑器</strong>渲染；只有当用户<strong>显式绑定</strong>该扩展名、或插件以<strong>精确扩展名</strong>声明认领（如 <code>.json</code> → 结构化对比、<code>.dbc</code> → DBC 对比、<code>.cer</code> → 证书对比）时才改由插件接管。</li>
+  </ul>
+  <p>这意味着：为某类文本文件（如 <code>.json</code> / <code>.dbc</code>）启用专属插件视图，只需安装一个<strong>声明了该扩展名</strong>的插件即可——<strong>无需修改仓库的 <code>.gitattributes</code></strong>，也不会影响其它文本文件（它们照旧走内置文本编辑器）。</p>
+  <div class="note"><strong>说明：</strong>文本差异的路由经 <code>DiffViewPluginRegistry.ResolveClaimed</code> 解析，<strong>只认「用户绑定 > 精确扩展名」，不含 <code>*</code> 通配兜底</strong>——否则 Hex 兜底插件会把所有未被专属插件认领的文本文件从内置文本视图抢走。</div>
 
   <h2>插件契约与宿主桥接</h2>
   <p>插件通过独立的契约工程 <code>ForkPlus.Plugins.Abstractions</code> 与主程序对接，其中定义了 <code>IDiffViewPlugin</code>、<code>IDiffView</code>、<code>IDiffViewHost</code>、<code>DiffViewContext</code> 等类型。<strong>插件本身不感知 Git 领域类型与主工程</strong>；一切宿主能力都经 <code>PluginEnvironment</code> / <code>IDiffViewHost</code> 桥接注入，包括：</p>

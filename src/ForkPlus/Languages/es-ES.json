@@ -1112,6 +1112,7 @@
     "Loading LFS files...": "Cargando archivos LFS...",
     "Loading binary info for '{0}'": "Cargando información binaria para '{0}'",
     "Loading changed files": "Cargando archivos cambiados",
+    "Loading content for '{0}'": "Cargando el contenido de '{0}'",
     "Loading image content for '{0}'": "Cargando contenido de imagen para '{0}'",
     "Loading repositories...": "Cargando repositorios...",
     "Loading submodule content for '{0}'": "Cargando contenido del submódulo para '{0}'",

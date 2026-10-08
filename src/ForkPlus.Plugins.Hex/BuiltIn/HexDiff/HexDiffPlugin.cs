@@ -7,7 +7,7 @@ namespace ForkPlus.Plugins.BuiltIn.HexDiff
 	/// v5.0.0：内置 Hex 对比插件（独立 DLL：ForkPlus.Plugins.Hex.dll，经 plugins/ 动态加载）。
 	/// v5.0.0 起兼二进制文件通配兜底（原 forkplus.binary 职责并入，与 4.3.2「一个图片对比器 +
 	/// 一个十六进制对比器」的心智模型一致）：任何未被专属插件认领的文件都落这里——默认
-	/// side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章），宿主预载字节（≤50MB）时
+	/// side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章），宿主预载字节（v5.0.5 起 ≤100MB）时
 	/// 可切 Hex 对比。图片扩展名仍由图片插件（forkplus.image，100）优先认领；第三方插件
 	/// 以更高优先级或用户绑定（DiffViewPluginRegistry.BindExtension）覆盖本兜底。
 	/// 渲染内核与图片插件的「Hex」模式页共用同一 ForkPlus.Plugins.Ui 组件

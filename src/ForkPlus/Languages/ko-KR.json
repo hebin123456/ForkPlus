@@ -1112,6 +1112,7 @@
     "Loading LFS files...": "LFS 파일 로드 중...",
     "Loading binary info for '{0}'": "'{0}'의 바이너리 정보 로드 중",
     "Loading changed files": "변경된 파일 로드 중",
+    "Loading content for '{0}'": "'{0}' 콘텐츠 로드 중",
     "Loading image content for '{0}'": "'{0}'의 이미지 내용 로드 중",
     "Loading repositories...": "저장소 로드 중...",
     "Loading submodule content for '{0}'": "'{0}'의 서브모듈 내용 로드 중",

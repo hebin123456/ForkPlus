@@ -1115,6 +1115,7 @@
     "Loading LFS files...": "正在加载 LFS 文件...",
     "Loading binary info for '{0}'": "加载 '{0}' 的二进制信息",
     "Loading changed files": "正在加载变更文件",
+    "Loading content for '{0}'": "正在加载 '{0}' 的内容",
     "Loading image content for '{0}'": "加载 '{0}' 的图像内容",
     "Loading repositories...": "正在加载仓库...",
     "Loading submodule content for '{0}'": "加载 '{0}' 的子模块内容",

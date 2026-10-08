@@ -170,7 +170,7 @@ namespace ForkPlus.Tests
 		Assert.True(subView is HexDiffView,
 			"二进制 diff 应默认显示简略卡片视图（HexDiffView，forkplus.hex 兜底），实际: " + diag);
 			Assert.True(diag.Contains("Hex按钮可见=True"),
-				"≤50MB 二进制应预载字节并提供 Hex 切换按钮，实际: " + diag);
+				"≤100MB 二进制应预载字节并提供 Hex 切换按钮，实际: " + diag);
 			Assert.True(diag.Contains("Hex容器可见=True"),
 				"点击 Hex 后应切换到十六进制对比视图，实际: " + diag);
 			// 且编辑器有内容（非空白）

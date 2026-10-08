@@ -234,7 +234,7 @@ namespace ForkPlus.Tests
 						&& UiClick.FindAll<OnionSkinImageDiffUserControl>(window).Count == 0,
 						"非图片二进制不应装配 Swipe/Onion Skin 视图（图片插件专属）");
 					Assert.True(cards.HexRadioButton.IsVisible,
-						"≤50MB 二进制预载字节后 Hex 按钮应可见");
+						"≤100MB 二进制预载字节后 Hex 按钮应可见");
 					Assert.True(UiClick.FindAll<HexDiffUserControl>(window).Count == 0,
 						"未点 Hex 前不应装配 HexDiffUserControl（懒加载）");
 

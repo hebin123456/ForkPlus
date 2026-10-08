@@ -161,6 +161,55 @@ namespace ForkPlus.UI.Plugins
 		}
 
 		/// <summary>
+		/// v5.0.5：按文件路径解析**显式认领**该文件类型的插件。路由顺序：用户绑定 &gt; 精确扩展名
+		/// （按优先级）；与 <see cref="Resolve"/> 的区别是不走 "*" 通配兜底。
+		/// 供宿主文本 diff 分支使用：文本差异默认仍由内置文本编辑器渲染，仅当插件被用户绑定、
+		/// 或以精确扩展名声明认领（如 .json / .dbc / .cer）时才接管——避免通配兜底（Hex）
+		/// 把所有未被专属插件认领的文本文件从文本视图抢走。返回 null 表示无人显式认领。
+		/// </summary>
+		[Null]
+		public static IDiffViewPlugin ResolveClaimed([Null] string path, long? srcSize = null, long? dstSize = null)
+		{
+			DiffViewRequest request = new DiffViewRequest(path, srcSize, dstSize);
+			string extension = null;
+			if (!string.IsNullOrEmpty(path))
+			{
+				extension = NormalizeExtension(Path.GetExtension(path));
+			}
+			IDiffViewPlugin[] snapshot;
+			string boundId = null;
+			lock (SyncRoot)
+			{
+				snapshot = Plugins.ToArray();
+				if (extension != null)
+				{
+					UserBindings.TryGetValue(extension, out boundId);
+				}
+			}
+			// 1) 用户绑定（最高，覆盖自动路由）
+			if (boundId != null)
+			{
+				IDiffViewPlugin bound = FindPluginById(boundId, snapshot);
+				if (bound != null && IsEnabled(bound.Id) && bound.CanHandle(request))
+				{
+					return bound;
+				}
+			}
+			// 2) 精确扩展名（按优先级，快照已排序；不含通配）
+			if (extension != null)
+			{
+				foreach (IDiffViewPlugin plugin in snapshot)
+				{
+					if (IsEnabled(plugin.Id) && HasExtension(plugin, extension) && plugin.CanHandle(request))
+					{
+						return plugin;
+					}
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
 		/// 按文件路径解析对比视图插件。路由顺序：用户绑定 &gt; 精确扩展名（优先级）&gt; 通配（优先级）。
 		/// 内置通配兜底恒命中，正常不返回 null；返回 null 表示无任何插件可用（调用方自行回退）。
 		/// </summary>
