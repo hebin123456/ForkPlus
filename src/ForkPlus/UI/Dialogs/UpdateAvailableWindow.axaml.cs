@@ -28,6 +28,9 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _updateFailed;
 
+		/// <summary>用户主动取消下载（Kill updater）——退出码非 0 属预期，不能当失败报错。</summary>
+		private bool _userCancelledUpdate;
+
 		/// <summary>
 		/// E2E 测试注入：替换默认 AutoUpdateRunner 工厂（注入临时安装目录/假 wait-pid/
 		/// no-restart），生产为 null（用真实安装目录与本进程 pid）。
@@ -75,6 +78,8 @@ namespace ForkPlus.UI.Dialogs
 			// 的语义一致。非下载阶段（解压/替换中）Cancel 按钮已收起，此分支不可达。
 			if (_updateRunner != null && _updateRunner.IsRunning)
 			{
+				// 记录"用户主动取消"：Kill 后退出码非 0 属预期，OnUpdateRunnerExited 不得报错
+				_userCancelledUpdate = _updateRunner.IsDownloading;
 				_updateRunner.Cancel();
 				return;
 			}
@@ -177,9 +182,25 @@ namespace ForkPlus.UI.Dialogs
 			}
 			if (!_updateFailed)
 			{
+				bool userCancelled = _userCancelledUpdate;
+				int? exitCode = _updateRunner?.ExitCode;
 				// 用户取消（或 updater 意外早退）：恢复结果区允许重试或关闭
 				RestoreContentUi();
+				// 修复（2026-10-08，v5.0.6）：updater 起进程即崩/早退不会发 error 管道消息
+				//（参数解析失败/连不上管道都发生在上报之前），此前一律按"用户取消"静默恢复
+				// 结果区——用户看到的就是"点了 Download 闪一下、原地踏步"（Windows 上
+				// --install-dir 结尾反斜杠吃掉结束引号即此症状，见 AutoUpdateRunner.Quote）。
+				// 现在读退出码区分：非用户取消且退出码非 0 → 按失败报错（0 成功 / 130 取消 /
+				// 1 失败，见 AutoUpdater Program.cs）。与 UpdateCheckWindow 的"重置此版本"
+				// 流（2026-09-14 同款修复）口径一致。
+				if (!userCancelled && exitCode != 0)
+				{
+					SetStatus(ForkPlusDialogStatus.Error, PreferencesLocalization.FormatCurrent(
+						"Update failed: {0}",
+						"updater exited unexpectedly (code " + (exitCode.HasValue ? exitCode.Value.ToString() : "unknown") + ")"));
+				}
 			}
+			_userCancelledUpdate = false;
 			DisposeRunner();
 		}
 

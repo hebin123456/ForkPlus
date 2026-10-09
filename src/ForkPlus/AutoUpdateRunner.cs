@@ -430,10 +430,31 @@ namespace ForkPlus
 			}
 		}
 
-		/// <summary>命令行引号（含空格路径安全；updater 侧按整段读值不解析引号内容）。</summary>
-		private static string Quote(string value)
+		/// <summary>命令行引号（含空格路径安全；updater 侧按整段读值不解析引号内容）。
+		/// 修复（2026-10-08，v5.0.6，"自动更新 Download 按钮闪一下就原地踏步"）：
+		/// Windows 命令行规则（CommandLineToArgvW）下，引号内"紧邻结束引号的 \ 会转义该
+		/// 引号"，而 AppContext.BaseDirectory 必然以目录分隔符结尾（Windows 为 \），
+		/// 于是 `--install-dir "C:\App\"` 的结束引号被吃掉，后面整段
+		/// ` --restart-command "..."` 被吞进 --install-dir 的值里，updater 侧
+		/// UpdateOptions.Parse 命中未知键 → 返回 null → 打用法后以退出码 1 退出，
+		/// 且参数解析失败发生在连进度管道之前（一条消息都不发）→ 主窗口静默复位。
+		/// 修复：把结尾连续的 \ 翻倍，使结束引号被正确识别（值本身不变）。
+		/// 无结尾反斜杠（Linux/macOS 路径、Windows 可执行文件路径）时输出与原来一致。
+		/// internal 供测试断言参数口径。</summary>
+		internal static string Quote(string value)
 		{
-			return "\"" + (value ?? "").Replace("\"", "'") + "\"";
+			string quoted = (value ?? "").Replace("\"", "'");
+			int end = quoted.Length;
+			while (end > 0 && quoted[end - 1] == '\\')
+			{
+				end--;
+			}
+			if (end != quoted.Length)
+			{
+				// 结尾连续的 \ 翻倍（注意只保留翻倍后的副本，原始结尾段不能重复追加）
+				quoted = quoted.Substring(0, end) + new string('\\', (quoted.Length - end) * 2);
+			}
+			return "\"" + quoted + "\"";
 		}
 
 		private static void TryDeleteDir(string dir)

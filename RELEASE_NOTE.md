@@ -2,6 +2,35 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.0.6
+
+> 修复 **Windows 上自动更新「Download 按钮点了没反应」**：点下去界面闪一下（进度面板出现又消失）就回到原样，既没有进度也没有报错。根因是拼给 updater 子进程的命令行里，`--install-dir` 的值以反斜杠结尾（Windows 的 `AppContext.BaseDirectory` 必然如此），按 Windows 命令行规则把结束引号转义掉了，连带吞掉后面的 `--restart-command` 整段——updater 参数解析失败，在连进度管道之前就以退出码 1 退出、一条消息都不发；主窗口又把这种"无消息早退"当成用户取消静静复位。本版修掉这条链路。应用版本号升至 5.0.6。
+
+### 修复
+
+- **Windows 自动更新点击无反应（Download 按钮"闪一下、原地踏步"）**：
+  - 根因一（命令行引号）：[AutoUpdateRunner.cs](src/ForkPlus/AutoUpdateRunner.cs) 拼 `--install-dir "…\"` 时未处理**结尾反斜杠**。Windows 命令行解析规则（`CommandLineToArgvW`）下，引号内**紧邻结束引号的 `\` 会转义该引号**，于是 `"C:\Users\…\ForkPlus\"` 的结束引号被吃掉，` --restart-command "…\ForkPlus.exe"` 整段被吞进 `--install-dir` 的值里；updater 侧 `UpdateOptions.Parse` 随后读到无法识别的参数（`ForkPlus.exe` 路径）→ 返回 `null` → 打用法页并以**退出码 1** 退出。而参数解析失败发生在**连接进度管道之前**，所以主程序连一条 `error:` 消息都收不到。
+    - 修正：拼命令行时把**结尾连续的 `\` 翻倍**（值本身不变，只让结束引号能被正确识别）。无结尾反斜杠的值（Linux/macOS 路径、`ForkPlus.exe` 自身路径）输出与修复前逐字节一致。
+  - 根因二（静默复位）：[UpdateAvailableWindow.axaml.cs](src/ForkPlus/UI/Dialogs/UpdateAvailableWindow.axaml.cs) 在 updater 进程退出时，只要没收到过 `error:` 消息就按"用户取消"处理，静默恢复结果区——于是"更新失败"在用户眼里就是"没反应"。
+    - 修正：读 updater **退出码**区分（0 成功 / 130 取消 / 1 失败），非用户主动取消且非 0 时在 Footer 状态区展示「更新失败：updater exited unexpectedly (code 1)」，与手动「检查更新」窗口里"重置此版本"流的处理口径一致。
+- **影响范围**：仅 Windows。Linux/macOS 的 `AppContext.BaseDirectory` 以 `/` 结尾，`/` 不参与引号转义，故此前一直正常（CI 测试也跑在 Linux，所以此前未暴露）。手动「检查更新 → 重置此版本」走同一套命令行拼装，在 Windows 上同样受损（它早已会报 `code 1`），本版一并修好。
+
+### 构建
+
+- **回归测试**：[UpdateAvailableWindowTests](src/ForkPlus.Tests/UpdateAvailableWindowTests.cs) 新增三组用例，锁定这条链路且不依赖 Windows：
+  - 用 `CommandLineToArgvW` 规则自行切分 `BuildArguments` 产出的命令行，断言 `--install-dir` / `--restart-command` 等键值在 **Windows 语义**下原样还原、且不产生多余 token（Linux 上 `ProcessStartInfo.Arguments` 走另一套更宽松的切分，不写这套断言就测不出 Windows 才会中招的参数被吞）；
+  - 断言无结尾反斜杠的取值输出不变（修复不误伤 Linux/macOS 路径）；
+  - 用"起进程即退出码 1、从不连管道"的桩 updater 复现静默早退，断言窗口必须报错而非静默复位。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.0.6-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.0.6-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.0.6-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.0.6-macos-arm64.zip` |
+
 ## v5.0.5
 
 > 让「文本文件」也能命中对比视图插件：此前宿主只对**二进制**差异查询插件路由，`.json` / `.dbc` / `.cer` 这类纯文本文件固定走内置文本编辑器，插件即使声明了扩展名也不会被调用。本版在文本分支接入插件路由（仅「用户绑定」或「精确扩展名声明」命中时接管，通配兜底不参与），并把非图片二进制的字节供给阈值由 50MB 提到 100MB。应用版本号升至 5.0.5。

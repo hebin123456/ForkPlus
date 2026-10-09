@@ -17,6 +17,7 @@
 // 本地跑测试未设时从当前共享运行时位置推导补齐，SetEnvironmentVariable 进程级
 // 生效、子进程可见）。
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -457,6 +458,216 @@ namespace ForkPlus.Tests
 			Assert.Equal(
 				AutoUpdatePackageUrl.ReleaseDownloadBase + "v9.9.9/ForkPlus-9.9.9-linux-x64.zip",
 				AutoUpdatePackageUrl.Resolve("ftp://example.com/a.zip", "9.9.9", "linux-x64"));
+		}
+
+		// ===== 修复回归（2026-10-08，v5.0.6）：Download 按钮"闪一下、原地踏步" =====
+		// 症状拆两半：① Windows 上 --install-dir 值以 \ 结尾 → 吃掉结束引号 → 吞掉
+		// --restart-command 整段 → updater 参数解析失败、连管道前退出码 1（无任何消息）；
+		// ② 主窗口把"无消息早退"当用户取消静默复位，于是用户看不到任何反馈。
+
+		/// <summary>Windows 命令行切分（CommandLineToArgvW / .NET apphost 子进程的实际
+		/// 解析口径）。Linux 上 ProcessStartInfo.Arguments 走另一套更宽松的切分，所以
+		/// "参数在 Windows 上是否被吞"必须用这套规则断言，否则 CI（Linux）测不出来。</summary>
+		private static string[] WindowsCommandLineTokens(string commandLine)
+		{
+			var tokens = new List<string>();
+			var current = new StringBuilder();
+			bool inQuotes = false;
+			bool hasToken = false;
+			int index = 0;
+			while (index < commandLine.Length)
+			{
+				char c = commandLine[index];
+				if (c == '\\')
+				{
+					int slashes = 0;
+					while (index < commandLine.Length && commandLine[index] == '\\')
+					{
+						slashes++;
+						index++;
+					}
+					if (index < commandLine.Length && commandLine[index] == '"')
+					{
+						// N 个反斜杠 + 引号：产出 N/2 个字面反斜杠；N 为奇数时引号是字面量，
+						// 偶数时引号才起"开/合引号"作用（这正是结尾单反斜杠会吃掉结束引号的由来）。
+						current.Append('\\', slashes / 2);
+						if (slashes % 2 == 1)
+						{
+							current.Append('"');
+						}
+						else
+						{
+							inQuotes = !inQuotes;
+						}
+						index++;
+					}
+					else
+					{
+						current.Append('\\', slashes);
+					}
+					hasToken = true;
+					continue;
+				}
+				if (c == '"')
+				{
+					inQuotes = !inQuotes;
+					hasToken = true;
+					index++;
+					continue;
+				}
+				if (!inQuotes && (c == ' ' || c == '\t'))
+				{
+					if (hasToken)
+					{
+						tokens.Add(current.ToString());
+						current.Clear();
+						hasToken = false;
+					}
+					index++;
+					continue;
+				}
+				current.Append(c);
+				hasToken = true;
+				index++;
+			}
+			if (hasToken)
+			{
+				tokens.Add(current.ToString());
+			}
+			return tokens.ToArray();
+		}
+
+		private static string ArgumentValue(string[] tokens, string key)
+		{
+			for (int i = 0; i + 1 < tokens.Length; i++)
+			{
+				if (tokens[i] == key)
+				{
+					return tokens[i + 1];
+				}
+			}
+			return null;
+		}
+
+		/// <summary>Windows 安装目录（AppContext.BaseDirectory 必然以 \ 结尾）经
+		/// BuildArguments 后必须原样还原、且 --restart-command 不被吞——修复前
+		/// `"C:\...\"` 的结束引号被转义，install-dir 值吞掉后随的 --restart-command
+		/// 段，updater 侧更新检查项认不出 → 退出码 1 → 用户看到"点了没反应"。</summary>
+		[Fact]
+		public void BuildArguments_WindowsInstallDirWithTrailingBackslash_SurvivesWindowsParsing()
+		{
+			HeadlessAppBootstrap.Run(delegate
+			{
+				string installDir = "C:\\Users\\me\\AppData\\Local\\ForkPlus\\";
+				string restartCommand = "C:\\Users\\me\\AppData\\Local\\ForkPlus\\ForkPlus.exe";
+				string zipUrl = "https://example.com/ForkPlus-5.0.6-windows-x64.zip";
+				using (var runner = new AutoUpdateRunner(installDir, installDir, restartCommand, waitPid: 4242, noRestart: false))
+				{
+					string commandLine = runner.BuildArguments(zipUrl);
+					string[] tokens = WindowsCommandLineTokens(commandLine);
+
+					Assert.Equal(zipUrl, ArgumentValue(tokens, "--url"));
+					Assert.Equal(installDir, ArgumentValue(tokens, "--install-dir"));
+					Assert.Equal(restartCommand, ArgumentValue(tokens, "--restart-command"));
+					Assert.Equal("4242", ArgumentValue(tokens, "--wait-pid"));
+					Assert.Equal(App.ProcessId.ToString(), ArgumentValue(tokens, "--pipe-pid"));
+
+					// 参数个数与键集合必须是 updater 认识的形态：多出来的 token（被吞后
+					// 挤出的裸路径）会让 UpdateOptions.Parse 命中未知键 → 退出码 1。
+					Assert.Equal(10, tokens.Length);
+					string[] knownKeys = { "--url", "--install-dir", "--restart-command", "--pipe-pid", "--wait-pid" };
+					Assert.All(tokens.Where(delegate (string t) { return t.StartsWith("--"); }),
+						delegate (string key) { Assert.Contains(key, knownKeys); });
+				}
+			});
+		}
+
+		/// <summary>无结尾反斜杠的值（Linux/macOS 路径、Windows 可执行文件路径）输出
+		/// 必须与修复前逐字节一致——本次修复只动"结尾连续反斜杠"这一种输入。</summary>
+		[Theory]
+		[InlineData("/opt/forkplus/")]
+		[InlineData("/opt/forkplus")]
+		[InlineData("C:\\ForkPlus")]
+		[InlineData("C:\\ForkPlus\\ForkPlus.exe")]
+		[InlineData("D:\\Program Files\\ForkPlus")]
+		public void Quote_ValueWithoutTrailingBackslash_IsUnchanged(string value)
+		{
+			Assert.Equal("\"" + value + "\"", AutoUpdateRunner.Quote(value));
+		}
+
+		[Fact]
+		public void Quote_TrailingBackslashes_AreDoubled()
+		{
+			// 值本身不变；只是把结尾 \ 翻倍，让结束引号不被转义（Windows 解析规则要求）
+			Assert.Equal("\"C:\\ForkPlus\\\\\"", AutoUpdateRunner.Quote("C:\\ForkPlus\\"));
+			Assert.Equal("\"C:\\ForkPlus\\\\\\\\\"", AutoUpdateRunner.Quote("C:\\ForkPlus\\\\"));
+			Assert.Equal("\"\"", AutoUpdateRunner.Quote(null));
+			Assert.Equal("\"a'b\"", AutoUpdateRunner.Quote("a\"b"));
+		}
+
+		/// <summary>updater 起进程即早退、且一条消息都不发（复现"参数被吞 / 连不上管道"）：
+		/// 修复前窗口静默复位（用户看到"闪一下、原地踏步"），修复后必须按退出码报错。
+		/// 桩 updater 是 sh 脚本（测试套件只在 Linux 跑；Windows 下自行跳过）。</summary>
+		[Fact]
+		public void UpdaterEarlyExitWithoutPipeMessage_ReportsErrorInsteadOfSilentRestore()
+		{
+			if (OperatingSystem.IsWindows())
+			{
+				return;
+			}
+			HeadlessAppBootstrap.Run(delegate
+			{
+				string originalLanguage = ForkPlusSettings.Default.UiLanguage;
+				string stubDir = Path.Combine(Path.GetTempPath(), "fpe2e-upd-stub-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+				try
+				{
+					ForkPlusSettings.Default.UiLanguage = "zh-Hans";
+					Directory.CreateDirectory(stubDir);
+					string stubPath = Path.Combine(stubDir, Consts.ForkPlus.AutoUpdaterFilename);
+					File.WriteAllText(stubPath, "#!/bin/sh\nexit 1\n");
+					File.SetUnixFileMode(stubPath,
+						UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+
+					var window = CreateTestWindow("http://127.0.0.1:1/update.zip", delegate (UpdateInfo info)
+					{
+						// 桩：启动即退出码 1、从不连进度管道
+						return new AutoUpdateRunner(stubDir, _session.InstallDir, _session.RestartCommand, _session.WaitPid, noRestart: true);
+					}, null);
+					try
+					{
+						ForkPlusDialogFooter footer = FindFooter(window);
+						footer.SubmitButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+						Dispatcher.UIThread.RunJobs();
+
+						// 修复后：不再静默复位——Footer 状态区（现有弹窗错误的标准展示位）报退出码
+						Assert.True(WaitFor(delegate { return footer.StatusMessageTextBlock.IsVisible; }, 15000),
+							"updater 无消息早退必须报错，不能静默恢复结果区（原症状：闪一下、原地踏步）");
+						Assert.StartsWith("更新失败：", footer.StatusMessageTextBlock.Text);
+						Assert.Contains("code 1", footer.StatusMessageTextBlock.Text);
+
+						// 结果区恢复：可重试 Download 或关闭 Later
+						Assert.True(window.ContentPanel.IsVisible);
+						Assert.False(window.DownloadPanel.IsVisible);
+						Assert.True(footer.SubmitButton.IsVisible);
+					}
+					finally
+					{
+						window.Close();
+						Dispatcher.UIThread.RunJobs();
+					}
+				}
+				finally
+				{
+					ForkPlusSettings.Default.UiLanguage = originalLanguage;
+					try
+					{
+						Directory.Delete(stubDir, recursive: true);
+					}
+					catch (Exception)
+					{
+					}
+				}
+			});
 		}
 
 		/// <summary>构造被测窗口：注入 Runner 工厂与 waiting-exit 替代动作（生产真正 Shutdown）。</summary>
