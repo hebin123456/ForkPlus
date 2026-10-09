@@ -142,6 +142,8 @@ namespace ForkPlus.UI.UserControls
 
 		private ShowApplyStashWindowCommand _showApplyStashWindow;
 
+		private SaveStashAsPatchCommand _saveStashAsPatch;
+
 		private ShowRenameStashWindowCommand _showRenameStashWindow;
 
 		private ShowRemoveStashWindowCommand _showRemoveStashWindow;
@@ -329,6 +331,8 @@ namespace ForkPlus.UI.UserControls
 		public LeanBranchingSyncCommand LeanBranchingSync => CommandContainer.Lazy(ref _leanBranchingSync);
 
 		public ShowApplyStashWindowCommand ShowApplyStashWindow => CommandContainer.Lazy(ref _showApplyStashWindow);
+
+		public SaveStashAsPatchCommand SaveStashAsPatch => CommandContainer.Lazy(ref _saveStashAsPatch);
 
 		public ShowRenameStashWindowCommand ShowRenameStashWindow => CommandContainer.Lazy(ref _showRenameStashWindow);
 

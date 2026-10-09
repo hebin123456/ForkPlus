@@ -96,7 +96,8 @@ namespace ForkPlus.UI.Dialogs
 					RemoteBranch remoteBranch = _remoteBranches[i];
 					base.Dispatcher.Post(delegate
 					{
-						SetStatus(ForkPlusDialogStatus.InProgress, "Deleting '" + remoteBranch.Name + "'...");
+						// 国际化（之前是硬编码英文 "Deleting 'xxx'..."）
+						SetStatus(ForkPlusDialogStatus.InProgress, PreferencesLocalization.FormatCurrent("Deleting '{0}'...", remoteBranch.Name));
 					});
 					GitCommandResult removeRemoteBranchResult = new RemoveRemoteBranchGitCommand().Execute(gitModule, remoteBranch, monitor);
 					if (!removeRemoteBranchResult.Succeeded)

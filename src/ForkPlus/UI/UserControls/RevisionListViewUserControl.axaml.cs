@@ -1978,6 +1978,10 @@ namespace ForkPlus.UI.UserControls
 				{
 					RepositoryUserControl.Commands.ShowApplyStashWindow.Execute(repositoryUserControl, stash);
 				});
+				yield return RepositoryUserControl.Commands.SaveStashAsPatch.CreateMenuItem(PreferencesLocalization.FormatCurrent("Save as Patch '{0}'...", stash.Message), delegate
+				{
+					RepositoryUserControl.Commands.SaveStashAsPatch.Execute(repositoryUserControl, stash);
+				});
 				yield return RepositoryUserControl.Commands.ShowRenameStashWindow.CreateMenuItem("Rename '" + stash.Message + "'...", delegate
 				{
 					RepositoryUserControl.Commands.ShowRenameStashWindow.Execute(repositoryUserControl, stash);
