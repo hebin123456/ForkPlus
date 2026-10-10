@@ -2,6 +2,35 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.0.7
+
+> 贮藏（Stash）右键菜单新增**「另存为补丁」**：此前贮藏只能应用 / 重命名 / 删除，想把某个贮藏留存或分享给别人时无处下手；本版可将其直接导出为 `.patch` 文件，交互与工作区「另存为补丁」一致。同时修掉一处漏网文案——删除远端分支时状态栏的 `Deleting 'xxx'...` 一直是硬编码英文，未走多语言。应用版本号升至 5.0.7。
+
+### 新增
+
+- **贮藏另存为补丁（侧边栏 + 修订列表两处右键菜单）**：对单个贮藏执行「Save as Patch…」，选保存路径后生成补丁文件。
+  - 导出命令 [ExportStashPatchGitCommand.cs](src/ForkPlus/Git/Commands/ExportStashPatchGitCommand.cs) 用 `git stash show -p --binary` 生成差异。带 `--binary` 是为了让二进制改动完整写入补丁，否则会退化成 `Binary files differ`、补丁无法应用。
+  - 贮藏若在保存时勾选了「包含未跟踪文件」（stash 会有第三个父提交），会自动加 `--include-untracked`（git 2.32+）一并导出；**老版本 git 不认该选项时自动降级**为仅导出已跟踪改动，不会因此失败。
+  - 交互命令 [SaveStashAsPatchCommand.cs](src/ForkPlus/UI/Commands/SaveStashAsPatchCommand.cs) 复用工作区「另存为补丁」的既有链路：系统保存对话框选路径 → 模态进度弹窗 → 后台线程生成并写盘 → 出错弹 `ErrorWindow`，并记录 `RecentPatchDirectory` 供下次默认目录。生成过程放在后台线程，避免大贮藏冻结界面。
+  - 菜单项文案 `Save as Patch '{0}'...` 已补齐 7 个语言包（英文走内置回退）。
+
+### 修复
+
+- **删除远端分支状态栏文案未国际化**：[RemoveRemoteBranchWindow.axaml.cs](src/ForkPlus/UI/Dialogs/RemoveRemoteBranchWindow.axaml.cs) 里进度状态直接硬编码英文 `"Deleting '" + name + "'..."`，切到中文等语言时仍显示英文。改为经 `PreferencesLocalization.FormatCurrent("Deleting '{0}'...", ...)` 取值（该键在各语言包中本就存在），界面语言一致。
+
+### 构建
+
+- 新增的两个生产类型已登记进 [SourceFileCoverageManifest.cs](src/ForkPlus.Tests/SourceFileCoverageManifest.cs) 与 [ClassCoverageManifest.cs](src/ForkPlus.Tests/ClassCoverageManifest.cs)——仓库的覆盖率清单守卫要求每个生产源文件 / 类型都有登记项，漏登记会在 CI 直接红灯（本次即由该守卫在首次构建中拦下）。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.0.7-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.0.7-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.0.7-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.0.7-macos-arm64.zip` |
+
 ## v5.0.6
 
 > 修复 **Windows 上自动更新「Download 按钮点了没反应」**：点下去界面闪一下（进度面板出现又消失）就回到原样，既没有进度也没有报错。根因是拼给 updater 子进程的命令行里，`--install-dir` 的值以反斜杠结尾（Windows 的 `AppContext.BaseDirectory` 必然如此），按 Windows 命令行规则把结束引号转义掉了，连带吞掉后面的 `--restart-command` 整段——updater 参数解析失败，在连进度管道之前就以退出码 1 退出、一条消息都不发；主窗口又把这种"无消息早退"当成用户取消静静复位。本版修掉这条链路。应用版本号升至 5.0.6。

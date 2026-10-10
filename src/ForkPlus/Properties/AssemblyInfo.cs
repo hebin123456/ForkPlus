@@ -15,6 +15,14 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-09，v5.0.7）：贮藏右键菜单新增「另存为补丁」，并把远端分支
+//   删除状态栏的硬编码英文文案国际化。导出用 git stash show -p --binary（二进制改动
+//   完整可应用），贮藏含未跟踪文件时加 --include-untracked（git 2.32+），老版本 git
+//   自动降级为仅导出已跟踪改动；交互复用工作区「另存为补丁」的选路径 + 进度弹窗 +
+//   后台写盘，并记录 RecentPatchDirectory。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.7"；
+//   程序集标识与文件版本同为 5.0.7（.0）。
 // 版本号说明（2026-10-08，v5.0.6）：修复 Windows 上自动更新"点 Download 闪一下、
 //   原地踏步"——AutoUpdateRunner 命令行拼装的 --install-dir 值以 \ 结尾（Windows 的
 //   AppContext.BaseDirectory 必然如此），按 Windows 规则吃掉结束引号并把后随的
@@ -34,8 +42,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.0.6")]
-[assembly: AssemblyInformationalVersion("5.0.6")]
+[assembly: AssemblyFileVersion("5.0.7")]
+[assembly: AssemblyInformationalVersion("5.0.7")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.0.6.0")]
+[assembly: AssemblyVersion("5.0.7.0")]
