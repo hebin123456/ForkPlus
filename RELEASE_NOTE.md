@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.0
+
+> 对比视图插件架构升级：**每个插件独占一个目录**（`plugins/<程序集名>/`，目录根带 `plugin.json` 清单），宿主只加载 / 安装具备清单且声明的最低支持主软件版本（`minHostVersion`）兼容的插件。每个插件用**独立可回收的加载上下文**加载，私有依赖互不打架，卸载即**整目录删除**、不留残留。偏好设置 → 插件页新增「插件版本」「最低支持主软件版本」列；内置插件（图片 / Hex）自本版起**也可卸载**，可从插件仓 ForkPlus-Plugins 1.2.0 重装。老版本平铺在 `plugins/` 根目录的插件不再兼容，首次启动会被清空并弹窗告知。应用版本号升至 5.1.0。
+
+### 新增
+
+- **插件目录清单 `plugin.json`（`plugins/<程序集名>/plugin.json`）**：固定 5 个字段——`schemaVersion` / `id` / `version` / `minHostVersion` / `assembly`。宿主在**安装前**（读 zip 内清单）与**加载前**（读磁盘清单）都以它为准判定兼容性：缺少清单、缺少 `minHostVersion`、或宿主版本低于该值，一律不安装 / 不加载。[PluginManifest.cs](src/ForkPlus/UI/Plugins/PluginManifest.cs) 负责清单解析与版本比较（容错解析 `x` / `x.y` / `x.y.z`）。
+- **每插件独立可回收加载上下文**：[PluginLoadContext.cs](src/ForkPlus/UI/Plugins/PluginLoadContext.cs) 为每个插件目录创建自己的 `AssemblyLoadContext`（`isCollectible: true`）——两个插件各带一份不同版本的同一依赖时同名程序集各加载各的、互不打架；契约（`ForkPlus.Plugins.Abstractions`）、共享视图组件（`ForkPlus.Plugins.Ui`）与 Avalonia / SkiaSharp 等则显式复用宿主默认上下文实例，保证类型身份统一。
+- **偏好设置 → 插件页新增两列**：「插件版本」与「最低支持主软件版本」（取自清单，缺失显示 `—`）；加载失败 / 不兼容条目单独展示原因。[PluginsUserControl.axaml.cs](src/ForkPlus/UI/UserControls/Preferences/PluginsUserControl.axaml.cs)
+- **内置插件可卸载**：图片对比（`forkplus.image`）与 Hex 对比（`forkplus.hex`）自本版起与第三方插件一视同仁，可勾选卸载，卸载后从插件仓下载对应单插件包即可重装。
+- **安装器同时支持合集包与单插件包**：[PluginPackageInstaller.cs](src/ForkPlus/UI/Plugins/PluginPackageInstaller.cs) 统一按「含 `plugin.json` 的插件目录」识别（顶层 `plugins/` 下的各子目录，或已剥离到插件目录根），逐个做兼容校验后整目录复制到 `plugins/<程序集名>/`；宿主共享程序集跳过不覆盖。
+
+### 变更
+
+- **卸载改为整目录递归删除**：[PluginUninstaller.cs](src/ForkPlus/UI/Plugins/PluginUninstaller.cs) 不再逐个删除 DLL 及同名附属文件，而是删除插件整个目录——私有依赖、原生库、清单一次性清理干净。文件被占用（Windows 上已加载的 DLL）时登记整目录待删，本次重载跳过、下次启动清理。
+- **旧版平铺插件布局一次性迁移**：[PluginLayoutMigration.cs](src/ForkPlus/UI/Plugins/PluginLayoutMigration.cs) 检测到 `plugins/` 根目录存在 `*.dll`（旧版布局）即清空整个目录，并在主窗口显示后弹窗告知用户需从插件仓 1.2.0 重新安装。新布局下 DLL 都在子目录内，故该检测天然幂等、无需落库标记。
+- **内置 Image / Hex 按新目录规范分发**：构建期拷贝目标由「DLL 平铺到 `plugins/`」改为「DLL + `plugin.json` 落到 `plugins/<程序集名>/`」（[ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj) 的 `CopyDiffViewPlugins` / `PublishDiffViewPlugins`，测试工程同口径）。
+
+### 兼容性
+
+- 升级到 5.1.0 后，旧版（≤ 5.0.7）插件**不再兼容**：首次启动会被清理，请前往 [ForkPlus-Plugins Releases](https://github.com/hebin123456/ForkPlus-Plugins/releases) 下载 **1.2.0** 的插件包（合集包 `ForkPlus-Plugins-1.2.0-<平台>.zip` 或单插件包 `ForkPlus-Plugins-<名称>-1.0.0-<平台>.zip`），在「偏好设置 → 插件」页安装。
+
 ## v5.0.7
 
 > 贮藏（Stash）右键菜单新增**「另存为补丁」**：此前贮藏只能应用 / 重命名 / 删除，想把某个贮藏留存或分享给别人时无处下手；本版可将其直接导出为 `.patch` 文件，交互与工作区「另存为补丁」一致。同时修掉一处漏网文案——删除远端分支时状态栏的 `Deleting 'xxx'...` 一直是硬编码英文，未走多语言。应用版本号升至 5.0.7。

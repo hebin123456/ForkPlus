@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "id": "forkplus.image",
+  "version": "1.0.0",
+  "minHostVersion": "5.1.0",
+  "assembly": "ForkPlus.Plugins.Image"
+}

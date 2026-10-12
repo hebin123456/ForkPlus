@@ -8,44 +8,52 @@ namespace ForkPlus.UI.Plugins
 	/// <summary>v5.0.3：一次插件压缩包安装的结果汇总（供偏好设置 → 插件页反馈）。</summary>
 	public sealed class PluginInstallResult
 	{
-		/// <summary>复制到 plugins/ 目录的文件数。</summary>
+		/// <summary>成功安装的插件 Id（v5.1.0：按插件清单识别）。</summary>
+		public List<string> InstalledIds { get; } = new List<string>();
+
+		/// <summary>复制到 plugins/&lt;AssemblyName&gt;/ 的文件数。</summary>
 		public int CopiedFiles { get; set; }
 
 		/// <summary>因属于宿主共享程序集而被跳过的文件数（不覆盖宿主自带版本）。</summary>
 		public int SkippedSharedAssemblies { get; set; }
 
+		/// <summary>v5.1.0：被拒绝安装的插件及原因（缺少清单 / 缺少 minHostVersion / 与宿主不兼容）。</summary>
+		public List<string> RejectedReasons { get; } = new List<string>();
+
 		/// <summary>因文件被占用而未能覆盖的文件名（重启后需重新安装或更新）。</summary>
 		public List<string> LockedFiles { get; } = new List<string>();
 
-		/// <summary>致命错误（压缩包非法 / 无插件 DLL 等）；为空表示安装成功。</summary>
+		/// <summary>致命错误（压缩包非法 / 无插件目录 / 无插件可安装等）；为空表示安装成功。</summary>
 		public string Error { get; set; }
 
-		public bool Success => string.IsNullOrEmpty(Error);
+		public bool Success => string.IsNullOrEmpty(Error) && InstalledIds.Count > 0;
 	}
 
 	/// <summary>
-	/// v5.0.3：对比视图插件压缩包安装器（偏好设置 → 插件页的「安装插件」按钮）。
+	/// v5.1.0：对比视图插件压缩包安装器（偏好设置 → 插件页的「安装插件」按钮）。
 	///
-	/// 输入为 ForkPlus-Plugins Releases 页面下载的 zip（内部结构为单一顶层目录
-	/// <c>plugins/</c>，其中平铺插件 DLL 及其依赖；zip 条目在 Windows 包中使用
-	/// 反斜杠分隔，需统一归一化为 '/'）。安装流程：
+	/// 输入为 ForkPlus-Plugins Releases 页面下载的 zip——**合集包**（内含多个插件目录）与
+	/// **单插件包**（内含一个插件目录）都支持。包内结构统一为单一顶层 <c>plugins/</c>，
+	/// 其下每个插件独占目录 <c>&lt;AssemblyName&gt;/</c>，目录根带 <c>plugin.json</c> 清单。
+	/// 安装流程：
 	///  1) 解压到进程临时目录（逐条目归一化路径并做 Zip Slip 防护）；
-	///  2) 剥离单一顶层目录后，把全部文件<strong>平铺</strong>复制进可执行文件旁的
-	///     <c>plugins/</c> 目录——加载器只扫描顶层 DLL、且按扁平文件名解析依赖，
-	///     故不保留子目录层级；
-	///  3) 宿主共享程序集（契约 / 共享视图组件 / Avalonia / SkiaSharp 等）跳过不覆盖，
-	///     避免第三方包内旧版本覆盖宿主导致版本漂移崩溃；
-	///  4) 调用方随后重新加载插件并刷新列表。
+	///  2) 剥离单一顶层目录（如 plugins/），扫描各插件目录（以含 plugin.json 为准）；
+	///  3) 逐个读清单做兼容校验：缺少清单 / 缺少 minHostVersion / 宿主版本低于清单要求 →
+	///     **拒绝安装**并记录原因；否则把整个插件目录复制到可执行文件旁的
+	///     <c>plugins/&lt;AssemblyName&gt;/</c>（保留原目录层级）——每插件独立目录，
+	///     私有依赖互不打架，卸载时整目录删除即可清理干净；
+	///  4) 宿主共享程序集（契约 / 共享视图组件 / Avalonia / SkiaSharp 等）跳过不覆盖；
+	///  5) 调用方随后重新加载插件并刷新列表。
 	/// 单个文件复制失败（Windows 上目标 DLL 已加载被占用）只记录、不中断其余文件。
 	/// </summary>
 	public static class PluginPackageInstaller
 	{
-		/// <summary>宿主共享程序集文件名（不含扩展名）前缀/全名——安装时跳过，不覆盖宿主自带版本。</summary>
+		/// <summary>宿主共享程序集文件名（不含扩展名）全名——安装时跳过，不覆盖宿主自带版本。</summary>
 		private static readonly string[] HostSharedAssemblyNames = new string[4] { "ForkPlus.Plugins.Abstractions", "ForkPlus.Plugins.Ui", "NLog", "ForkPlus" };
 
 		private static readonly string[] HostSharedAssemblyPrefixes = new string[3] { "Avalonia", "SkiaSharp", "HarfBuzzSharp" };
 
-		/// <summary>v5.0.3：把插件压缩包安装到 plugins/ 目录。</summary>
+		/// <summary>把插件压缩包安装到 plugins/ 目录。</summary>
 		public static PluginInstallResult InstallFromZip(string zipPath)
 		{
 			PluginInstallResult result = new PluginInstallResult();
@@ -61,35 +69,19 @@ namespace ForkPlus.UI.Plugins
 				Directory.CreateDirectory(tempDirectory);
 				ExtractArchive(zipPath, tempDirectory);
 				string sourceRoot = ResolveSourceRoot(tempDirectory);
-				string[] files = Directory.GetFiles(sourceRoot, "*", SearchOption.AllDirectories);
-				int pluginAssemblies = 0;
-				foreach (string file in files)
+				List<string> pluginDirectories = FindPluginDirectories(sourceRoot);
+				if (pluginDirectories.Count == 0)
 				{
-					string fileName = Path.GetFileName(file);
-					if (fileName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !IsHostSharedAssembly(fileName))
-					{
-						pluginAssemblies++;
-					}
-					if (IsHostSharedAssembly(fileName))
-					{
-						result.SkippedSharedAssemblies++;
-						continue;
-					}
-					string destination = Path.Combine(targetDirectory, fileName);
-					try
-					{
-						File.Copy(file, destination, overwrite: true);
-						result.CopiedFiles++;
-					}
-					catch (Exception ex)
-					{
-						Log.Warn("Failed to copy plugin file '" + fileName + "'", ex);
-						result.LockedFiles.Add(fileName);
-					}
+					result.Error = "压缩包中未找到插件（需包含带 plugin.json 清单的插件目录）。";
+					return result;
 				}
-				if (pluginAssemblies == 0 && result.CopiedFiles == 0)
+				foreach (string pluginDirectory in pluginDirectories)
 				{
-					result.Error = "压缩包中未找到插件文件（需包含插件 DLL）。";
+					InstallPluginDirectory(pluginDirectory, targetDirectory, result);
+				}
+				if (result.InstalledIds.Count == 0)
+				{
+					result.Error = "压缩包中的插件均无法安装：" + string.Join("；", result.RejectedReasons);
 				}
 			}
 			catch (InvalidDataException)
@@ -106,6 +98,52 @@ namespace ForkPlus.UI.Plugins
 				TryDeleteDirectory(tempDirectory);
 			}
 			return result;
+		}
+
+		/// <summary>校验单个插件目录的清单并整目录复制到 plugins/&lt;AssemblyName&gt;/。</summary>
+		private static void InstallPluginDirectory(string pluginDirectory, string targetDirectory, PluginInstallResult result)
+		{
+			PluginManifest manifest = PluginManifest.ReadFromDirectory(pluginDirectory);
+			if (manifest == null)
+			{
+				result.RejectedReasons.Add(Path.GetFileName(pluginDirectory) + "：缺少或非法的 plugin.json 清单（需含 id / version / minHostVersion / assembly）");
+				return;
+			}
+			if (!PluginManifest.IsHostCompatible(manifest.MinHostVersion))
+			{
+				result.RejectedReasons.Add(manifest.Id + "：需要主程序版本 ≥ " + manifest.MinHostVersion + "，当前为 " + PluginManifest.HostVersion);
+				return;
+			}
+			string destinationDirectory = Path.Combine(targetDirectory, manifest.Assembly);
+			string[] files = Directory.GetFiles(pluginDirectory, "*", SearchOption.AllDirectories);
+			string sourceRoot = Path.GetFullPath(pluginDirectory);
+			foreach (string file in files)
+			{
+				string fileName = Path.GetFileName(file);
+				if (IsHostSharedAssembly(fileName))
+				{
+					result.SkippedSharedAssemblies++;
+					continue;
+				}
+				string relativePath = file.Substring(sourceRoot.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+				string destination = Path.Combine(destinationDirectory, relativePath);
+				try
+				{
+					string parent = Path.GetDirectoryName(destination);
+					if (!string.IsNullOrEmpty(parent))
+					{
+						Directory.CreateDirectory(parent);
+					}
+					File.Copy(file, destination, overwrite: true);
+					result.CopiedFiles++;
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("Failed to copy plugin file '" + fileName + "'", ex);
+					result.LockedFiles.Add(fileName);
+				}
+			}
+			result.InstalledIds.Add(manifest.Id);
 		}
 
 		/// <summary>逐条目解压：路径分隔符归一化为 '/'，并做 Zip Slip 防护（拒绝越出目标目录的条目）。</summary>
@@ -148,6 +186,26 @@ namespace ForkPlus.UI.Plugins
 				return topDirectories[0];
 			}
 			return extractedDirectory;
+		}
+
+		/// <summary>v5.1.0：找出根下所有"插件目录"（自身或子目录根含 plugin.json）。</summary>
+		private static List<string> FindPluginDirectories(string sourceRoot)
+		{
+			List<string> result = new List<string>();
+			if (File.Exists(Path.Combine(sourceRoot, PluginManifest.FileName)))
+			{
+				// 单插件包且已剥离到插件目录根。
+				result.Add(sourceRoot);
+				return result;
+			}
+			foreach (string subDirectory in Directory.GetDirectories(sourceRoot))
+			{
+				if (File.Exists(Path.Combine(subDirectory, PluginManifest.FileName)))
+				{
+					result.Add(subDirectory);
+				}
+			}
+			return result;
 		}
 
 		/// <summary>宿主共享程序集：安装时跳过，不覆盖宿主自带版本。</summary>

@@ -1278,10 +1278,14 @@ namespace ForkPlus
 			// PluginEnvironment，插件工程经此取宿主服务而不引用主工程类型。
 			// 必须早于任何对比视图控件创建（DiffViewPluginRegistry 静态构造在首次 Resolve 触发）。
 			UI.Plugins.PluginEnvironmentBridge.Initialize();
-			// v5.0.3：先清理上次卸载时被占用、延迟删除的插件文件（须早于扫描加载）。
+			// v5.1.0：旧版（≤ v5.0.7）插件平铺在 plugins/ 根目录，新版要求每插件独占目录并带
+			// plugin.json 清单。检测到旧布局即清空 plugins/ 目录；稍后在主窗口显示后弹窗告知用户
+			// 需从插件仓 1.2.0 重新安装。须早于扫描加载与待删清理。
+			bool pluginLayoutMigrated = UI.Plugins.PluginLayoutMigration.RunIfNeeded();
+			// v5.0.3：先清理上次卸载时被占用、延迟删除的插件目录（须早于扫描加载）。
 			UI.Plugins.PluginUninstaller.ProcessPendingDeletions();
-			// v5.0.0：动态加载对比视图插件——plugins/ 目录下一个 DLL 一个插件
-			//（内置 Image/Hex 两个 + 第三方），单个加载失败只记日志不阻断启动。
+			// v5.1.0：动态加载对比视图插件——plugins/ 下每个子目录一个插件（内含 plugin.json 清单），
+			// 内置 Image/Hex 两个与第三方走同一链路，单个加载失败只记日志不阻断启动。
 			UI.Plugins.DiffViewPluginLoader.LoadDefault();
 			if (!Environment.Is64BitOperatingSystem)
 			{
@@ -1299,6 +1303,16 @@ namespace ForkPlus
 					desktop.MainWindow = mainWindow;
 				}
 				mainWindow.Show();
+				// v5.1.0：旧插件布局已迁移——主窗口就绪后弹窗告知用户去插件仓重新安装。
+				if (pluginLayoutMigrated)
+				{
+					new ForkPlus.UI.Dialogs.MessageBoxWindow(
+						"插件已升级",
+						"ForkPlus 已升级到 5.1.0，插件架构随之变更：旧版插件（平铺在 plugins/ 目录）不再兼容，已被移除。\n\n请前往插件仓 ForkPlus-Plugins 下载 1.2.0 的插件包，在「偏好设置 → 插件」页重新安装。",
+						"我知道了",
+						showCancelButton: false,
+						showWarningIcon: true).ShowDialog();
+				}
 				// v4.0.6：UI 冻结看门狗——主循环已运行、心跳可投递后启动（headless 测试覆写
 				// 了本方法路径，看门狗不进测试进程）。卡住超阈值即写 freeze-*.log + 冻结转储，
 				// "卡着卡着崩溃"的前半段从此有现场可查。

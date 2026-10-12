@@ -18,6 +18,19 @@ namespace ForkPlus.Plugins.Abstractions
 		/// <summary>插件自身版本号，如 "1.0.0"。</summary>
 		string Version { get; }
 
+		/// <summary>
+		/// v5.1.0：本插件兼容的**最低宿主（主程序）版本**，如 "5.1.0"——宿主版本 ≥ 该值才算兼容。
+		/// 宿主安装/加载时以此判定（同时以插件目录内清单 plugin.json 的 minHostVersion 为准，
+		/// 两者应保持一致）。默认返回空串表示未声明；宿主对未声明的插件不予安装。
+		/// </summary>
+		string MinHostVersion
+		{
+			get
+			{
+				return string.Empty;
+			}
+		}
+
 		/// <summary>插件显示名（英文原文，同时作为多语言的缺省值）。</summary>
 		string DisplayName { get; }
 

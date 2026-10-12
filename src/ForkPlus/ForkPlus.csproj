@@ -199,31 +199,48 @@
          用反引号做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；MSBuild 属性正常展开）-->
     <Exec Condition="'$(OS)' == 'Unix' And !Exists('../../third_party/nuget/$(OxyPlotAvaloniaAsset)')" Command="bash -c 'set -e; mkdir -p ../../third_party/nuget; url=&quot;$(OxyPlotAvaloniaBaseUrl)/$(OxyPlotAvaloniaAsset)&quot;; out=&quot;../../third_party/nuget/$(OxyPlotAvaloniaAsset)&quot;; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from oxyplot-avalonia fork latest release&quot;'" />
   </Target>
-  <!-- v5.0.0：对比视图插件 DLL 拷贝（一个插件一个 DLL → 输出目录 plugins/）。
-       只拷主 DLL，不拷插件的依赖（契约/共享组件/Avalonia/SkiaSharp 与宿主共享同一份），
-       避免 plugins/ 里出现重复程序集导致加载器类型身份漂移。
+  <!-- v5.1.0：对比视图插件按「每插件一个目录」分发——输出目录 plugins/<AssemblyName>/，
+       目录内放插件主 DLL 与其 plugin.json 清单（宿主 5.1.0 起按 plugins/<目录>/plugin.json 扫描加载）。
+       只拷主 DLL + 清单，不拷插件的依赖（契约/共享组件/Avalonia/SkiaSharp 与宿主共享同一份），
+       避免目录内出现重复程序集导致加载器类型身份漂移。
        路径：插件是**类库**工程，经 ProjectReference 构建时产物落在
        bin\$(Configuration)\$(TargetFramework)\（无 <RID> 子目录）；只有 AskPass/RI 那类 Exe
        才落 <RID>\ 子目录。故两条路径都放守卫（先 RID、再回退根目录），谁存在取谁且不重复收录。
        只按 <RID>\ 找会让 Exists 恒 false → Copy 空转 → publish 里根本没有 plugins/，
        静默漏发全部内置插件（v5.0.3 四平台齐缺，就是踩了这个）。
        清单收集放 Target 内（执行期求值），保证全新 checkout 的构建顺序正确。-->
-  <Target Name="CollectDiffViewPluginDlls" Returns="@(_DiffViewPluginDlls)">
+  <Target Name="CollectDiffViewPluginFiles" Returns="@(_DiffViewPluginDlls);@(_DiffViewPluginManifests)">
     <PropertyGroup>
       <DiffViewPluginRidDir Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)\</DiffViewPluginRidDir>
     </PropertyGroup>
     <ItemGroup>
-      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll" Condition="Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll')" />
-      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll" Condition="!Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll') And Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll')" />
-      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll" Condition="Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll')" />
-      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll" Condition="!Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll') And Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll')" />
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll" Condition="Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll')">
+        <PluginDir>ForkPlus.Plugins.Image</PluginDir>
+      </_DiffViewPluginDlls>
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll" Condition="!Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Image.dll') And Exists('..\ForkPlus.Plugins.Image\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Image.dll')">
+        <PluginDir>ForkPlus.Plugins.Image</PluginDir>
+      </_DiffViewPluginDlls>
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll" Condition="Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll')">
+        <PluginDir>ForkPlus.Plugins.Hex</PluginDir>
+      </_DiffViewPluginDlls>
+      <_DiffViewPluginDlls Include="..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll" Condition="!Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\$(DiffViewPluginRidDir)ForkPlus.Plugins.Hex.dll') And Exists('..\ForkPlus.Plugins.Hex\bin\$(Configuration)\$(TargetFramework)\ForkPlus.Plugins.Hex.dll')">
+        <PluginDir>ForkPlus.Plugins.Hex</PluginDir>
+      </_DiffViewPluginDlls>
+      <_DiffViewPluginManifests Include="..\ForkPlus.Plugins.Image\plugin.json" Condition="Exists('..\ForkPlus.Plugins.Image\plugin.json')">
+        <PluginDir>ForkPlus.Plugins.Image</PluginDir>
+      </_DiffViewPluginManifests>
+      <_DiffViewPluginManifests Include="..\ForkPlus.Plugins.Hex\plugin.json" Condition="Exists('..\ForkPlus.Plugins.Hex\plugin.json')">
+        <PluginDir>ForkPlus.Plugins.Hex</PluginDir>
+      </_DiffViewPluginManifests>
     </ItemGroup>
   </Target>
-  <Target Name="CopyDiffViewPlugins" AfterTargets="Build" DependsOnTargets="CollectDiffViewPluginDlls">
-    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFolder="$(TargetDir)plugins\" SkipUnchangedFiles="true" />
+  <Target Name="CopyDiffViewPlugins" AfterTargets="Build" DependsOnTargets="CollectDiffViewPluginFiles">
+    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFiles="@(_DiffViewPluginDlls->'$(TargetDir)plugins\%(PluginDir)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DiffViewPluginManifests)" DestinationFiles="@(_DiffViewPluginManifests->'$(TargetDir)plugins\%(PluginDir)\plugin.json')" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="PublishDiffViewPlugins" AfterTargets="Publish" DependsOnTargets="CollectDiffViewPluginDlls">
-    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFolder="$(PublishDir)plugins\" SkipUnchangedFiles="true" />
+  <Target Name="PublishDiffViewPlugins" AfterTargets="Publish" DependsOnTargets="CollectDiffViewPluginFiles">
+    <Copy SourceFiles="@(_DiffViewPluginDlls)" DestinationFiles="@(_DiffViewPluginDlls->'$(PublishDir)plugins\%(PluginDir)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DiffViewPluginManifests)" DestinationFiles="@(_DiffViewPluginManifests->'$(PublishDir)plugins\%(PluginDir)\plugin.json')" SkipUnchangedFiles="true" />
   </Target>
   <!-- 子进程与 native 库的复制清单（Build 输出与 Publish 输出两处共用）。
        Migration note（CI）两点坑：

@@ -15,6 +15,15 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-12，v5.1.0）：对比视图插件架构升级——每插件独占一个目录
+//   （plugins/<AssemblyName>/，目录根带 plugin.json 清单），宿主只加载/安装具备清单且
+//   minHostVersion 兼容的插件；每个插件用独立可回收的 AssemblyLoadContext 加载，私有
+//   依赖互不打架、卸载即整目录删除。偏好设置 → 插件页新增「插件版本」「最低支持主软件
+//   版本」列，内置插件（图片/Hex）自本版起也可卸载并从插件仓重装。首次启动检测到旧版
+//   平铺插件布局时清空 plugins/ 目录并弹窗告知需从插件仓 1.2.0 重装。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.0"；
+//   程序集标识与文件版本同为 5.1.0（.0）。
 // 版本号说明（2026-10-09，v5.0.7）：贮藏右键菜单新增「另存为补丁」，并把远端分支
 //   删除状态栏的硬编码英文文案国际化。导出用 git stash show -p --binary（二进制改动
 //   完整可应用），贮藏含未跟踪文件时加 --include-untracked（git 2.32+），老版本 git
@@ -42,8 +51,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.0.7")]
-[assembly: AssemblyInformationalVersion("5.0.7")]
+[assembly: AssemblyFileVersion("5.1.0")]
+[assembly: AssemblyInformationalVersion("5.1.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.0.7.0")]
+[assembly: AssemblyVersion("5.1.0.0")]
