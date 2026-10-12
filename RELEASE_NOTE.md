@@ -2,6 +2,22 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.1
+
+> 对比视图插件新增 **HTML 预览**能力：共享视图组件（`ForkPlus.Plugins.Ui`）内置**并排双 WebView 预览控件**，走官方 `Avalonia.Controls.WebView`（NativeWebView，Windows=WebView2 / macOS=WKWebView / Linux=WPE WebKit 或 WebKitGTK）。CHM 与 EPUB 对比视图插件借此新增**「预览」模式**，**左右并排渲染容器内的 HTML 页面**（页面引用的图片等资源内联为 data URI）；WebView 不可用时只显示提示文案。应用版本号升至 5.1.1。
+
+### 新增
+
+- **HTML 预览共享组件（`ForkPlus.Plugins.Ui/HtmlPreview/`）**：[SideBySideHtmlPreview.cs](src/ForkPlus.Plugins.Ui/HtmlPreview/SideBySideHtmlPreview.cs) 提供并排双 WebView 预览控件（左=旧 / 右=新，某侧不存在时显示占位）；[HtmlWebViewSupport.cs](src/ForkPlus.Plugins.Ui/HtmlPreview/HtmlWebViewSupport.cs) 探测宿主进程内是否有可用的原生 WebView 引擎（与宿主 `WebView2Stub` 同口径：`WebViewAdapterInfo.GetAdapterInfo(...).IsSupported/IsInstalled`）；[HtmlResourceInliner.cs](src/ForkPlus.Plugins.Ui/HtmlPreview/HtmlResourceInliner.cs) 把 HTML 引用的容器内资源替换为 data URI，使文档自包含、WebView 无需自定义协议即可渲染。
+
+### 变更
+
+- **共享视图组件新增 `Avalonia.Controls.WebView` 依赖**：与主工程同版本（12.1.0），运行期由宿主提供（宿主共享程序集，插件不随包分发）。
+
+### 兼容性
+
+- 使用「预览」模式的插件（ForkPlus-Plugins 的 CHM / EPUB 1.0.1）要求宿主 ≥ **5.1.1**（其 `plugin.json` 已声明 `minHostVersion: 5.1.1`）。
+
 ## v5.1.0
 
 > 对比视图插件架构升级：**每个插件独占一个目录**（`plugins/<程序集名>/`，目录根带 `plugin.json` 清单），宿主只加载 / 安装具备清单且声明的最低支持主软件版本（`minHostVersion`）兼容的插件。每个插件用**独立可回收的加载上下文**加载，私有依赖互不打架，卸载即**整目录删除**、不留残留。偏好设置 → 插件页新增「插件版本」「最低支持主软件版本」列；内置插件（图片 / Hex）自本版起**也可卸载**，可从插件仓 ForkPlus-Plugins 1.2.0 重装。老版本平铺在 `plugins/` 根目录的插件不再兼容，首次启动会被清空并弹窗告知。应用版本号升至 5.1.0。

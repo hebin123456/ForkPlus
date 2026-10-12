@@ -15,6 +15,17 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-13，v5.1.1）：对比视图插件新增 HTML 预览能力——共享视图组件
+//   （ForkPlus.Plugins.Ui）内新增 HtmlPreview：并排双 WebView 预览控件
+//   （SideBySideHtmlPreview）+ 原生 WebView 可用性探测（HtmlWebViewSupport）+
+//   HTML 资源内联器（HtmlResourceInliner），走官方 Avalonia.Controls.WebView
+//   （NativeWebView，Win=WebView2 / macOS=WKWebView / Linux=WPE WebKit 或 WebKitGTK）。
+//   CHM / EPUB 对比视图插件借此新增「预览」模式，左右并排渲染容器内的 HTML 页面
+//   （引用资源内联为 data URI）；WebView 不可用（headless 测试 / 未装运行时）时
+//   只显示提示文案，不渲染页面。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.1"；
+//   程序集标识与文件版本同为 5.1.1（.0）。
 // 版本号说明（2026-10-12，v5.1.0）：对比视图插件架构升级——每插件独占一个目录
 //   （plugins/<AssemblyName>/，目录根带 plugin.json 清单），宿主只加载/安装具备清单且
 //   minHostVersion 兼容的插件；每个插件用独立可回收的 AssemblyLoadContext 加载，私有
@@ -51,8 +62,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.0")]
-[assembly: AssemblyInformationalVersion("5.1.0")]
+[assembly: AssemblyFileVersion("5.1.1")]
+[assembly: AssemblyInformationalVersion("5.1.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.0.0")]
+[assembly: AssemblyVersion("5.1.1.0")]

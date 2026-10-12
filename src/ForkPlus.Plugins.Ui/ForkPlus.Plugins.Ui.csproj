@@ -27,6 +27,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.1" />
+    <!-- HtmlPreview（并排双 WebView 预览）用官方 NativeWebView：Win=WebView2 /
+         macOS=WKWebView / Linux=WPE WebKit(缺失回退 WebKitGTK)。版本与主工程一致，
+         运行期由宿主提供（宿主共享程序集，插件不随包分发）。-->
+    <PackageReference Include="Avalonia.Controls.WebView" Version="12.1.0" />
     <!-- HexEditor 派生自 AvaloniaEdit 的 TextEditor，版本与主工程一致。-->
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
     <!-- AnimatedImage 用 SKCodec 解 GIF/WebP/APNG。Avalonia 主包不传递 SkiaSharp
