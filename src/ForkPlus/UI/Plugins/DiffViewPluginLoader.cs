@@ -290,9 +290,9 @@ namespace ForkPlus.UI.Plugins
 			}
 			try
 			{
-				// 测试环境：插件被测试工程静态引用（默认上下文已有同名程序集）→ 直接复用，
-				// 保证类型身份一致（E2E 按类型查找视图控件依赖于此）。
-				Assembly assembly = FindDefaultContextAssembly(manifest.Assembly);
+				// 测试环境：插件被测试工程静态引用 → 复用默认上下文实例，保证类型身份一致
+				// （E2E 按类型查找视图控件依赖于此）；生产分发：回退到独立可回收加载上下文。
+				Assembly assembly = ResolveDefaultContextAssembly(manifest.Assembly);
 				PluginLoadContext context = null;
 				if (assembly == null)
 				{
@@ -325,6 +325,45 @@ namespace ForkPlus.UI.Plugins
 				Log.Error($"Failed to load diff view plugin '{pluginDirectory}'", ex);
 				RecordFailure(directoryName, ex.Message);
 			}
+		}
+
+		/// <summary>
+		/// v5.1.0：尝试按简单名取**默认上下文**中的插件程序集（测试静态引用场景），
+		/// 取不到返回 null（调用方回退到独立 ALC 加载）。
+		///
+		/// 两步：① 已加载则直接复用（快路径）；② 未加载时经
+		/// <see cref="Assembly.Load(AssemblyName)"/> 按宿主 deps.json 解析——测试工程以
+		/// ProjectReference 静态引用插件，其名称在 deps.json 可解析，随即载入默认上下文，
+		/// 与测试内直接构造的视图控件类型身份一致（E2E 按类型查找控件依赖于此）。
+		/// 生产分发下插件不在宿主 deps.json（ReferenceOutputAssembly=false），此处抛异常，
+		/// 由调用方回退到独立 <see cref="PluginLoadContext"/>——避免误把插件载进默认上下文
+		/// 而失去依赖隔离。
+		/// </summary>
+		[Null]
+		private static Assembly ResolveDefaultContextAssembly(string simpleName)
+		{
+			Assembly loaded = FindDefaultContextAssembly(simpleName);
+			if (loaded != null)
+			{
+				return loaded;
+			}
+			if (string.IsNullOrEmpty(simpleName))
+			{
+				return null;
+			}
+			try
+			{
+				Assembly assembly = Assembly.Load(new AssemblyName(simpleName));
+				if (assembly != null && AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default)
+				{
+					return assembly;
+				}
+			}
+			catch (Exception ex)
+			{
+				Log.Info("Plugin '" + simpleName + "' is not resolvable from host deps; loading via isolated context (" + ex.GetType().Name + ")");
+			}
+			return null;
 		}
 
 		/// <summary>v5.1.0：在默认上下文中按简单名查找已加载的程序集（测试静态引用场景复用）。</summary>
