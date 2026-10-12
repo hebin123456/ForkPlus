@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-Ein plattformübergreifender Git-Client: Die UI-Schicht ist auf .NET 10 + Avalonia 12 gebaut — eine einzige Codebasis läuft auf Windows / Linux / macOS. Die darunterliegende Rust-Engine (biturbo native), KI-gestützte Entwicklung, 8 Sprachen, 12 Theme-Skins, der git mm-Workflow sowie Visualisierungen wie Beitrags-Heatmaps und Repository-Treemaps stehen sofort zur Verfügung.
+Ein plattformübergreifender Git-Client: Die UI-Schicht ist auf .NET 10 + Avalonia 12 gebaut — eine einzige Codebasis läuft auf Windows / Linux / macOS. Die darunterliegende Rust-Engine (biturbo native), KI-gestützte Entwicklung, 8 Sprachen, 22 Theme-Skins, der git mm-Workflow sowie Visualisierungen wie Beitrags-Heatmaps und Repository-Treemaps stehen sofort zur Verfügung.
 
 > Build-Umgebung und Kompilierungsschritte finden Sie in [BUILDING.md](BUILDING.md).
 
@@ -14,7 +15,7 @@ Ein plattformübergreifender Git-Client: Die UI-Schicht ist auf .NET 10 + Avalon
 
 - **Plattformübergreifend**: Auf Avalonia 12 basierende UI-Schicht; die CI erzeugt parallel Builds für Windows x64 / Linux x64 / Linux ARM64 / macOS arm64, veröffentlicht als eigenständige (self-contained) Builds (keine Installation der .NET-Runtime nötig)
 - **Mehrsprachigkeit**: 8 integrierte Sprachen (Englisch, vereinfachtes Chinesisch, traditionelles Chinesisch, Japanisch, Koreanisch, Französisch, Deutsch, Spanisch), per JSON-Dateien erweiterbar
-- **Mehrere Themes**: 12 eingebaute Skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Lila/Grün hell & dunkel) sowie benutzerdefinierte Farbüberschreibungen, die sofort angewendet werden
+- **Mehrere Themes**: 22 eingebaute Preset-Skins (Light/Dark, Solarized, GitHub, Dracula, Monokai sowie Rot/Orange/Gelb/Grün/Cyan/Blau/Violett — jeweils in heller und dunkler Variante) sowie benutzerdefinierte Farbüberschreibungen, die sofort angewendet werden
 - **git mm-Workflow**: Mitgelieferter `git mm`-Unterbefehl für Lean-Branching-Workflows zur einheitlichen Verwaltung und Synchronisierung von Änderungen über mehrere Sub-Repositories
 - **KI-gestützte Entwicklung**: Integrierte KI-Codeüberprüfung, automatische Commit-Nachrichten-Generierung und KI-gestützte Codeänderung
 - **Beitrags-Heatmap**: GitHub-artige Commit-Heatmap über 53 Wochen × 7 Tage mit Farbskala-Legende und Statistikzusammenfassung (Gesamtcommits / längste Serie / aktivster Tag); beim Hovern werden Commits des Tages und Top-3-Autoren angezeigt
@@ -22,6 +23,7 @@ Ein plattformübergreifender Git-Client: Die UI-Schicht ist auf .NET 10 + Avalon
 - **Tracking entfernter Branches**: Der Rechtsklick-Befehl „Tracken“ ist ein zweistufiges, nach Remote gruppiertes Menü mit angedocktem Suchfeld für das schnelle Auffinden unter vielen Remote-Branches
 - **Leistungsoptimierungen**: Gezielte Verbesserungen für Aktualisierung großer Repositorys, Diff-Rendering und Submodul-Verwaltung
 - **Code-Statistiken**: Integriert tokei (Rust, 200+ Sprachen) für zeilenbasierte Statistiken pro Sprache (Dateien, Code, Kommentare, Leerzeilen) mit Tortendiagramm, unterstützt Workspace/Branch/Tag-Ref-Wechsel
+- **Pluginfähige Diff-Ansichten**: Die Dateivergleichsansicht ist erweiterbar; integriert sind zwei Plugins für Bilder und Binär/Hex. Jedes Plugin besitzt ein eigenes Verzeichnis `plugins/<AssemblyName>/` (mit `plugin.json`-Manifest), um Abhängigkeiten zu isolieren; der Host prüft die Kompatibilität anhand der vom Plugin angegebenen minimal unterstützten Hauptprogrammversion und unterstützt das Deinstallieren (auch integrierter Plugins). Drittanbieter-Plugins siehe [ForkPlus-Plugins-Repository](https://github.com/hebin123456/ForkPlus-Plugins)
 
 ## Repository-Struktur
 
@@ -42,9 +44,16 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH-Askpass-Hilfsprogramm
 │   ├── ForkPlus.RI/           # Interaktiver Rebase-Editor-Hilfsprogramm
+│   ├── ForkPlus.AutoUpdater/  # Hilfsprogramm für automatische Updates (Herunterladen, Prüfen, Ersetzen des Installationsverzeichnisses und Neustart der Haupt-App)
+│   ├── ForkPlus.Plugins.Abstractions/ # Plugin-Verträge (IDiffViewPlugin / IPluginMetadata usw., von Host und Plugins gemeinsam genutzt)
+│   ├── ForkPlus.Plugins.Ui/   # Von Host und integrierten Plugins gemeinsam genutzte UI-Komponenten der Vergleichsansicht
+│   ├── ForkPlus.Plugins.Image/# Integriertes Bildvergleichs-Plugin (Verteilung über das Verzeichnis plugins/<AssemblyName>/)
+│   ├── ForkPlus.Plugins.Hex/  # Integriertes Binär-/Hex-Vergleichs-Plugin (wie oben)
 │   ├── ForkPlus.Tests/        # xUnit-Einheitentests (inkl. Avalonia.Headless-UI-Rauchtests)
 │   ├── ForkPlus.AskPass.Tests/# Einheitentests des AskPass-Hilfsprogramms
-│   └── ForkPlus.RI.Tests/     # Einheitentests des RI-Hilfsprogramms
+│   ├── ForkPlus.RI.Tests/     # Einheitentests des RI-Hilfsprogramms
+│   ├── ForkPlus.AutoUpdaterTests/ # Einheitentests des Hilfsprogramms für automatische Updates
+│   └── ForkPlus.Plugins.Tests/# Einheitentests der Plugin-Verträge und integrierten Plugins
 ├── third_party/               # Zur Build-Zeit bezogene native Binärdateien (siehe „Native biturbo-Bibliothek“ unten)
 ├── gitmm/                     # git mm-Workflow-Referenzdokumentation
 └── .github/workflows/         # GitHub Actions CI-Konfiguration
@@ -126,7 +135,7 @@ Die Artefakte sind **eigenständige (self-contained) Publishes** (die .NET-10-Ru
 ## Tests
 
 - Einheitentests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (inkl. plattformübergreifender Avalonia.Headless-UI-Rauch- und End-to-End-Tests, zusammen mit den Einheitentests)
-- Insgesamt 4200+ Fälle; jeder wichtige Fix hat eine Regressionssicherung (schlägt sie fehl, werden die Tests rot)
+- Insgesamt 4400+ Fälle; jeder wichtige Fix hat eine Regressionssicherung (schlägt sie fehl, werden die Tests rot)
 - Die CI führt bei Tag-Builds und manuellem Start auf einem Ubuntu-Runner die vollständige Suite (inkl. der Tests der AskPass-/RI-Hilfsprogramme) aus; sie hängt von gitflow-avh und git-lfs ab (siehe die Workflow-Kommentare)
 
 ## Mehrsprachigkeitsunterstützung

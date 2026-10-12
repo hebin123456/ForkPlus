@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-Un client Git multiplateforme : la couche UI est construite en .NET 10 + Avalonia 12, et une seule base de code fonctionne sur Windows / Linux / macOS. Le moteur Rust sous-jacent (biturbo native), le développement assisté par IA, les 8 langues, les 12 thèmes, le workflow git mm, ainsi que les visualisations comme les cartes de chaleur de contributions et les treemaps de dépôt sont utilisables immédiatement.
+Un client Git multiplateforme : la couche UI est construite en .NET 10 + Avalonia 12, et une seule base de code fonctionne sur Windows / Linux / macOS. Le moteur Rust sous-jacent (biturbo native), le développement assisté par IA, les 8 langues, les 22 thèmes, le workflow git mm, ainsi que les visualisations comme les cartes de chaleur de contributions et les treemaps de dépôt sont utilisables immédiatement.
 
 > Pour l'environnement de build et les étapes de compilation, voir [BUILDING.md](BUILDING.md).
 
@@ -14,7 +15,7 @@ Un client Git multiplateforme : la couche UI est construite en .NET 10 + Avaloni
 
 - **Multiplateforme** : couche UI multiplateforme basée sur Avalonia 12 ; la CI produit en parallèle des builds Windows x64 / Linux x64 / Linux ARM64 / macOS arm64, publiés en mode autonome (self-contained, aucune installation du runtime .NET nécessaire)
 - **Prise en charge multilingue** : 8 langues intégrées (anglais, chinois simplifié, chinois traditionnel, japonais, coréen, français, allemand, espagnol), extensibles via des fichiers JSON
-- **Thèmes multiples** : 12 habillages intégrés (Light/Dark, Solarized, GitHub, Dracula, Monokai, Violet/Vert clair & sombre) plus surcharges de couleurs personnalisées appliquées instantanément
+- **Thèmes multiples** : 22 habillages intégrés (Light/Dark, Solarized, GitHub, Dracula, Monokai, ainsi que rouge/orange/jaune/vert/cyan/bleu/violet — chacun en version claire et sombre) plus surcharges de couleurs personnalisées appliquées instantanément
 - **Flux de travail git mm** : sous-commande `git mm` intégrée fournissant des flux de travail Lean Branching pour gérer et synchroniser les changements de plusieurs sous-dépôts
 - **Développement assisté par IA** : revue de code par IA, génération automatique de messages de commit et modification de code assistée par IA
 - **Carte de chaleur des contributions** : carte de chaleur des commits façon GitHub sur 53 semaines × 7 jours, avec légende de l'échelle de couleurs et résumé statistique (total des commits / plus longue série / jour le plus actif) ; le survol affiche le nombre de commits du jour et le top 3 des auteurs
@@ -22,6 +23,7 @@ Un client Git multiplateforme : la couche UI est construite en .NET 10 + Avaloni
 - **Suivi des branches distantes** : l'action « Suivre » du clic droit devient un menu à deux niveaux groupé par distant, avec une boîte de recherche épinglée pour retrouver rapidement une branche parmi de nombreux distants
 - **Optimisations des performances** : améliorations ciblées pour l'actualisation des grands dépôts, le rendu des diffs et la gestion des sous-modules
 - **Statistiques de code** : intègre tokei (Rust, 200+ langages) pour compter les lignes par langage (fichiers, code, commentaires, lignes vides) avec visualisation en camembert, et prend en charge le changement de ref Workspace/branche/tag
+- **Vues de diff enfichables** : la vue de comparaison de fichiers est enfichable, avec deux plugins intégrés (image et binaire / Hex) ; chaque plugin occupe son propre répertoire `plugins/<AssemblyName>/` (avec un manifeste `plugin.json`) afin d'isoler ses dépendances, l'hôte vérifie la compatibilité selon la version minimale du programme principal déclarée par le plugin, et la désinstallation (y compris des plugins intégrés) est prise en charge. Pour les plugins tiers, voir le [dépôt ForkPlus-Plugins](https://github.com/hebin123456/ForkPlus-Plugins)
 
 ## Structure du dépôt
 
@@ -42,9 +44,16 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Assistant askpass Git/SSH
 │   ├── ForkPlus.RI/           # Assistant éditeur de rebase interactif
+│   ├── ForkPlus.AutoUpdater/  # Assistant de mise à jour automatique (téléchargement, vérification, remplacement du répertoire d'installation puis redémarrage du programme principal)
+│   ├── ForkPlus.Plugins.Abstractions/ # Contrats de plugin (IDiffViewPlugin / IPluginMetadata, etc., partagés entre l'hôte et les plugins)
+│   ├── ForkPlus.Plugins.Ui/   # Composants UI de vue de comparaison partagés entre l'hôte et les plugins intégrés
+│   ├── ForkPlus.Plugins.Image/# Plugin intégré de comparaison d'images (distribué via le répertoire plugins/<AssemblyName>/)
+│   ├── ForkPlus.Plugins.Hex/  # Plugin intégré de comparaison binaire / Hex (idem)
 │   ├── ForkPlus.Tests/        # Tests unitaires xUnit (dont tests de fumée UI Avalonia.Headless)
 │   ├── ForkPlus.AskPass.Tests/# Tests unitaires de l'assistant AskPass
-│   └── ForkPlus.RI.Tests/     # Tests unitaires de l'assistant RI
+│   ├── ForkPlus.RI.Tests/     # Tests unitaires de l'assistant RI
+│   ├── ForkPlus.AutoUpdaterTests/ # Tests unitaires de l'assistant de mise à jour automatique
+│   └── ForkPlus.Plugins.Tests/# Tests unitaires des contrats de plugin et des plugins intégrés
 ├── third_party/               # Binaires natifs récupérés à la compilation (voir « Bibliothèque native biturbo » ci-dessous)
 ├── gitmm/                     # Documentation de référence du flux de travail git mm
 └── .github/workflows/         # Configuration CI GitHub Actions
@@ -126,7 +135,7 @@ Les artefacts sont des publications **autonomes (self-contained)** (le runtime .
 ## Tests
 
 - Tests unitaires : `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (dont tests de fumée et de bout en bout Avalonia.Headless, multiplateformes, exécutés avec les tests unitaires)
-- Plus de 4200 cas au total ; chaque correctif clé dispose d'une garde de régression (une garde qui échoue fait passer les tests au rouge)
+- Plus de 4400 cas au total ; chaque correctif clé dispose d'une garde de régression (une garde qui échoue fait passer les tests au rouge)
 - La CI exécute la suite complète (y compris les tests des assistants AskPass/RI) sur un runner Ubuntu lors des builds de tag et des déclenchements manuels ; elle dépend de gitflow-avh et git-lfs (voir les commentaires du workflow)
 
 ## Prise en charge multilingue

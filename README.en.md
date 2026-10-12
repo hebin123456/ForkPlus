@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and a single codebase runs on Windows / Linux / macOS. The underlying Rust engine (biturbo native), AI-assisted development, 8 languages, 12 theme skins, the git mm workflow, and visualizations such as contribution heatmaps and repository treemaps work out of the box.
+A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and a single codebase runs on Windows / Linux / macOS. The underlying Rust engine (biturbo native), AI-assisted development, 8 languages, 22 theme skins, the git mm workflow, and visualizations such as contribution heatmaps and repository treemaps work out of the box.
 
 > For the build environment and compile steps, see [BUILDING.md](BUILDING.md).
 
@@ -14,7 +15,7 @@ A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and
 
 - **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 builds in parallel, published self-contained (no .NET runtime installation needed)
 - **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, extensible with more languages via JSON files
-- **Multiple themes**: 12 built-in skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, Purple/Green light & dark) plus user-customizable color overrides applied instantly
+- **Multiple themes**: 22 built-in preset skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, and red/orange/yellow/green/cyan/blue/purple each with both a light and a dark variant) plus user-customizable color overrides applied instantly
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows that manage changes and sync across multiple sub-repositories
 - **AI-assisted development**: Integrated AI code review, automatic commit message generation, and AI-assisted code modification
 - **Contribution heatmap**: GitHub-style 53-week × 7-day commit heatmap with color-scale legend and statistics summary (total commits / longest streak / most active day); hovering shows the commit count and Top 3 authors of that day
@@ -22,6 +23,7 @@ A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and
 - **Remote branch tracking**: The right-click "Track" action is a two-level menu grouped by remote with a pinned search box, for quickly locating branches among many remotes
 - **Performance optimizations**: Targeted improvements for large repository refresh, diff rendering, and submodule management
 - **Code statistics**: Integrates tokei (Rust, 200+ languages) for per-language line counts (files, code, comments, blanks) with pie-chart visualization, supporting Workspace/branch/tag ref switching
+- **Pluggable diff views**: The file diff view is pluggable, with two built-in plugins for images and binary / Hex; each plugin occupies its own `plugins/<AssemblyName>/` directory (containing a `plugin.json` manifest) to isolate dependencies, the host validates compatibility against the minimum supported main-app version declared by the plugin, and uninstalling (including built-in plugins) is supported. Third-party plugins are in the [ForkPlus-Plugins repository](https://github.com/hebin123456/ForkPlus-Plugins)
 
 ## Repository Layout
 
@@ -40,11 +42,18 @@ ForkPlus/
 │   │   │   ├── es-ES.json     # Spanish
 │   │   │   └── README.md      # Language file format description
 │   │   └── ...
-│   ├── ForkPlus.AskPass/      # Git/SSH askpass helper
+│   ├── ForkPlus.AskPass/      # Git/SSH password prompt helper
 │   ├── ForkPlus.RI/           # Interactive rebase editor helper
+│   ├── ForkPlus.AutoUpdater/  # Auto-update helper (downloads, verifies, replaces the install directory, and restarts the main app)
+│   ├── ForkPlus.Plugins.Abstractions/ # Plugin contracts (IDiffViewPlugin / IPluginMetadata, etc., shared by host and plugins)
+│   ├── ForkPlus.Plugins.Ui/   # Diff-view UI components shared by the host and built-in plugins
+│   ├── ForkPlus.Plugins.Image/# Built-in image diff plugin (distributed under the plugins/<AssemblyName>/ directory)
+│   ├── ForkPlus.Plugins.Hex/  # Built-in binary / Hex diff plugin (same as above)
 │   ├── ForkPlus.Tests/        # xUnit unit tests (incl. Avalonia.Headless UI smoke tests)
 │   ├── ForkPlus.AskPass.Tests/# AskPass helper unit tests
-│   └── ForkPlus.RI.Tests/     # RI helper unit tests
+│   ├── ForkPlus.RI.Tests/     # RI helper unit tests
+│   ├── ForkPlus.AutoUpdaterTests/ # Auto-updater helper unit tests
+│   └── ForkPlus.Plugins.Tests/# Plugin contracts and built-in plugin unit tests
 ├── third_party/               # Native binaries fetched at build time (see "biturbo native library" below)
 ├── gitmm/                     # git mm workflow reference docs
 └── .github/workflows/         # GitHub Actions CI config
@@ -125,7 +134,7 @@ The artifacts are **self-contained publishes** (bundling the .NET 10 runtime; no
 ## Tests
 
 - Unit tests: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj` (incl. Avalonia.Headless UI smoke and end-to-end tests, cross-platform, run together with unit tests)
-- 4200+ cases in total; every key fix has a regression guard (a failing guard turns the tests red)
+- 4400+ cases in total; every key fix has a regression guard (a failing guard turns the tests red)
 - CI runs the full suite (incl. AskPass / RI helper tests) on an ubuntu runner on tag builds and manual dispatch; it depends on gitflow-avh and git-lfs (see the workflow comments)
 
 ## Multi-language Support

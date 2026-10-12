@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
 [![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-跨平台 Git 客户端：UI 层基于 .NET 10 + Avalonia 12 构建，一套代码运行于 Windows / Linux / macOS。底层 Rust 引擎（biturbo native）、AI 辅助开发、8 种语言、12 套主题皮肤、git mm 工作流，以及贡献热力图、仓库树图等可视化能力开箱即用。
+跨平台 Git 客户端：UI 层基于 .NET 10 + Avalonia 12 构建，一套代码运行于 Windows / Linux / macOS。底层 Rust 引擎（biturbo native）、AI 辅助开发、8 种语言、22 套主题皮肤、git mm 工作流，以及贡献热力图、仓库树图等可视化能力开箱即用。
 
 > 构建环境与编译步骤详见 [BUILDING.md](BUILDING.md)。
 
@@ -15,7 +15,7 @@
 
 - **跨平台**：基于 Avalonia 12 的跨平台 UI 层，CI 同时产出 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 四平台构建，产物为自包含（self-contained）发布，无需安装 .NET 运行时
 - **多语言支持**：内置英语、简体中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 种语言，并支持通过 JSON 文件扩展更多语言
-- **多主题皮肤**：内置 12 套预设皮肤（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/绿色浅色深色），并支持用户自定义颜色覆盖，即时生效
+- **多主题皮肤**：内置 22 套预设皮肤（Light/Dark、Solarized、GitHub、Dracula、Monokai，以及红/橙/黄/绿/青/蓝/紫各含浅色与深色两套），并支持用户自定义颜色覆盖，即时生效
 - **git mm 工作流**：内置 `git mm` 子命令，提供精益分支（Lean Branching）工作流，统一管理多子仓的变更与同步
 - **AI 辅助开发**：集成 AI 代码审查、自动生成提交信息、AI 辅助修改代码
 - **贡献热力图**：GitHub 风格 53 周 × 7 天提交热力图，附带色阶图例和统计摘要（总提交数 / 最长连续提交天数 / 最活跃日期），鼠标悬停显示当日提交数和 Top 3 作者
@@ -23,6 +23,7 @@
 - **远端分支跟踪**：右键"跟踪"改为按远端分组的二级菜单，菜单内嵌置顶搜索框，支持大量远端分支快速检索
 - **性能优化**：针对大型仓库的刷新、diff 渲染、子模块管理做了专项优化
 - **代码统计**：集成 tokei（Rust 编写，支持 200+ 语言），按语言统计代码行数、文件数、注释行、空白行，饼图可视化，支持 Workspace/分支/tag 切换 ref
+- **插件化对比视图**：文件对比视图可插拔，内置图片与二进制 / Hex 两个插件；每个插件独占 `plugins/<AssemblyName>/` 目录（含 `plugin.json` 清单）以隔离依赖，宿主按插件声明的最低支持主程序版本校验兼容性，支持卸载（含内置插件）。第三方插件见 [ForkPlus-Plugins 仓库](https://github.com/hebin123456/ForkPlus-Plugins)
 
 ## 项目结构
 
@@ -43,9 +44,16 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH 密码输入辅助程序
 │   ├── ForkPlus.RI/           # 交互式 rebase 编辑器辅助程序
+│   ├── ForkPlus.AutoUpdater/  # 自动更新辅助程序（下载、校验、替换安装目录并重启主程序）
+│   ├── ForkPlus.Plugins.Abstractions/ # 插件契约（IDiffViewPlugin / IPluginMetadata 等，宿主与插件共享）
+│   ├── ForkPlus.Plugins.Ui/   # 宿主与内置插件共享的对比视图 UI 组件
+│   ├── ForkPlus.Plugins.Image/# 内置图片对比插件（按 plugins/<AssemblyName>/ 目录分发）
+│   ├── ForkPlus.Plugins.Hex/  # 内置二进制 / Hex 对比插件（同上）
 │   ├── ForkPlus.Tests/        # xUnit 单元测试（含 Avalonia.Headless UI 冒烟测试）
 │   ├── ForkPlus.AskPass.Tests/# AskPass 辅助程序单元测试
-│   └── ForkPlus.RI.Tests/     # RI 辅助程序单元测试
+│   ├── ForkPlus.RI.Tests/     # RI 辅助程序单元测试
+│   ├── ForkPlus.AutoUpdaterTests/ # 自动更新辅助程序单元测试
+│   └── ForkPlus.Plugins.Tests/# 插件契约与内置插件单元测试
 ├── third_party/               # 构建期拉取的原生二进制（见下文「biturbo native 库来源」）
 ├── gitmm/                     # git mm 工作流参考文档
 └── .github/workflows/         # GitHub Actions CI 配置
@@ -125,7 +133,7 @@ biturbo native 三方件（Rust）提供仓库树图布局、提交图缓存、r
 ## 测试
 
 - 单元测试：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒烟与端到端测试，跨平台，随单测一起运行）
-- 全量 4200+ 用例；关键修复均配有回归防线（失败即测试红灯）
+- 全量 4400+ 用例；关键修复均配有回归防线（失败即测试红灯）
 - CI 在 tag 构建与手动触发时于 ubuntu runner 上运行全量测试（含 AskPass / RI 辅助程序测试），环境依赖 gitflow-avh 与 git-lfs（见 workflow 注释）
 
 ## 多语言支持

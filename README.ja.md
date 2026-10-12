@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-クロスプラットフォーム Git クライアント：UI 層は .NET 10 + Avalonia 12 で構築され、単一コードベースで Windows / Linux / macOS 上で動作します。基盤の Rust エンジン（biturbo native）、AI 支援開発、8 言語、12 種類のテーマスキン、git mm ワークフロー、コントリビューションヒートマップやリポジトリツリーマップなどの可視化機能を利用できます。
+クロスプラットフォーム Git クライアント：UI 層は .NET 10 + Avalonia 12 で構築され、単一コードベースで Windows / Linux / macOS 上で動作します。基盤の Rust エンジン（biturbo native）、AI 支援開発、8 言語、22 種類のテーマスキン、git mm ワークフロー、コントリビューションヒートマップやリポジトリツリーマップなどの可視化機能を利用できます。
 
 > ビルド環境とコンパイル手順は [BUILDING.md](BUILDING.md) を参照してください。
 
@@ -14,7 +15,7 @@
 
 - **クロスプラットフォーム**: Avalonia 12 ベースのクロスプラットフォーム UI 層。CI では Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 の 4 プラットフォーム分を並行ビルドし、自己完結型（self-contained、.NET ランタイムのインストール不要）で公開
 - **多言語サポート**: 英語、簡体字中国語、繁体字中国語、日本語、한국어、Français、Deutsch、Español の 8 言語を内蔵し、JSON ファイルによる追加言語の拡張も可能
-- **マルチテーマスキン**: 12 種類の内蔵スキン（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫/緑のライト&ダーク）に加え、ユーザーカスタムカラーの上書きが即時反映
+- **マルチテーマスキン**: 22 種類の内蔵プリセットスキン（Light/Dark、Solarized、GitHub、Dracula、Monokai、および赤/橙/黄/緑/青/藍/紫の各色にライトとダークの 2 種）に加え、ユーザーカスタムカラーの上書きが即時反映
 - **git mm ワークフロー**: `git mm` サブコマンドを内蔵し、リーンブランチング（Lean Branching）ワークフローで複数サブリポジトリの変更と同期を一元管理
 - **AI 支援開発**: AI コードレビュー、コミットメッセージ自動生成、AI 支援によるコード変更を統合
 - **コントリビューションヒートマップ**: GitHub 風の 53 週 × 7 日コミットヒートマップ。カラースケール凡例と統計サマリー（総コミット数 / 最長連続コミット日数 / 最もアクティブな日）を表示し、ホバーでその日のコミット数と Top 3 作成者を表示
@@ -22,6 +23,7 @@
 - **リモートブランチ追跡**: 右クリックの「追跡」をリモート別にグループ化した 2 段階メニューに変更。メニュー内に固定検索ボックスを内蔵し、多数のリモートブランチから高速に検索
 - **パフォーマンス最適化**: 大規模リポジトリのリフレッシュ、diff レンダリング、サブモジュール管理に対する専用最適化
 - **コード統計**: tokei（Rust、200+ 言語対応）を統合し、言語別のコード行数・ファイル数・コメント行・空白行を集計、円グラフで可視化、Workspace/ブランチ/tag の ref 切替に対応
+- **プラグイン化された差分ビュー**: ファイルの差分ビューはプラグイン化可能で、画像とバイナリ / Hex の 2 つの組み込みプラグインを備えます。各プラグインは `plugins/<AssemblyName>/` ディレクトリ（`plugin.json` マニフェストを含む）を占有して依存関係を分離し、ホストはプラグインが宣言する最低対応メインプログラムバージョンで互換性を検証し、アンインストール（組み込みプラグインを含む）にも対応します。サードパーティ製プラグインは [ForkPlus-Plugins リポジトリ](https://github.com/hebin123456/ForkPlus-Plugins) を参照してください
 
 ## プロジェクト構成
 
@@ -42,9 +44,16 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH パスワード入力ヘルパー
 │   ├── ForkPlus.RI/           # インタラクティブ rebase エディタヘルパー
+│   ├── ForkPlus.AutoUpdater/  # 自動更新ヘルパー（ダウンロード、検証、インストールディレクトリの置換とメインプログラムの再起動）
+│   ├── ForkPlus.Plugins.Abstractions/ # プラグイン契約（IDiffViewPlugin / IPluginMetadata など、ホストとプラグインで共有）
+│   ├── ForkPlus.Plugins.Ui/   # ホストと組み込みプラグインで共有する差分ビュー UI コンポーネント
+│   ├── ForkPlus.Plugins.Image/# 組み込み画像差分プラグイン（plugins/<AssemblyName>/ ディレクトリで配布）
+│   ├── ForkPlus.Plugins.Hex/  # 組み込みバイナリ / Hex 差分プラグイン（同上）
 │   ├── ForkPlus.Tests/        # xUnit 単体テスト（Avalonia.Headless UI スモークテストを含む）
 │   ├── ForkPlus.AskPass.Tests/# AskPass ヘルパーの単体テスト
-│   └── ForkPlus.RI.Tests/     # RI ヘルパーの単体テスト
+│   ├── ForkPlus.RI.Tests/     # RI ヘルパーの単体テスト
+│   ├── ForkPlus.AutoUpdaterTests/ # 自動更新ヘルパーの単体テスト
+│   └── ForkPlus.Plugins.Tests/# プラグイン契約と組み込みプラグインの単体テスト
 ├── third_party/               # ビルド時に取得するネイティブバイナリ（下記「biturbo native ライブラリの入手元」参照）
 ├── gitmm/                     # git mm ワークフローリファレンスドキュメント
 └── .github/workflows/         # GitHub Actions CI 設定
@@ -125,7 +134,7 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 ## テスト
 
 - 単体テスト: `dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（クロスプラットフォーム対応の Avalonia.Headless UI スモーク・E2E テストを含み、単体テストと一緒に実行されます）
-- 全 4200+ ケース。主要な修正にはすべて回帰防止テストが付いています（失敗すればテストが赤になります）
+- 全 4400+ ケース。主要な修正にはすべて回帰防止テストが付いています（失敗すればテストが赤になります）
 - CI ではタグビルドと手動トリガー時に ubuntu ランナーでフルテストスイート（AskPass / RI ヘルパーのテストを含む）を実行します。gitflow-avh と git-lfs に依存します（workflow のコメントを参照）
 
 ## 多言語サポート

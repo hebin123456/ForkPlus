@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml/badge.svg)](https://github.com/hebin123456/ForkPlus/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/hebin123456/ForkPlus)](https://github.com/hebin123456/ForkPlus/releases)
+[![Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue?logo=githubpages&logoColor=white)](https://hebin123456.github.io/ForkPlus/)
 
-跨平台 Git 客戶端：UI 層基於 .NET 10 + Avalonia 12 建置，一套程式碼執行於 Windows / Linux / macOS。底層 Rust 引擎（biturbo native）、AI 輔助開發、8 種語言、12 套主題皮膚、git mm 工作流，以及貢獻熱力圖、倉庫樹圖等視覺化能力開箱即用。
+跨平台 Git 客戶端：UI 層基於 .NET 10 + Avalonia 12 建置，一套程式碼執行於 Windows / Linux / macOS。底層 Rust 引擎（biturbo native）、AI 輔助開發、8 種語言、22 套主題皮膚、git mm 工作流，以及貢獻熱力圖、倉庫樹圖等視覺化能力開箱即用。
 
 > 建置環境與編譯步驟詳見 [BUILDING.md](BUILDING.md)。
 
@@ -14,7 +15,7 @@
 
 - **跨平台**：基於 Avalonia 12 的跨平台 UI 層，CI 同時產出 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 四平台建置，產物為自包含（self-contained）發布，無需安裝 .NET 執行時
 - **多語言支援**：內建英語、簡體中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 種語言，並支援透過 JSON 檔案擴充更多語言
-- **多主題皮膚**：內建 12 套預設皮膚（Light/Dark、Solarized、GitHub、Dracula、Monokai、紫色/綠色淺色深色），並支援使用者自訂顏色覆蓋，即時生效
+- **多主題皮膚**：內建 22 套預設皮膚（Light/Dark、Solarized、GitHub、Dracula、Monokai，以及紅/橙/黃/綠/青/藍/紫各含淺色與深色兩套），並支援使用者自訂顏色覆蓋，即時生效
 - **git mm 工作流**：內建 `git mm` 子命令，提供精益分支（Lean Branching）工作流，統一管理多子倉的變更與同步
 - **AI 輔助開發**：整合 AI 程式碼審查、自動產生提交訊息、AI 輔助修改程式碼
 - **貢獻熱力圖**：GitHub 風格 53 週 × 7 天提交熱力圖，附帶色階圖例和統計摘要（總提交數 / 最長連續提交天數 / 最活躍日期），滑鼠懸停顯示當日提交數和 Top 3 作者
@@ -22,6 +23,7 @@
 - **遠端分支追蹤**：右鍵「追蹤」改為按遠端分組的二級選單，選單內嵌置頂搜尋框，支援大量遠端分支快速檢索
 - **效能優化**：針對大型倉庫的重新整理、diff 渲染、子模組管理做了專項優化
 - **代碼統計**：整合 tokei（Rust 編寫，支援 200+ 語言），按語言統計代碼行數、檔案數、註解行、空白行，圓餅圖視覺化，支援 Workspace/分支/tag 切換 ref
+- **外掛化對比檢視**：檔案對比檢視可外掛，內建圖片與二進位 / Hex 兩個外掛；每個外掛獨占 `plugins/<AssemblyName>/` 目錄（含 `plugin.json` 清單）以隔離依賴，宿主按外掛宣告的最低支援主程式版本校驗相容性，支援卸載（含內建外掛）。第三方外掛見 [ForkPlus-Plugins 倉庫](https://github.com/hebin123456/ForkPlus-Plugins)
 
 ## 專案結構
 
@@ -42,9 +44,16 @@ ForkPlus/
 │   │   └── ...
 │   ├── ForkPlus.AskPass/      # Git/SSH 密碼輸入輔助程式
 │   ├── ForkPlus.RI/           # 互動式 rebase 編輯器輔助程式
+│   ├── ForkPlus.AutoUpdater/  # 自動更新輔助程式（下載、校驗、替換安裝目錄並重啟主程式）
+│   ├── ForkPlus.Plugins.Abstractions/ # 外掛契約（IDiffViewPlugin / IPluginMetadata 等，宿主與外掛共享）
+│   ├── ForkPlus.Plugins.Ui/   # 宿主與內建外掛共享的對比檢視 UI 元件
+│   ├── ForkPlus.Plugins.Image/# 內建圖片對比外掛（按 plugins/<AssemblyName>/ 目錄分發）
+│   ├── ForkPlus.Plugins.Hex/  # 內建二進位 / Hex 對比外掛（同上）
 │   ├── ForkPlus.Tests/        # xUnit 單元測試（含 Avalonia.Headless UI 冒煙測試）
 │   ├── ForkPlus.AskPass.Tests/# AskPass 輔助程式單元測試
-│   └── ForkPlus.RI.Tests/     # RI 輔助程式單元測試
+│   ├── ForkPlus.RI.Tests/     # RI 輔助程式單元測試
+│   ├── ForkPlus.AutoUpdaterTests/ # 自動更新輔助程式單元測試
+│   └── ForkPlus.Plugins.Tests/# 外掛契約與內建外掛單元測試
 ├── third_party/               # 建置期拉取的原生二進位檔案（見下文「biturbo native 庫來源」）
 ├── gitmm/                     # git mm 工作流參考文件
 └── .github/workflows/         # GitHub Actions CI 配置
@@ -124,7 +133,7 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 ## 測試
 
 - 單元測試：`dotnet test src/ForkPlus.Tests/ForkPlus.Tests.csproj`（含 Avalonia.Headless UI 冒煙與端到端測試，跨平台，隨單測一起執行）
-- 全量 4200+ 用例；關鍵修復均配有回歸防線（失敗即測試紅燈）
+- 全量 4400+ 用例；關鍵修復均配有回歸防線（失敗即測試紅燈）
 - CI 在標籤建置與手動觸發時於 ubuntu runner 上執行全量測試（含 AskPass / RI 輔助程式測試），環境依賴 gitflow-avh 與 git-lfs（見 workflow 註釋）
 
 ## 多語言支援
