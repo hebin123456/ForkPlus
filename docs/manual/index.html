@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.0.7</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.1.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,14 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.1.0 更新</h2>
+  <ul>
+    <li><strong>插件目录化 + 清单校验</strong>：每个插件独占一个目录 <code>plugins/&lt;程序集名&gt;/</code>，目录根带 <code>plugin.json</code> 清单（<code>schemaVersion</code> / <code>id</code> / <code>version</code> / <code>minHostVersion</code> / <code>assembly</code>）。宿主只安装 / 加载<strong>具备清单</strong>、且<strong>主程序版本 ≥ 声明的最低支持主软件版本</strong>的插件；每个插件用独立加载上下文加载，<strong>私有依赖随目录隔离</strong>互不打架，卸载即<strong>整目录删除</strong>、不留残留。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>内置插件也可卸载</strong>：图片对比（<code>forkplus.image</code>）与 Hex 对比（<code>forkplus.hex</code>）自本版起与第三方插件一视同仁，可勾选卸载；卸载后从插件仓 <strong>1.2.0</strong> 下载对应单插件包即可重装。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>偏好设置 → 插件页新增两列</strong>：新增<strong>「插件版本」</strong>与<strong>「最低支持主软件版本」</strong>（取自清单，缺失显示 <code>—</code>）；加载失败 / 不兼容的插件条目会单独展示原因。详见<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>。</li>
+    <li><strong>旧版插件布局不再兼容</strong>：升级到 5.1.0 后，旧版（≤ 5.0.7）平铺在 <code>plugins/</code> 根目录的插件首次启动会被<strong>清空并弹窗告知</strong>，需前往 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins Releases</a> 下载 <strong>1.2.0</strong> 的插件包（合集包或单插件包）重新安装。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+  </ul>
 
   <h2>v5.0.5 更新</h2>
   <ul>
@@ -29,7 +37,7 @@
   <ul>
     <li><strong>插件多语言</strong>：宿主把当前界面语言下发给插件（缺省英文），插件可提供本地化的名称与描述，界面语言切换时插件视图随之刷新；内置的图片对比与 Hex 对比插件已提供 8 种语言的名称/描述。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
     <li><strong>压缩包安装插件</strong>：偏好设置 → 插件页新增<strong>「安装插件...」</strong>，选择从 ForkPlus-Plugins Releases 下载的插件 zip 后自动解压安装到 <code>plugins/</code> 并重新加载，无需手工解压、无需重启。详见<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>与<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
-    <li><strong>批量卸载插件</strong>：偏好设置 → 插件页新增勾选框、「全选」与<strong>「卸载选中」</strong>按钮，可一次卸载多个第三方插件；<strong>内置的图片对比与 Hex 对比插件受保护，不可卸载</strong>。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>批量卸载插件</strong>：偏好设置 → 插件页新增勾选框、「全选」与<strong>「卸载选中」</strong>按钮，可一次卸载多个第三方插件；<strong>内置的图片对比与 Hex 对比插件受保护，不可卸载</strong>（<strong>v5.1.0 起改为同样可卸载</strong>）。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
     <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.0.3，偏好设置各标签页插图按最新界面重新生成。详见<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>。</li>
   </ul>
 
@@ -211,12 +219,12 @@
     <a class="chapter-card" href="ch-26-plugin-mechanism.html">
       <span class="num">CH-26</span>
       <h3>对比视图插件机制</h3>
-      <p>图片/Hex 对比拆分为独立插件 DLL、动态加载、插件管理器（偏好设置 → 插件）启禁用与重新加载、路由规则与第三方插件</p>
+      <p>每插件独占目录 + plugin.json 清单（最低支持主软件版本校验）、动态加载与依赖隔离、插件管理器（偏好设置 → 插件）启禁用/安装/卸载、路由规则与第三方插件</p>
     </a>
   </div>
 </main>
 <footer class="manual-footer">
-  ForkPlus 用户手册 · 生成于 2026-10-06
+  ForkPlus 用户手册 · 生成于 2026-10-12
 </footer>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.0.7</p>
+  <p>ForkPlus 用户手册 · 版本 v5.1.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -18,18 +18,52 @@
   <a href="ch-26-plugin-mechanism.html" class="active">对比视图插件</a>
 </nav>
 <main class="manual-main">
-  <p>从 <strong>v5.0.0</strong> 起，ForkPlus 把「对比视图」重构为<strong>插件化架构</strong>：原先写死在主程序里的<strong>图片对比</strong>与 <strong>Hex 对比</strong>拆分为两个独立的插件 DLL，由主程序在启动时从 <code>plugins/</code> 目录<strong>动态加载</strong>。这样一来，<strong>不重新编译主程序即可增删对比视图插件</strong>，第三方也能以插件形式为新的文件类型提供专属对比视图。v5.0.1 起，偏好设置新增<strong>「插件」管理页</strong>——可查看插件名称、版本号与描述，启用/禁用插件，并<strong>重新加载插件</strong>（无需重启）；v5.0.3 起该页进一步支持<strong>压缩包安装</strong>与<strong>批量卸载</strong>（内置插件受保护不可卸载），插件名称与描述也会<strong>跟随界面语言</strong>本地化。本章说明插件如何认领文件、如何路由、如何在偏好设置里管理与安装卸载，以及内置插件的行为。</p>
+  <p>从 <strong>v5.0.0</strong> 起，ForkPlus 把「对比视图」重构为<strong>插件化架构</strong>：原先写死在主程序里的<strong>图片对比</strong>与 <strong>Hex 对比</strong>拆分为两个独立的插件 DLL，由主程序在启动时从 <code>plugins/</code> 目录<strong>动态加载</strong>。这样一来，<strong>不重新编译主程序即可增删对比视图插件</strong>，第三方也能以插件形式为新的文件类型提供专属对比视图。v5.0.1 起，偏好设置新增<strong>「插件」管理页</strong>——可查看插件名称、版本号与描述，启用/禁用插件，并<strong>重新加载插件</strong>（无需重启）；v5.0.3 起该页进一步支持<strong>压缩包安装</strong>与<strong>批量卸载</strong>，插件名称与描述也会<strong>跟随界面语言</strong>本地化。从 <strong>v5.1.0</strong> 起架构再次升级：<strong>每个插件独占一个目录</strong> <code>plugins/&lt;程序集名&gt;/</code>，目录根带 <code>plugin.json</code> 清单，宿主只安装 / 加载<strong>声明了最低支持主软件版本（<code>minHostVersion</code>）且与当前主程序兼容</strong>的插件，每个插件由<strong>独立加载上下文</strong>加载以隔离依赖；<strong>内置插件同样可以卸载</strong>。本章说明插件的目录与清单规范、如何认领与路由文件、如何在偏好设置里管理与安装卸载，以及内置插件的行为。</p>
 
   <h2>为什么插件化</h2>
   <ul>
     <li><strong>可扩展</strong>：为新的文件类型（如某种领域格式）提供专属对比视图时，只需新写一个插件 DLL，无需改动主程序。</li>
     <li><strong>可替换 / 可覆盖</strong>：任何内置对比视图都能被更高优先级的插件或用户绑定覆盖。</li>
-    <li><strong>按需加载</strong>：主程序启动时扫描 <code>plugins/</code>，一个 DLL 一个插件，随读随用。</li>
+    <li><strong>按需加载</strong>：主程序启动时扫描 <code>plugins/</code> 下的<strong>插件子目录</strong>，读取各自的 <code>plugin.json</code> 清单后按需加载，随读随用。</li>
+    <li><strong>依赖隔离</strong>：每个插件由<strong>独立加载上下文</strong>加载，私有依赖与原生库随目录分发——两个插件各带一份不同版本的同一依赖也互不打架；卸载时<strong>整目录删除</strong>，不留残留。</li>
     <li><strong>行为不变</strong>：内置插件的对比行为与 v4.3.2 保持一致——图片走图片对比器，其余二进制走 Hex 对比器。</li>
   </ul>
 
   <h2>内置插件</h2>
   <p>ForkPlus 自带两个内置对比视图插件，覆盖了绝大多数场景：</p>
+  <table class="plugin-table">
+    <thead>
+      <tr><th>插件 ID</th><th>名称 / 版本</th><th>最低支持主程序</th><th>认领范围</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>forkplus.image</code></td>
+        <td>图片对比<br><code>1.0.0</code></td>
+        <td><code>5.1.0</code></td>
+        <td>精确扩展名：<code>.bmp</code> <code>.gif</code> <code>.png</code> <code>.jpg</code> <code>.jpeg</code> <code>.ico</code> <code>.tga</code> <code>.webp</code></td>
+        <td><strong>图片对比插件</strong>：并排 / 滑动 / 洋葱皮 / Hex 四种模式，含动图播放、像素差异高亮、缩放平移与 LFS smudge；优先级 100。</td>
+      </tr>
+      <tr>
+        <td><code>forkplus.hex</code></td>
+        <td>十六进制对比<br><code>1.0.0</code></td>
+        <td><code>5.1.0</code></td>
+        <td>通配兜底：任何未被专属插件认领的文件类型</td>
+        <td><strong>Hex 对比插件</strong>：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章）；宿主预载字节（v5.0.5 起 ≤100MB）时可切换到 Hex 对比。</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>说明：</strong>两个内置插件自 <strong>v5.1.0</strong> 起也可在偏好设置 → 插件页<strong>卸载</strong>；卸载后从 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins Releases</a> 下载 1.2.0 的对应单插件包即可重装。</div>
+
+  <h2>插件目录与清单（plugin.json）</h2>
+  <p>从 <strong>v5.1.0</strong> 起，每个插件在 <code>plugins/</code> 下独占一个以<strong>程序集名</strong>命名的子目录，插件的 DLL、私有依赖、原生库与清单都放在其中，互不干扰：</p>
+  <pre>plugins/
+├── ForkPlus.Plugins.Image/
+│   ├── plugin.json
+│   └── ForkPlus.Plugins.Image.dll
+└── ForkPlus.Plugins.Hex/
+    ├── plugin.json
+    └── ForkPlus.Plugins.Hex.dll</pre>
+  <p>目录根的 <code>plugin.json</code> 是宿主判定「这是不是一个可安装 / 可加载的插件」以及「是否与当前主程序兼容」的<strong>唯一事实来源</strong>，固定 5 个字段：</p>
   <table class="plugin-table">
     <colgroup>
       <col class="col-id">
@@ -38,23 +72,18 @@
       <col class="col-desc">
     </colgroup>
     <thead>
-      <tr><th>插件 ID</th><th>名称 / 版本</th><th>认领范围</th><th>说明</th></tr>
+      <tr><th>字段</th><th>示例</th><th>类型</th><th>说明</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><code>forkplus.image</code></td>
-        <td>图片对比<br><code>1.0.0</code></td>
-        <td>精确扩展名：<code>.bmp</code> <code>.gif</code> <code>.png</code> <code>.jpg</code> <code>.jpeg</code> <code>.ico</code> <code>.tga</code> <code>.webp</code></td>
-        <td><strong>图片对比插件</strong>：并排 / 滑动 / 洋葱皮 / Hex 四种模式，含动图播放、像素差异高亮、缩放平移与 LFS smudge；优先级 100。</td>
-      </tr>
-      <tr>
-        <td><code>forkplus.hex</code></td>
-        <td>十六进制对比<br><code>1.0.0</code></td>
-        <td>通配兜底：任何未被专属插件认领的文件类型</td>
-        <td><strong>Hex 对比插件</strong>：默认 side-by-side 文件卡片（图标 + 扩展名 + 大小 + LFS 徽章）；宿主预载字节（v5.0.5 起 ≤100MB）时可切换到 Hex 对比。</td>
-      </tr>
+      <tr><td><code>schemaVersion</code></td><td><code>1</code></td><td>整数</td><td>清单格式版本。</td></tr>
+      <tr><td><code>id</code></td><td><code>forkplus.image</code></td><td>字符串</td><td>插件唯一标识。</td></tr>
+      <tr><td><code>version</code></td><td><code>1.0.0</code></td><td>字符串</td><td>插件自身版本。</td></tr>
+      <tr><td><code>minHostVersion</code></td><td><code>5.1.0</code></td><td>字符串</td><td><strong>最低支持的主程序版本</strong>：主程序版本低于该值即判定为不兼容。</td></tr>
+      <tr><td><code>assembly</code></td><td><code>ForkPlus.Plugins.Image.dll</code></td><td>字符串</td><td>插件主程序集文件名（相对插件目录根）。</td></tr>
     </tbody>
   </table>
+  <div class="note"><strong>说明：</strong>宿主在<strong>安装前</strong>（读压缩包内清单）与<strong>加载前</strong>（读磁盘清单）都以清单判定兼容性：<strong>缺少清单、缺少 <code>minHostVersion</code>、或主程序版本低于该值，一律不安装 / 不加载</strong>，并在偏好设置页单独列出原因。</div>
+  <div class="tip"><strong>小贴士：</strong>清单里的 <code>minHostVersion</code> 应与插件代码中 <code>IPluginMetadata.MinHostVersion</code> 保持一致——宿主以<strong>清单</strong>为准。</div>
 
   <h3>图片对比插件（forkplus.image）</h3>
   <p>图片对比插件提供第 7 章介绍的四种对比模式，为图片与动图提供图形化差异视图。</p>
@@ -64,7 +93,7 @@
   </figure>
 
   <h3>Hex 对比插件（forkplus.hex）</h3>
-  <p>Hex 对比插件是所有二进制的<strong>兜底视图</strong>。未加载该 DLL 时，ForkPlus 同样会显示文件卡片视图。</p>
+  <p>Hex 对比插件是所有二进制的<strong>兜底视图</strong>。未安装该插件时，ForkPlus 同样会显示文件卡片视图。</p>
   <figure>
     <img src="screenshots/07-binary-diff/06-binary-card-view.png" alt="Hex 对比插件：文件卡片视图" loading="lazy">
     <figcaption>图 26-2　Hex 对比插件（<code>forkplus.hex</code>）：文件卡片视图（图标 + 字节大小，此例 256 B → 512 B）</figcaption>
@@ -107,32 +136,41 @@
   <h2>插件管理器（偏好设置 → 插件）</h2>
   <p>从 <strong>v5.0.1</strong> 起，可在「偏好设置 → 插件」页集中管理对比视图插件，无需手工改文件、也无需重启：</p>
   <ul>
-    <li><strong>查看插件信息</strong>：每个插件展示<strong>名称、版本号、描述</strong>，以及它认领的<strong>匹配扩展名</strong>与<strong>优先级</strong>；加载失败的 DLL 会单独列出并标明失败原因，不影响其他插件。</li>
+    <li><strong>查看插件信息</strong>：每个插件展示<strong>名称、插件版本、最低支持主软件版本</strong>与描述，以及它认领的<strong>匹配扩展名</strong>与<strong>优先级</strong>；加载失败或不兼容的插件会单独列出并标明原因（如「需要主程序 ≥ 5.1.0」），不影响其他插件。</li>
     <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。</li>
-    <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 目录</strong>——放入或删除插件 DLL 后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
-    <li><strong>安装插件（v5.0.3）</strong>：点击<strong>「安装插件...」</strong>选择从发布页下载的插件压缩包（zip），ForkPlus 会自动解压并安装到 <code>plugins/</code>，随后重新加载——无需手工解压文件。</li>
-    <li><strong>卸载插件（v5.0.3）</strong>：勾选要移除的插件后点击<strong>「卸载选中」</strong>可一次卸载多个（也可用「全选」快速勾选）。<strong>内置的图片对比与 Hex 对比插件受保护，不可卸载</strong>；若文件被占用，会在下次启动 ForkPlus 时自动完成删除。</li>
+    <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 下各插件子目录</strong>——放入或删除插件后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
+    <li><strong>安装插件</strong>：点击<strong>「安装插件...」</strong>选择从发布页下载的插件压缩包（<strong>合集包或单插件包</strong>均可），ForkPlus 会自动识别包内各插件目录、逐个校验 <code>plugin.json</code> 兼容性后安装到 <code>plugins/&lt;程序集名&gt;/</code> 并重新加载——无需手工解压；<strong>不兼容或缺少清单的插件会被跳过并提示</strong>。</li>
+    <li><strong>卸载插件</strong>：勾选要移除的插件后点击<strong>「卸载选中」</strong>可一次卸载多个（也可用「全选」快速勾选）。卸载会<strong>删除插件整个目录</strong>（含清单、私有依赖与原生库），不留残留；<strong>自 v5.1.0 起内置的图片对比与 Hex 对比插件同样可卸载</strong>，卸载后可从插件仓下载对应单插件包重装。若文件被占用，会在下次启动 ForkPlus 时自动完成删除。</li>
     <li><strong>打开插件目录</strong>：点击「打开插件目录」直接定位到 <code>plugins/</code>，方便投放或替换插件 DLL。</li>
     <li><strong>下载最新插件（v5.0.2）</strong>：点击页内的<strong>「下载最新插件」超链接</strong>，直达 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins 的 Releases 页面</a>，一键获取最新插件。</li>
   </ul>
-  <div class="note"><strong>说明：</strong>插件的名称、版本号与描述由插件自身通过 <code>IPluginMetadata</code> 契约提供；未实现该接口的插件会回退显示为「显示名 + 程序集版本 + 空描述」，不会因此无法加载。</div>
+  <div class="note"><strong>说明：</strong>插件的名称、版本号与描述由插件自身通过 <code>IPluginMetadata</code> 契约提供；未实现该接口的插件会回退显示为「显示名 + 程序集版本 + 空描述」，不会因此无法加载。而插件<strong>版本</strong>与<strong>最低支持主软件版本</strong>两列取自目录内的 <code>plugin.json</code> 清单（见上文），与代码里的 <code>IPluginMetadata</code> 相互独立。</div>
 
   <h2>安装第三方插件</h2>
   <ol>
     <li>到 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins 的 Releases 页面</a>下载最新插件（偏好设置 → 插件页的「下载最新插件」超链接可直达）。</li>
-    <li>推荐直接用偏好设置 → 插件页的<strong>「安装插件...」</strong>选择下载好的插件 zip，ForkPlus 会自动解压安装并重新加载（v5.0.3）；也可手工把插件 <strong>DLL 放入程序的 <code>plugins/</code> 目录</strong>（一个 DLL 对应一个插件；可在偏好设置 → 插件页点「打开插件目录」定位）。</li>
-    <li>安装后即已加载；若为手工投放，在「偏好设置 → 插件」页点击<strong>「重新加载插件」</strong>即可立即生效，<strong>无需重启 ForkPlus</strong>（<code>DiffViewPluginLoader</code> 会重扫描该目录）。</li>
+    <li>推荐直接用偏好设置 → 插件页的<strong>「安装插件...」</strong>选择下载好的插件 zip，ForkPlus 会自动识别包内插件目录、校验兼容性后安装到 <code>plugins/&lt;程序集名&gt;/</code> 并重新加载；也可手工把<strong>整个插件目录</strong>（含 <code>plugin.json</code> 与 DLL）放进程序的 <code>plugins/</code> 目录下（可在偏好设置 → 插件页点「打开插件目录」定位）。</li>
+    <li>安装后即已加载；若为手工投放，在「偏好设置 → 插件」页点击<strong>「重新加载插件」</strong>即可立即生效，<strong>无需重启 ForkPlus</strong>（<code>DiffViewPluginLoader</code> 会重扫描各插件子目录）。</li>
     <li>如插件声明的扩展名与内置插件冲突，可让插件声明<strong>更高优先级</strong>，或把扩展名<strong>绑定</strong>到该插件来指定使用。</li>
-    <li>不再需要某个第三方插件时，在「偏好设置 → 插件」页勾选它并点击<strong>「卸载选中」</strong>删除（内置插件不可卸载）。</li>
+    <li>不再需要某个插件时，在「偏好设置 → 插件」页勾选它并点击<strong>「卸载选中」</strong>删除（自 v5.1.0 起内置插件同样可卸载）。</li>
   </ol>
-  <div class="tip"><strong>小贴士：</strong>开发插件时以 <code>ForkPlus.Plugins.Abstractions</code> 为唯一依赖，不要直接引用主工程——所有需要的能力都从 <code>IDiffViewHost</code> 获取，这样插件才能独立分发、独立升级。</div>
+  <div class="tip"><strong>小贴士：</strong>开发插件时以 <code>ForkPlus.Plugins.Abstractions</code> 为唯一依赖，不要直接引用主工程——所有需要的能力都从 <code>IDiffViewHost</code> 获取，这样插件才能独立分发、独立升级。发布时请附带 <code>plugin.json</code> 并把 <code>minHostVersion</code> 设为插件实际要求的最低主程序版本（本仓 1.2.0 的插件统一为 <code>5.1.0</code>）。</div>
+
+  <h2>从旧版本升级（v5.1.0 兼容性）</h2>
+  <p>v5.1.0 把插件布局从「DLL 平铺在 <code>plugins/</code> 根目录」改为「每个插件独占子目录 + <code>plugin.json</code> 清单」。因此升级后<strong>旧版（≤ 5.0.7）插件不再兼容</strong>：</p>
+  <ul>
+    <li>首次启动检测到 <code>plugins/</code> 根目录存在旧版平铺的 <code>*.dll</code> 时，ForkPlus 会<strong>清空该目录</strong>并<strong>弹窗告知</strong>需要重新安装插件。</li>
+    <li>请前往 <a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins Releases</a> 下载 <strong>1.2.0</strong> 的插件包——<strong>合集包</strong>（<code>ForkPlus-Plugins-1.2.0-&lt;平台&gt;.zip</code>，含全部插件）或<strong>单插件包</strong>（<code>ForkPlus-Plugins-&lt;名称&gt;-1.0.0-&lt;平台&gt;.zip</code>），在偏好设置 → 插件页用<strong>「安装插件...」</strong>安装。</li>
+    <li>旧版残留的「待删 DLL」记录会在下次启动时按新逻辑清理；<code>plugins/</code> 下不再有平铺 DLL 后，本检测天然幂等、不会再次触发。</li>
+  </ul>
+  <div class="warn"><strong>注意：</strong>若主程序版本<strong>低于</strong>插件清单声明的 <code>minHostVersion</code>，插件仍会被跳过（不加载），并在偏好设置页标注为不兼容——升级插件前请先确认主程序版本。</div>
 
   <h2>与旧版行为的一致性</h2>
   <p>插件化属于内部架构重构，<strong>默认对比行为与 v4.3.2 完全一致</strong>：</p>
   <ul>
     <li>图片文件 → 图片对比插件（四模式、动图播放、缩放平移、LFS smudge）；</li>
     <li>其余二进制 → Hex 对比插件（文件卡片，预载字节时可切 Hex 对比）；</li>
-    <li>不加载 Hex 插件 DLL 时，同样显示文件卡片视图作为回退。</li>
+    <li>未安装 Hex 插件时，同样显示文件卡片视图作为回退。</li>
   </ul>
   <p>关于各模式的详细操作，请参见 <a href="ch-07-binary-diff.html">第 7 章 · 二进制与图片 Diff</a>。</p>
 </main>
