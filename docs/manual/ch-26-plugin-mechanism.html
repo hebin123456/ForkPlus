@@ -131,7 +131,7 @@
     <li><strong>保存对话框</strong>：导出视图内容；</li>
     <li><strong>文件图标</strong>：按扩展名取图标。</li>
   </ul>
-  <p>内置的图片插件与 Hex 插件共用一层<strong>共享组件</strong>（<code>ForkPlus.Plugins.Ui</code>）：文件卡片面板（<code>BinaryContentPanel</code>）、回退面板（<code>DiffFallbackPanel</code>）、Hex 编辑内核（<code>HexDiffUserControl</code> / <code>HexEditor</code>）、动图播放组件等不再复制两份代码，而是由两个插件共同引用。</p>
+  <p>内置的图片插件与 Hex 插件共用一层<strong>共享组件</strong>（<code>ForkPlus.Plugins.Ui</code>）：文件卡片面板（<code>BinaryContentPanel</code>）、回退面板（<code>DiffFallbackPanel</code>）、Hex 编辑内核（<code>HexDiffUserControl</code> / <code>HexEditor</code>）、动图播放组件等不再复制两份代码，而是由两个插件共同引用。自 <strong>v5.1.1</strong> 起，该共享组件还向插件提供<strong>并排双 WebView 预览控件</strong>（<code>SideBySideHtmlPreview</code>）与 HTML 资源内联工具（<code>HtmlResourceInliner</code>）——需要渲染 HTML 页面的插件（如 CHM / EPUB 的「预览」模式）可直接复用，无需各自实现。</p>
 
   <h2>插件管理器（偏好设置 → 插件）</h2>
   <p>从 <strong>v5.0.1</strong> 起，可在「偏好设置 → 插件」页集中管理对比视图插件，无需手工改文件、也无需重启：</p>

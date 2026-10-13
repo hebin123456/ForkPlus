@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.1.0</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.1.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,12 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.1.1 更新</h2>
+  <ul>
+    <li><strong>对比视图插件新增 HTML 预览能力</strong>：共享视图组件（<code>ForkPlus.Plugins.Ui</code>）内置<strong>并排双 WebView 预览控件</strong>，走官方 <code>Avalonia.Controls.WebView</code>（Windows=WebView2 / macOS=WKWebView / Linux=WPE WebKit 或 WebKitGTK）。借此能力，<a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins</a> 的 <strong>CHM / EPUB 对比视图插件新增「预览」模式</strong>：左右并排渲染容器内的 HTML 页面，页面引用的图片等资源<strong>内联为 data URI</strong> 使文档自包含；WebView 不可用时只显示提示文案。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
+    <li><strong>兼容性</strong>：使用「预览」模式的插件（ForkPlus-Plugins 的 CHM / EPUB <strong>1.0.1</strong>）其 <code>plugin.json</code> 已声明 <code>minHostVersion: 5.1.1</code>，要求宿主 ≥ <strong>5.1.1</strong>。应用版本号升至 5.1.1。</li>
+  </ul>
 
   <h2>v5.1.0 更新</h2>
   <ul>
