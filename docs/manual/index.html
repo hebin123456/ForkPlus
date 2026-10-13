@@ -18,6 +18,12 @@
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
 
+  <h2>v5.1.2 更新</h2>
+  <ul>
+    <li><strong>对比视图内容去重</strong>：窗口失去焦点再切回来时，此前对比视图会被<strong>无条件刷新</strong>（重拉变更列表 → 重新选中当前文件 → 重新下发内容），Hex / 图片 / 视频等重内容视图被<strong>全量重建</strong>——重新解码、丢「加载更多」进度、视图模式被重置回并排，既耗性能又打断操作手感。本版做<strong>两层去重</strong>：宿主侧按内容指纹比对、插件侧新增幂等守卫，<strong>只有能证明两份内容对视图渲染等价时才跳过</strong>，任何一项不同都照常重下发，避免漏刷新。详见<a href="ch-07-binary-diff.html">第 7 章 · 二进制对比</a>。</li>
+    <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.1.2。</li>
+  </ul>
+
   <h2>v5.1.1 更新</h2>
   <ul>
     <li><strong>对比视图插件新增 HTML 预览能力</strong>：共享视图组件（<code>ForkPlus.Plugins.Ui</code>）内置<strong>并排双 WebView 预览控件</strong>，走官方 <code>Avalonia.Controls.WebView</code>（Windows=WebView2 / macOS=WKWebView / Linux=WPE WebKit 或 WebKitGTK）。借此能力，<a href="https://github.com/hebin123456/ForkPlus-Plugins/releases">ForkPlus-Plugins</a> 的 <strong>CHM / EPUB 对比视图插件新增「预览」模式</strong>：左右并排渲染容器内的 HTML 页面，页面引用的图片等资源<strong>内联为 data URI</strong> 使文档自包含；WebView 不可用时只显示提示文案。详见<a href="ch-26-plugin-mechanism.html">第 26 章 · 对比视图插件机制</a>。</li>
