@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.3
+
+> 修复 **提交信息 emoji（gitmoji）自动补全的两处小问题**：① 标题框输入 `:` 弹出的 emoji 选择器**鼠标点击无效**（只有键盘 ↑↓ + 回车/Tab 能选中）；② **描述框输入 `:` 不会弹出** emoji 选择器。应用版本号升至 5.1.3。
+
+### 修复
+
+- **emoji 浮层鼠标点选无效**（[AutoCompleteTextBox.cs](src/ForkPlus/UI/Controls/AutoCompleteTextBox.cs)）：真实点击序里，按下鼠标会让键盘焦点离开文本框，`OnIsKeyboardFocusWithinChanged` 立即触发 `ClosePopup()`，在 `PointerReleased` 到达之前就把浮层拆掉（列表置空、`Popup.Child` 摘除），释放事件再也回不到列表，点击落空。现改在 **`PointerPressed` 阶段**命中即应用建议（并置 `Handled`），同时修 `FocusChanged`——焦点落到浮层列表上时不再误关浮层，只有真正离开浮层才关闭。
+- **描述框 `:` 不触发 emoji 选择器**（[CommitUserControl.axaml.cs](src/ForkPlus/UI/UserControls/CommitUserControl.axaml.cs)）：描述框此前只注册了 `Co-authored-by` 补全。现 [AutoCompleteTextBox](src/ForkPlus/UI/Controls/AutoCompleteTextBox.cs) 支持**多个补全提供器**（按注册顺序求值，取第一个非空结果），描述框在 `Co-authored-by` 之后**追加注册 gitmoji 提供器**——输入 `:` 同样弹出 emoji 选择器，二者互不干扰（同一段文本都命中时仍是 `Co-authored-by` 优先）。
+
+### 构建
+
+- 新增回归测试（[E2e05ChangesAndCommitTests.cs](src/ForkPlus.Tests/E2e05ChangesAndCommitTests.cs)）：`CommitView_GitmojiAutocomplete_MouseClickAppliesSuggestion`（模拟真实左键按下，断言文本被替换为 emoji + 空格、浮层关闭）与 `CommitView_GitmojiAutocomplete_TriggersInDescription`（描述框输入 `:zap` 验证浮层弹出并选中生效）。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.1.3-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.1.3-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.1.3-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.1.3-macos-arm64.zip` |
+
 ## v5.1.2
 
 > 修复 **对比视图在窗口重新获得焦点时被无条件刷新、重内容文件反复重新渲染**：切到别的窗口再切回来，对比视图会重新走一遍刷新（重拉变更列表 → 重新选中当前文件 → 重新下发内容），此前插件视图的 `SetContent` 无条件执行，于是 Hex / 图片 / 视频等视图被**全量重建**——重新解码、丢失「加载更多」进度、视图模式被重置回并排，既耗性能又打断操作手感。本版做**两层内容去重**（保守策略：只有当能证明两份内容对视图渲染等价时才跳过，任何一项不同都照常重新下发，避免漏刷新）。应用版本号升至 5.1.2。

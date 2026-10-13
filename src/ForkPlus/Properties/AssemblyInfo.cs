@@ -15,6 +15,15 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-13，v5.1.3）：修复提交信息 emoji（gitmoji）自动补全的两处小问题：
+//   A) 鼠标点击浮层里的 emoji 建议项无反应（只有键盘 ↑↓ + 回车/Tab 生效）——真实点击序中
+//      按下会让键盘焦点离开文本框，触发 ClosePopup() 在释放事件到达之前拆掉浮层，点击落空；
+//      现改在 PointerPressed 阶段命中即应用（并修 FocusChanged 不再因焦点落到浮层而误关）；
+//   B) 提交描述框输入 ":" 不弹 emoji 选择器——现描述框在 Co-authored-by 补全之后追加注册
+//      gitmoji 提供器，输入 ":" 同样触发。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.3"；
+//   程序集标识与文件版本同为 5.1.3（.0）。
 // 版本号说明（2026-10-13，v5.1.2）：对比视图去重——窗口重新获得焦点会触发
 //   RepositoryUserControl 刷新（重拉变更列表后重新选中同一文件），此前无条件重发
 //   内容给插件视图，导致 Hex/图片/视频等重内容视图被全量重建（重新解码、丢"加载更多"
@@ -75,8 +84,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.2")]
-[assembly: AssemblyInformationalVersion("5.1.2")]
+[assembly: AssemblyFileVersion("5.1.3")]
+[assembly: AssemblyInformationalVersion("5.1.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.2.0")]
+[assembly: AssemblyVersion("5.1.3.0")]

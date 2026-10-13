@@ -577,5 +577,142 @@ namespace ForkPlus.Tests
 				TestRepoFactory.Cleanup(repo);
 			}
 		}
+
+		// v5.1.3 修复回归：emoji（gitmoji）建议浮层鼠标点选无效。
+		// 修复前真实点击序：按下 → 键盘焦点离开文本框 → OnIsKeyboardFocusWithinChanged →
+		// ClosePopup() 在 PointerReleased 之前拆掉浮层，释放事件回不到列表，点击落空
+		//（只有键盘 ↑↓ + 回车/Tab 有效）。现改为 PointerPressed 隧道路由阶段命中即应用。
+		[Fact]
+		public void CommitView_GitmojiAutocomplete_MouseClickAppliesSuggestion()
+		{
+			string repo = TestRepoFactory.CreateWorkingDir();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+						repoControl.ActivateCommitView();
+						Dispatcher.UIThread.RunJobs();
+						CommitUserControl commit = repoControl.Content.CommitUserControl;
+						WaitForWorkingDirStatus(commit);
+
+						// ===== 1) subject 输入 ":bug" → gitmoji 浮层弹出 =====
+						AutoCompleteTextBox subject = commit.CommitSubjectTextBox;
+						subject.Text = ":bug";
+						subject.CaretIndex = subject.Text.Length;
+
+						bool popupOpened = UiClick.WaitFor(delegate
+						{
+							Popup popup = UiClick.TryFind<Popup>(subject, "Popup");
+							return popup != null && popup.IsOpen == true;
+						});
+						Assert.True(popupOpened, "输入 :bug 后 emoji 浮层未弹出");
+						Popup suggestionPopup = UiClick.TryFind<Popup>(subject, "Popup");
+						ListBox suggestionList = suggestionPopup.Child as ListBox;
+						Assert.NotNull(suggestionList);
+
+						// 定位 ":bug:" 建议（前缀 "bug" 必然命中）
+						int bugIndex = -1;
+						for (int i = 0; i < suggestionList.Items.Count; i++)
+						{
+							if (suggestionList.Items[i] is GitmojiAutoCompleteSuggestion candidate
+								&& candidate.Entry.ShortName == ":bug:")
+							{
+								bugIndex = i;
+								break;
+							}
+						}
+						Assert.True(bugIndex >= 0, "建议列表应包含 :bug:");
+						var bugSuggestion = (GitmojiAutoCompleteSuggestion)suggestionList.Items[bugIndex];
+						ScreenshotHelper.Snap(window, "12-gitmoji-popup-mouse-click", "05-changescommit");
+
+						// ===== 2) 实化该行 ListBoxItem，模拟真实鼠标左键按下 =====
+						ListBoxItem container = null;
+						UiClick.WaitFor(delegate
+						{
+							container = suggestionList.ContainerFromIndex(bugIndex) as ListBoxItem;
+							return container != null;
+						});
+						Assert.NotNull(container);
+						UiClick.Press(container, window, new global::Avalonia.Point(5.0, 5.0));
+
+						// ===== 3) ":bug" 应被替换为 emoji + 空格，caret 移到末尾，浮层关闭 =====
+						Assert.Equal(bugSuggestion.Entry.Emoji + " ", subject.Text);
+						Assert.Equal(subject.Text.Length, subject.CaretIndex);
+						Assert.True(suggestionPopup.IsOpen != true, "点击选中建议后浮层应关闭");
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
+
+		// v5.1.3：描述框此前只挂了 Co-authored-by 补全，输入 ":" 不弹 emoji 浮层；
+		// 现描述框追加注册 gitmoji 提供器（Co-authored-by 优先），输入 ":" 同样触发。
+		[Fact]
+		public void CommitView_GitmojiAutocomplete_TriggersInDescription()
+		{
+			string repo = TestRepoFactory.CreateWorkingDir();
+			try
+			{
+				HeadlessAppBootstrap.Run(delegate
+				{
+					RepositoryUserControl repoControl = E2eMainWindowHarness.OpenRepository(repo, out var window);
+					try
+					{
+						repoControl.ActivateCommitView();
+						Dispatcher.UIThread.RunJobs();
+						CommitUserControl commit = repoControl.Content.CommitUserControl;
+						WaitForWorkingDirStatus(commit);
+
+						commit.FullCommitMessage = "write something\n";
+						AutoCompleteTextBox desc = commit.CommitDescriptionTextBox;
+						Dispatcher.UIThread.RunJobs();
+						desc.Text = ":zap";
+						desc.CaretIndex = desc.Text.Length;
+
+						bool popupOpened = UiClick.WaitFor(delegate
+						{
+							Popup popup = UiClick.TryFind<Popup>(desc, "Popup");
+							return popup != null && popup.IsOpen == true;
+						});
+						Assert.True(popupOpened, "描述框输入 :zap 后 emoji 浮层未弹出");
+						Popup suggestionPopup = UiClick.TryFind<Popup>(desc, "Popup");
+						ListBox suggestionList = suggestionPopup.Child as ListBox;
+						Assert.NotNull(suggestionList);
+						var zapSuggestion = suggestionList.Items[0] as GitmojiAutoCompleteSuggestion;
+						Assert.NotNull(zapSuggestion);
+						Assert.Equal(":zap:", zapSuggestion.Entry.ShortName);
+						ScreenshotHelper.Snap(window, "13-gitmoji-popup-in-description", "05-changescommit");
+
+						// 键盘 Tab 选中首条（fallbackToFirst）→ ":zap" 替换为 emoji + 空格
+						desc.RaiseEvent(new KeyEventArgs
+						{
+							RoutedEvent = InputElement.KeyDownEvent,
+							Key = Key.Tab
+						});
+						Dispatcher.UIThread.RunJobs();
+						Assert.Equal(zapSuggestion.Entry.Emoji + " ", desc.Text);
+						Assert.True(suggestionPopup.IsOpen != true, "选中建议后浮层应关闭");
+					}
+					finally
+					{
+						E2eMainWindowHarness.CloseRepositoryTab(window, repo);
+					}
+				});
+			}
+			finally
+			{
+				TestRepoFactory.Cleanup(repo);
+			}
+		}
 	}
 }

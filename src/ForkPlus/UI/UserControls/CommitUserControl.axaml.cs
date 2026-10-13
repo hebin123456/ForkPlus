@@ -255,6 +255,9 @@ namespace ForkPlus.UI.UserControls
 			InitializeComponent();
 			PreferencesLocalization.ApplyCurrent(this);
 			CommitDescriptionTextBox.SetAutocompleteProvider(_commitMessageAutocompleteProvider);
+			// v5.1.3：描述框也可输入 ":" 触发 emoji 选择器（注册在 Co-authored-by 补全之后，
+			// 同一段文本两者都命中时仍是 Co-authored-by 优先，互不干扰）。
+			CommitDescriptionTextBox.AddAutocompleteProvider(_gitmojiAutocompleteProvider);
 			// 为 commit subject 输入框注册 Gitmoji 自动补全（输入 ":" 触发 emoji 选择器）
 			CommitSubjectTextBox.SetAutocompleteProvider(_gitmojiAutocompleteProvider);
 			RefreshSubjectLengthLimitToolTip();
