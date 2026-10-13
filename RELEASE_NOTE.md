@@ -2,6 +2,30 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.2
+
+> 修复 **对比视图在窗口重新获得焦点时被无条件刷新、重内容文件反复重新渲染**：切到别的窗口再切回来，对比视图会重新走一遍刷新（重拉变更列表 → 重新选中当前文件 → 重新下发内容），此前插件视图的 `SetContent` 无条件执行，于是 Hex / 图片 / 视频等视图被**全量重建**——重新解码、丢失「加载更多」进度、视图模式被重置回并排，既耗性能又打断操作手感。本版做**两层内容去重**（保守策略：只有当能证明两份内容对视图渲染等价时才跳过，任何一项不同都照常重新下发，避免漏刷新）。应用版本号升至 5.1.2。
+
+### 修复
+
+- **宿主侧内容指纹去重（方案 A）**：新增 [DiffViewContentFingerprint.cs](src/ForkPlus/UI/Plugins/DiffViewContentFingerprint.cs)，把一次对比可被视图观察到的全部输入折成指纹——插件 Id、文件路径、是否显示标题、两侧角色、标题画刷颜色、两侧声明大小 / 跟踪态 / LFS 指针，以及字节内容（SHA-256 内容哈希，同流按引用去重避免重复哈希）。[PluginDiffViewControl.cs](src/ForkPlus/UI/UserControls/BinaryDiff/PluginDiffViewControl.cs) 的 `UpdateDiff` 在下发前先算指纹，与上一次相同即直接返回，不再调用 `SetContent`。标题画刷按**颜色值**而非实例比较，避免主题重建产生的等价画刷被误判为变更；不可回退（`CanSeek == false`）的流用唯一值代表「无法证明相等」，绝不误判为相同。
+- **插件侧幂等守卫（方案 B）**：内置的 **Hex 对比**（[HexDiffView.axaml.cs](src/ForkPlus.Plugins.Hex/BuiltIn/HexDiff/HexDiffView.axaml.cs)）与 **图片对比**（[BinaryDiffView.axaml.cs](src/ForkPlus.Plugins.Image/BuiltIn/ImageDiff/BinaryDiffView.axaml.cs)）视图，其 `SetContent` 开头先按同一口径计算内容签名，与上次相同即早退——不再重置 `_hexContentLoaded` 标记、不再重新装配内容。视图卸载（`ControlWillBeRemoved`）时同步清空签名，避免实例复用时误跳过。签名算法与宿主侧指纹保持一致（路径 / 角色 / 声明大小 / LFS 指针 / 标题画色 / 字节 SHA-256）。
+- **视频对比插件同款守卫**：视频对比视图在独立仓 [ForkPlus-Plugins](https://github.com/hebin123456/ForkPlus-Plugins)，本版一并加入幂等守卫，随 **1.2.4** 发布（见其 Release Notes）。
+
+### 构建
+
+- 新增的生产源文件 [DiffViewContentFingerprint.cs](src/ForkPlus/UI/Plugins/DiffViewContentFingerprint.cs) 已登记进覆盖率清单 [SourceFileCoverageManifest.cs](src/ForkPlus.Tests/SourceFileCoverageManifest.cs)（仓库的覆盖率清单守卫要求每个生产源文件都有登记项，漏登记会在 CI 直接红灯）。
+- 新增回归测试 [DiffViewContentDedupTests.cs](src/ForkPlus.Tests/DiffViewContentDedupTests.cs)：既覆盖指纹等价性语义（等价内容判相等、字节 / 路径 / 插件 Id / 画刷颜色 / Hex 字节任一不同判不等），也走生产路径 `PluginDiffViewControl.UpdateDiff` 验证「同内容重复下发复用视图且保留 Hex 模式」与「内容变化时照常重建（不误跳过）」。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.1.2-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.1.2-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.1.2-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.1.2-macos-arm64.zip` |
+
 ## v5.1.1
 
 > 对比视图插件新增 **HTML 预览**能力：共享视图组件（`ForkPlus.Plugins.Ui`）内置**并排双 WebView 预览控件**，走官方 `Avalonia.Controls.WebView`（NativeWebView，Windows=WebView2 / macOS=WKWebView / Linux=WPE WebKit 或 WebKitGTK）。CHM 与 EPUB 对比视图插件借此新增**「预览」模式**，**左右并排渲染容器内的 HTML 页面**（页面引用的图片等资源内联为 data URI）；WebView 不可用时只显示提示文案。应用版本号升至 5.1.1。

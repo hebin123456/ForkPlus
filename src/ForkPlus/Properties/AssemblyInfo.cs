@@ -15,6 +15,19 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-13，v5.1.2）：对比视图去重——窗口重新获得焦点会触发
+//   RepositoryUserControl 刷新（重拉变更列表后重新选中同一文件），此前无条件重发
+//   内容给插件视图，导致 Hex/图片/视频等重内容视图被全量重建（重新解码、丢"加载更多"
+//   进度、视图模式被重置为并排），既耗性能又影响体验。本版做两层去重（保守：能证明
+//   两份内容对视图渲染等价才跳过，否则照常重发，避免漏刷新）：
+//   A) 宿主侧内容指纹：PluginDiffViewControl.UpdateDiff 在 SetContent 前按
+//      DiffViewContentFingerprint（路径/角色/声明大小/LFS 指针/标题画色/字节 SHA-256）
+//      比对，与上次相同即早退；
+//   B) 插件侧幂等守卫：Hex/图片/视频视图 SetContent 开头算同一口径的内容签名，相同即早退。
+//   提示：视频对比插件在独立仓 ForkPlus-Plugins，随本版发布 1.2.4。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.2"；
+//   程序集标识与文件版本同为 5.1.2（.0）。
 // 版本号说明（2026-10-13，v5.1.1）：对比视图插件新增 HTML 预览能力——共享视图组件
 //   （ForkPlus.Plugins.Ui）内新增 HtmlPreview：并排双 WebView 预览控件
 //   （SideBySideHtmlPreview）+ 原生 WebView 可用性探测（HtmlWebViewSupport）+
@@ -62,8 +75,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.1")]
-[assembly: AssemblyInformationalVersion("5.1.1")]
+[assembly: AssemblyFileVersion("5.1.2")]
+[assembly: AssemblyInformationalVersion("5.1.2")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.1.0")]
+[assembly: AssemblyVersion("5.1.2.0")]

@@ -29,7 +29,7 @@ namespace ForkPlus.UI.Plugins
 		public const string FileName = "plugin.json";
 
 		/// <summary>当前宿主声明的宿主版本（与 AssemblyInfo 的 AssemblyVersion 对齐）。</summary>
-		public const string HostVersion = "5.1.1";
+		public const string HostVersion = "5.1.2";
 
 		public int SchemaVersion { get; set; }
 

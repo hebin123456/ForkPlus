@@ -1214,6 +1214,7 @@ namespace ForkPlus.Tests
 				"src/ForkPlus/UI/OpenDialog.cs",
 				"src/ForkPlus/UI/PopupItemsPresenterRelease.cs",
 				"src/ForkPlus/UI/Plugins/BiturboImageDecoder.cs",
+				"src/ForkPlus/UI/Plugins/DiffViewContentFingerprint.cs",
 				"src/ForkPlus/UI/Plugins/DiffViewHostAdapter.cs",
 				"src/ForkPlus/UI/Plugins/DiffViewPluginInfo.cs",
 				"src/ForkPlus/UI/Plugins/DiffViewPluginLoader.cs",

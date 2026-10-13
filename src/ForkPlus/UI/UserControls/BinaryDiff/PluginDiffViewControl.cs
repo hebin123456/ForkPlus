@@ -31,6 +31,11 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 		[Null]
 		private string _currentPluginId;
 
+		/// <summary>v5.1.2：当前已下发内容的指纹——用于跳过「同插件 + 同内容」的重复下发
+		///（窗口重新激活等刷新路径），避免 Hex/图片/视频视图被全量重建。</summary>
+		[Null]
+		private DiffViewContentFingerprint _lastFingerprint;
+
 		/// <summary>「高亮差异像素」可用性变化（原 DiffImageSourceChanged；FileControlHeader 联动开关）。</summary>
 		public event EventHandler<bool> DiffImageSourceChanged;
 
@@ -71,6 +76,14 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				// 同一插件实例被复用（侧栏切换文件）：刷新宿主桥的仓库上下文。
 				_host.UpdateRepository(repositoryUserControl);
 			}
+			// v5.1.2：同插件 + 同内容（典型：窗口重新激活触发的刷新）直接跳过，避免重内容视图
+			// （Hex/图片/视频）被全量重建；指纹能证明等价才跳过，否则照常重新下发。
+			DiffViewContentFingerprint fingerprint = DiffViewContentFingerprint.Create(plugin.Id, context);
+			if (fingerprint.Equals(_lastFingerprint))
+			{
+				return;
+			}
+			_lastFingerprint = fingerprint;
 			_view.SetContent(context, _host);
 		}
 
@@ -196,6 +209,7 @@ namespace ForkPlus.UI.UserControls.BinaryDiff
 				_view = null;
 			}
 			_currentPluginId = null;
+			_lastFingerprint = null;
 			_host?.Dispose();
 			_host = null;
 			base.Children.Clear();

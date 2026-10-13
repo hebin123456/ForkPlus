@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using ForkPlus.Plugins.Abstractions;
 using ForkPlus.Plugins.BuiltIn.ImageDiff;
 
@@ -46,6 +49,10 @@ namespace ForkPlus.Plugins.BuiltIn.HexDiff
 
 		// 当前字节是否已 SetContent 到 _hexDiffView（避免侧栏来回切换重复全量重载）
 		private bool _hexContentLoaded;
+
+		// v5.1.2：上一次下发内容的签名——同内容重复下发（窗口重新激活刷新）时跳过全量重建
+		[Null]
+		private string _contentSignature;
 
 		/// <summary>视图根控件（宿主直接挂载）。</summary>
 		global::Avalonia.Controls.Control IDiffView.View => this;
@@ -133,8 +140,16 @@ namespace ForkPlus.Plugins.BuiltIn.HexDiff
 		/// <summary>下发内容：两侧 DiffSideContent + 宿主能力桥（换文件重置 Hex 视图状态）。</summary>
 		public void SetContent(DiffViewContext context, IDiffViewHost host)
 		{
-			_context = context;
 			_host = host;
+			// v5.1.2：同内容重复下发（典型：窗口重新激活触发的刷新）直接跳过，避免 Hex 视图被
+			// 全量重建（重新解析 / 丢"加载更多"进度）。能证明内容等价才跳过，否则照常重新装配。
+			string signature = ComputeContentSignature(context);
+			if (signature != null && string.Equals(signature, _contentSignature, StringComparison.Ordinal))
+			{
+				return;
+			}
+			_contentSignature = signature;
+			_context = context;
 			_showTitle = context.ShowTitle;
 			// 换文件重置 Hex 视图（取消旧后台加载并释放上一份内容）
 			if (_hexDiffView != null)
@@ -204,12 +219,101 @@ namespace ForkPlus.Plugins.BuiltIn.HexDiff
 			_hexContentLoaded = false;
 			_hexSrcData = null;
 			_hexDstData = null;
+			_contentSignature = null;
 			_activeSrcSmudge?.Dispose();
 			_activeSrcSmudge = null;
 			_activeDstSmudge?.Dispose();
 			_activeDstSmudge = null;
 			SrcFileContentUserControl.ReleaseContent();
 			DstFileContentUserControl.ReleaseContent();
+		}
+
+		// ---- 内容签名（v5.1.2：同内容重复下发去重） ----
+
+		/// <summary>把视图可观察到的全部输入折成一个签名：路径 / 角色 / 声明大小 / LFS 指针 /
+		/// 标题画刷颜色 / 字节内容（SHA-256）。任何一项不同都得到不同签名，照常重新装配；
+		/// 不可回退的流用唯一值代表「无法证明相等」，同样不会误判为相同。</summary>
+		[Null]
+		private static string ComputeContentSignature([Null] DiffViewContext context)
+		{
+			if (context == null)
+			{
+				return null;
+			}
+			StringBuilder builder = new StringBuilder();
+			builder.Append(context.FilePath).Append('\u0001')
+				.Append(context.ShowTitle ? '1' : '0').Append('\u0001')
+				.Append((int)context.SrcRole).Append('\u0001')
+				.Append((int)context.DstRole).Append('\u0001')
+				.Append(BrushKey(context.SrcTitleBrush)).Append('\u0001')
+				.Append(BrushKey(context.DstTitleBrush)).Append('\u0001');
+			AppendSideSignature(builder, context.Src);
+			AppendSideSignature(builder, context.Dst);
+			AppendStreamHash(builder, context.HexSrc);
+			AppendStreamHash(builder, context.HexDst);
+			return builder.ToString();
+		}
+
+		private static void AppendSideSignature(StringBuilder builder, [Null] DiffSideContent side)
+		{
+			if (side == null)
+			{
+				builder.Append("<none>").Append('\u0001');
+				return;
+			}
+			builder.Append(side.Path).Append('\u0002')
+				.Append(side.IsTracked ? '1' : '0').Append('\u0002')
+				.Append(side.Size ?? -1L).Append('\u0002')
+				.Append(side.Lfs?.Sha256).Append('\u0002')
+				.Append(side.Lfs?.Size ?? -1L).Append('\u0002')
+				.Append(side.IsLfsImage ? '1' : '0').Append('\u0002');
+			AppendStreamHash(builder, side.Data);
+			builder.Append('\u0001');
+		}
+
+		private static void AppendStreamHash(StringBuilder builder, [Null] Stream stream)
+		{
+			builder.Append(HashStream(stream)).Append('\u0002');
+		}
+
+		/// <summary>流内容哈希：可回退流按 SHA-256（取哈希后复位位置，不影响后续读取）；
+		/// 不可回退 / 读取失败用唯一值，保证不会被误判为「与上次相同」。</summary>
+		[Null]
+		private static string HashStream([Null] Stream stream)
+		{
+			if (stream == null)
+			{
+				return null;
+			}
+			if (!stream.CanSeek)
+			{
+				return Guid.NewGuid().ToString("N");
+			}
+			long position = stream.Position;
+			try
+			{
+				stream.Position = 0L;
+				return Convert.ToHexString(SHA256.HashData(stream));
+			}
+			catch (Exception)
+			{
+				return Guid.NewGuid().ToString("N");
+			}
+			finally
+			{
+				stream.Position = position;
+			}
+		}
+
+		/// <summary>标题画刷标识：取颜色值（同色视为同渲染，不受画刷实例更换影响），无法取值时退回 ToString。</summary>
+		[Null]
+		private static string BrushKey([Null] IBrush brush)
+		{
+			if (brush == null)
+			{
+				return null;
+			}
+			return brush is ISolidColorBrush solid ? solid.Color.ToString() : brush.ToString();
 		}
 
 		// ---- 内容装配 ----
