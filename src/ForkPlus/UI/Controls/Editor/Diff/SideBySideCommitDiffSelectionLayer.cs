@@ -139,9 +139,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		protected override void InvalidateAdornerVisibility()
 		{
-			if ((_activeChunk != null && _textEditor.DiffViewMode == DiffViewMode.SideBySideNew) || _textEditor.TextArea.Selection.Length > 0)
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·闪顶"）：与基类一致——保留分支不再
+			// 调 ShowChunkAdorner(0.0) 写伪造位置，位置由 Render 阶段给出；追加
+			// _isPointerOverAdorner，指针在浮窗上时浮窗保留不被误删。
+			if ((_activeChunk != null && _textEditor.DiffViewMode == DiffViewMode.SideBySideNew) || _textEditor.TextArea.Selection.Length > 0 || _isPointerOverAdorner)
 			{
-				ShowChunkAdorner(0.0);
+				InvalidateVisual();
 			}
 			else
 			{
@@ -155,7 +158,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			{
 				ActiveChunk = null;
 			}
-			else
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·remove/recreate 循环"）：指针在浮窗上
+			// （滚轮经浮窗转发滚动）时保持锚定块不变，避免浮窗被删后立刻重建。
+			else if (!_isPointerOverAdorner)
 			{
 				ActiveChunk = GetChunkUnderMousePointer();
 			}

@@ -117,7 +117,9 @@ namespace ForkPlus.UI.Controls.Editor
 
 		// 修复（2026-09-05，"浮窗抖动 / 反复显示消失"）：
 		// 跟踪鼠标是否在浮窗上，避免编辑器 MouseLeave 时误删浮窗。
-		private bool _isPointerOverAdorner;
+		// 修复（2026-10-18，"暂存浮窗飘来飘去"）：改为 protected——子类 RefreshActiveChunk
+		// 需要在指针位于浮窗上时保持锚定块不变（滚轮经浮窗转发滚动场景）。
+		protected bool _isPointerOverAdorner;
 
 		// 延迟隐藏的取消令牌：鼠标离开编辑器后延迟隐藏，
 		// 若期间鼠标进入浮窗则取消隐藏，消除抖动。
@@ -245,9 +247,15 @@ namespace ForkPlus.UI.Controls.Editor
 			// 原版 WPF 条件是 `_activeChunk != null || Selection.Length > 0`，迁移时把
 			// 选区分支丢了——鼠标不在 hunk 上（键盘 Shift 选行 / 选完手移开）时选区
 			// 存在也只走 RemoveChunkAdorner，悬浮 Stage/Discard 永远不出现。
-			if (_activeChunk != null || _textEditor.TextArea.Selection.Length > 0)
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·闪顶"）：保留分支原调用
+			// ShowChunkAdorner(0.0)——用伪造位置先把浮窗写到编辑器顶部（top=0+15），
+			// 下一帧 Render（DrawChunk/DrawSelectionBorder）才以真实块顶纠正，跨块
+			// hover / 选区变化时浮窗视觉上闪跳。现移除伪造定位：保留时只触发重绘，
+			// 位置一律由 Render 阶段以真实锚点给出；追加 _isPointerOverAdorner——
+			// 指针在浮窗上（滚轮经浮窗转发滚动）时浮窗同样保留，不被误删。
+			if (_activeChunk != null || _textEditor.TextArea.Selection.Length > 0 || _isPointerOverAdorner)
 			{
-				ShowChunkAdorner(0.0);
+				InvalidateVisual();
 			}
 			else
 			{
@@ -359,11 +367,13 @@ namespace ForkPlus.UI.Controls.Editor
 				return;
 			}
 			_adornerUpdatePending = true;
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·滚动滞后一帧"）：Update 从 Background
+			// 提升到 Render——滚动时 Tag 已更新但浮窗要等下一帧才跟随，视觉上滞后跳动。
 			global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
 			{
 				_adornerUpdatePending = false;
 				_adornerLayer?.Update();
-			}, Avalonia.Threading.DispatcherPriority.Background);
+			}, Avalonia.Threading.DispatcherPriority.Render);
 		}
 
 		private void TextEditor_MouseEnter(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -453,7 +463,11 @@ namespace ForkPlus.UI.Controls.Editor
 
 		private void TextEditor_TextChanged(object sender, EventArgs e)
 		{
+			// 修复（2026-10-18，"暂存浮窗飘来飘去"）：文本变化（切换文件重设文档）时仅
+			// ActiveChunk=null 可能因选区仍在而走保留分支留下浮窗，且锚定块已失效。
+			// 无条件移除，待 Render 阶段按新内容重新定位，避免浮窗残留错位。
 			ActiveChunk = null;
+			RemoveChunkAdorner();
 		}
 
 		private void TextEditor_IsVisibleChanged(object sender, global::Avalonia.AvaloniaPropertyChangedEventArgs e)

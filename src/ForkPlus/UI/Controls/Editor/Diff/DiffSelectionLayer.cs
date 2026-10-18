@@ -45,6 +45,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		protected override void RefreshActiveChunk()
 		{
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·remove/recreate 循环"）：滚轮经浮窗
+			// 转发滚动时，编辑器 MouseLeave 已清空 _lastPointerPosition，此处取不到块
+			// 会把 ActiveChunk 置空 → 浮窗被从指针下删掉 → 编辑器 PointerEntered 又
+			// 立即重建，反复闪烁。指针在浮窗上时保持锚定块不变。
+			if (_isPointerOverAdorner)
+			{
+				return;
+			}
 			CommitDiffSelectedRange chunkUnderMousePointer = GetChunkUnderMousePointer();
 			if (chunkUnderMousePointer != ActiveChunk)
 			{

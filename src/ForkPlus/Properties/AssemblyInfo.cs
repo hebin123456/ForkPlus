@@ -15,6 +15,21 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-18，v5.1.4）：修复 FileDiff（暂存对比）视图 Stage/Unstage 浮窗
+//   飘来飘去的问题。两类漂移根因与修复：
+//   A) 闪到编辑器顶部再跳回——InvalidateAdornerVisibility 在保留分支调用
+//      ShowChunkAdorner(0.0)，浮窗先被定位到 Y≈15 的编辑器顶部，下一帧 Render 才回到
+//      块顶部；现移除该调用，定位一律由 Render 阶段（DrawChunk/DrawSelectionBorder）给出。
+//   B) remove/recreate 循环——指针落在浮窗上滚动时 MouseLeave 清空 _lastPointerPosition，
+//      RefreshActiveChunk 取不到块 → RemoveChunkAdorner 把浮窗从指针下删掉，编辑器
+//      PointerEntered 又立刻重建，反复闪烁；现保留条件追加 _isPointerOverAdorner，
+//      子类 RefreshActiveChunk 在指针位于浮窗上时保持锚定块不变，且
+//      QueueAdornerLayerUpdate 优先级提升到 Render 消除滚动时滞后一帧。
+//   覆盖 ChunkSelectionLayer 基类与 DiffSelectionLayer / SideBySideCommitDiffSelectionLayer /
+//   MergeChunkSelectionLayer 三个子类（split、side-by-side、冲突合并视图一致）。
+//   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
+//   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.4"；
+//   程序集标识与文件版本同为 5.1.4（.0）。
 // 版本号说明（2026-10-13，v5.1.3）：修复提交信息 emoji（gitmoji）自动补全的两处小问题：
 //   A) 鼠标点击浮层里的 emoji 建议项无反应（只有键盘 ↑↓ + 回车/Tab 生效）——真实点击序中
 //      按下会让键盘焦点离开文本框，触发 ClosePopup() 在释放事件到达之前拆掉浮层，点击落空；
@@ -84,8 +99,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.3")]
-[assembly: AssemblyInformationalVersion("5.1.3")]
+[assembly: AssemblyFileVersion("5.1.4")]
+[assembly: AssemblyInformationalVersion("5.1.4")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.3.0")]
+[assembly: AssemblyVersion("5.1.4.0")]

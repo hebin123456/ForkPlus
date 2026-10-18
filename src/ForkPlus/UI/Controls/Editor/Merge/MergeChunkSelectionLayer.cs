@@ -64,6 +64,12 @@ namespace ForkPlus.UI.Controls.Editor.Merge
 
 		protected override void RefreshActiveChunk()
 		{
+			// 修复（2026-10-18，"暂存浮窗飘来飘去·remove/recreate 循环"）：与基类子类
+			// 一致——指针在浮窗上（滚轮经浮窗转发滚动）时保持锚定块不变。
+			if (_isPointerOverAdorner)
+			{
+				return;
+			}
 			MergeConflictView.Chunk chunkUnderMousePointer = GetChunkUnderMousePointer();
 			if (chunkUnderMousePointer != ActiveChunk)
 			{
