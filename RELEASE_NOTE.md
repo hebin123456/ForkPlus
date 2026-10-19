@@ -2,6 +2,30 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.4
+
+> 修复 **对比视图（FileDiff）暂存浮窗飘来飘去**：暂存/丢弃悬浮按钮在跨 hunk 悬停时先闪到编辑器顶部再跳回、滚轮经过浮窗转发滚动时反复消失又重现、滚动时浮窗跟随滞后一帧。应用版本号升至 5.1.4。
+
+### 修复
+
+- **浮窗闪到编辑器顶部再跳回**（[ChunkSelectionLayer.cs](src/ForkPlus/UI/Controls/Editor/ChunkSelectionLayer.cs)）：`InvalidateAdornerVisibility` 保留分支调用 `ShowChunkAdorner(0.0)`，用伪造位置先把浮窗定位到编辑器顶部（Y≈15），下一帧渲染才以真实块顶纠正——跨块悬停 / 选区变化时浮窗视觉上闪跳。现移除伪造定位，位置一律由渲染阶段（`DrawChunk`/`DrawSelectionBorder`）以真实锚点给出；选区存在但鼠标不在 hunk 上时浮窗照常保留。
+- **滚轮经浮窗转发滚动时反复消失重现**：指针落在浮窗上时，编辑器 `MouseLeave` 清空指针位置，`RefreshActiveChunk` 取不到块 → 浮窗被从指针下删掉 → 编辑器 `PointerEntered` 又立即重建，反复闪烁。浮窗保留条件追加 `_isPointerOverAdorner`，三个浮窗层子类——split 模式（[DiffSelectionLayer.cs](src/ForkPlus/UI/Controls/Editor/Diff/DiffSelectionLayer.cs)）、side-by-side 模式（[SideBySideCommitDiffSelectionLayer.cs](src/ForkPlus/UI/Controls/Editor/Diff/SideBySideCommitDiffSelectionLayer.cs)）、冲突合并视图（[MergeChunkSelectionLayer.cs](src/ForkPlus/UI/Controls/Editor/Merge/MergeChunkSelectionLayer.cs)）——在指针位于浮窗上时保持锚定块不变。
+- **滚动跟随滞后一帧**：浮窗层 `Update` 调度优先级从 `Background` 提升到 `Render`，滚动时浮窗即时跟随块位置。另在 `TextEditor_TextChanged`（切换文件重设文档）时无条件移除浮窗，避免锚定块失效后残留错位。
+
+### 构建
+
+- 新增回归测试（[FileDiffFloatingWindowDriftTests.cs](src/ForkPlus.Tests/FileDiffFloatingWindowDriftTests.cs)）：监听浮窗定位写入捕获伪造位置（双 hunk 跨块悬停时所有定位都落在真实块顶）、side-by-side 同场景、复现生产态指针在浮窗上滚动（断言浮窗不消失且跟随块移动）。
+- **CI 分片守卫重写**（[build.yml](.github/workflows/build.yml)）：测试分片完整性校验从「`--list-tests` 行数求和」改为「唯一测试集合比较」——vstest 对超长理论用例名（覆盖率清单类）的截断伪影与无 filter 全量枚举的单次输出抖动叠加，曾导致 v5.1.4 构建误红灯（`sum=5074 != total=5094`，实际分区完整）。新口径对两类抖动免疫，缺失/反向差集/分片重叠红灯时均打印具体测试名。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.1.4-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.1.4-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.1.4-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.1.4-macos-arm64.zip` |
+
 ## v5.1.3
 
 > 修复 **提交信息 emoji（gitmoji）自动补全的两处小问题**：① 标题框输入 `:` 弹出的 emoji 选择器**鼠标点击无效**（只有键盘 ↑↓ + 回车/Tab 能选中）；② **描述框输入 `:` 不会弹出** emoji 选择器。应用版本号升至 5.1.3。
