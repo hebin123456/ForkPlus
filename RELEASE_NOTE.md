@@ -2,6 +2,27 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.6
+
+> 修复 **FileDiff（对比）视图里选中 2 行时，外面的暂存/丢弃浮窗范围却有约 4 行**——选区边框块纵向虚高 1.5~2.5 倍，浮窗按钮定位也随之偏移。应用版本号升至 5.1.6。
+
+### 修复
+
+- **选区浮窗范围虚高**（[ChunkSelectionLayer.cs](src/ForkPlus/UI/Controls/Editor/ChunkSelectionLayer.cs)）：`DrawSelectionBorder` 用 `BackgroundGeometryBuilder.GetRectsForSegment(..., extendToFullWidthAtLineEnd: true)` 取选区矩形，但把返回的**全部矩形高度累加**（`num2 += item.Height`）。AvaloniaEdit 12 在 `extendToFullWidthAtLineEnd=true` 时对选区内每一可视行返回**多个矩形**——文本段矩形 + 行尾全宽扩展矩形（同一 Top、各自整行高），选区末行之后还会多出一个零宽矩形；探针实测 2 行选区在不同拖拽形状下返回 3~5 个矩形，高度累加把浮窗高放大到 3~5 倍行高（观感"选 2 行浮窗罩 4 行"）。改为取全部矩形的**纵向并集跨度**（min Top → max Bottom）——同一行内的重复矩形共享 Top/Bottom，并集即为选区真实范围。另加空矩形列表提前返回：选区整体滚出视口时不再画 0 高块、不再把浮窗钉在编辑器顶部。
+
+### 构建
+
+- 新增探针回归测试（[FileDiffSelectionBoundsProbeTests.cs](src/ForkPlus.Tests/FileDiffSelectionBoundsProbeTests.cs)）：在真实 FileDiff 视图（split 模式 CommitCodeEditor + VisualPatch）里对 3 种拖拽形状的 2 行选区打印 `GetRectsForSegment` 返回的矩形明细（top/height/width 与累加结果），直接暴露"一行多矩形 + 高度累加"的根因数据，可随时重跑复核。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.1.6-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.1.6-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.1.6-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.1.6-macos-arm64.zip` |
+
 ## v5.1.5
 
 > 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**（General 分区最后两项挤在同一行）、**变更文件树/列表里删除文件显示黄色 Modify（铅笔）图标而非删除图标**，以及 **插件卸载确认弹窗点确认后偏好设置窗口被主窗口压到下面**（点确认看似"没有用"）。应用版本号升至 5.1.5。

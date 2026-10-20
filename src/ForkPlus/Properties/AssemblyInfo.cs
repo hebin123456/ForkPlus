@@ -15,6 +15,15 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-20，v5.1.6）：修复 FileDiff 视图选区浮窗范围虚高——选中 2 行
+//   时暂存/丢弃浮窗（及块背景）覆盖约 4 行。根因：ChunkSelectionLayer.DrawSelectionBorder
+//   对 BackgroundGeometryBuilder.GetRectsForSegment 返回的全部矩形做高度累加
+//   （num2 += item.Height），而 AvaloniaEdit 12 在 extendToFullWidthAtLineEnd=true 时对
+//   选区内每一可视行返回多个矩形（文本段矩形 + 行尾全宽扩展矩形，同一 Top、各自整行高），
+//   选区末行之后还多一个零宽矩形——2 行选区实测 3~5 个矩形，高度累加把浮窗高放大
+//   3~5 倍行高。改为取全部矩形的纵向并集跨度（min Top → max Bottom），同一行内重复
+//   矩形共享 Top/Bottom，并集即选区真实范围；另加空矩形列表提前返回（选区整体滚出
+//   视口时不再把浮窗钉在编辑器顶部）。
 // 版本号说明（2026-10-20，v5.1.5）：修复插件卸载确认弹窗点「卸载」后偏好设置窗口被
 //   主窗口压到下面（观感"点确认没用"）——ForkPlusDialogWindow 构造把模态 owner 硬登记
 //   主窗口（显式通道），WPF 风格 ShowDialog() shim 解析中显式登记永远赢，嵌套模态
@@ -116,8 +125,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.5")]
-[assembly: AssemblyInformationalVersion("5.1.5")]
+[assembly: AssemblyFileVersion("5.1.6")]
+[assembly: AssemblyInformationalVersion("5.1.6")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.5.0")]
+[assembly: AssemblyVersion("5.1.6.0")]

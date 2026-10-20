@@ -522,6 +522,14 @@ namespace ForkPlus.UI.Controls.Editor
 		protected void DrawSelectionBorder(DrawingContext drawingContext, TextArea textArea)
 		{
 			ISegment surroundingSegment = textArea.Selection.SurroundingSegment;
+			// 修复（2026-10-20，"FileDiff 选中 2 行，外面的浮窗范围有 4 行"）：
+			// 原实现 num2 += item.Height 把 GetRectsForSegment 返回的所有矩形高度累加。
+			// 但 AvaloniaEdit 12 对选区内每一可视行会返回多个矩形——文本段矩形 + 行尾
+			// 全宽扩展矩形（extendToFullWidthAtLineEnd，同一 Top、各自整行高），选区末行
+			// 之后还会多一个零宽矩形（seg=[行首,下一行行首] 时 2 行选区实测 5 个矩形）。
+			// 高度累加使浮窗高被放大 1.5~2.5 倍（2 行选区实测 3~5 行高）。
+			// 改为取全部矩形的纵向并集跨度（min Top → max Bottom）——同一行内的重复
+			// 矩形共享 Top/Bottom，并集即选区真实范围。
 			double num = 0.0;
 			double num2 = 0.0;
 			bool flag = true;
@@ -530,11 +538,20 @@ namespace ForkPlus.UI.Controls.Editor
 				if (flag)
 				{
 					num = item.Top;
+					num2 = item.Bottom;
+					flag = false;
+					continue;
 				}
-				num2 += item.Height;
-				flag = false;
+				num = Math.Min(num, item.Top);
+				num2 = Math.Max(num2, item.Bottom);
 			}
-			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2);
+			if (flag)
+			{
+				// 选区没有任何可视行矩形（整体滚出视口等）——无可绘制范围，
+				// 不画块也不把悬浮按钮钉在 0 位（旧行为会在编辑器顶部画 0 高块并置顶浮窗）。
+				return;
+			}
+			Rect rect = new Rect(0.0, num, _textEditor.Bounds.Width, num2 - num);
 			DrawBorder(rect, drawingContext);
 			// Bug 修复（2026-09-04，"选中一小块变更区域应该出来悬浮的变更和丢弃"）：
 			// 原版 WPF 画完选区边框后把悬浮按钮定位到选区顶部（num=选区顶 + SearchBarHeight
