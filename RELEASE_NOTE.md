@@ -4,17 +4,19 @@
 
 ## v5.1.5
 
-> 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**（General 分区最后两项挤在同一行），以及 **变更文件树/列表里删除文件显示黄色 Modify（铅笔）图标而非删除图标**。应用版本号升至 5.1.5。
+> 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**（General 分区最后两项挤在同一行）、**变更文件树/列表里删除文件显示黄色 Modify（铅笔）图标而非删除图标**，以及 **插件卸载确认弹窗点确认后偏好设置窗口被主窗口压到下面**（点确认看似"没有用"）。应用版本号升至 5.1.5。
 
 ### 修复
 
 - **设置页布局重叠**（[GeneralUserControl.axaml](src/ForkPlus/UI/UserControls/RepositorySettings/GeneralUserControl.axaml)）：General 分区的 Grid 只定义到 Row 14，而「Tab Width」标签与输入框写在越界的 `Grid.Row="15"` 上——Avalonia 会把越界行号钳制到最后一行，于是「Diff View」标题与制表符宽度输入框被排进同一行、直接叠在一起。补足第 16 行的 `RowDefinition` 后，标题与输入行各占一行。
 - **删除文件显示黄色 Modify 图标**（[BridgeExtensions.cs](src/ForkPlus/UI/Extensions/BridgeExtensions.cs)）：`ChangeTypeExtensions.GetIconKey` 对 Deleted 返回 `IconKeys.StatusRemove`（"Status.Remove"），而图标桥接的 switch 只认 `StatusDelete`（"Status.Delete"）——两个键虽都是删除语义却是不同常量，"Status.Remove" 落入默认分支返回铅笔图标。补上 `StatusRemove => DeletedIcon`（[Status_Remove.png](src/ForkPlus/Assets/Status_Remove.png)）分支后，`ChangeType.Deleted` 与 `StatusType.Deleted` 在变更文件树/列表中恢复显示红色删除图标。
+- **嵌套模态弹窗关闭后父窗口被主窗口压到下面**（[WpfCompat.Controls.cs](src/ForkPlus/UI/WpfCompat/WpfCompat.Controls.cs)、[ForkPlusDialogWindow.cs](src/ForkPlus/UI/Dialogs/ForkPlusDialogWindow.cs)、[WpfCompat.Batch2.cs](src/ForkPlus/UI/WpfCompat/WpfCompat.Batch2.cs)）：偏好设置窗口里点「卸载选中」弹出的确认框，点「卸载」后设置窗口瞬间掉到主窗口下面（观感"点确认没用"）。根因是 `ForkPlusDialogWindow` 构造把每个对话框的模态 owner 硬登记为主窗口（显式通道），WPF 风格 `ShowDialog()` shim 的 owner 解析里显式登记永远优先于"当前活动窗口"——嵌套模态（设置窗口里弹确认框）时确认框 owner 错挂主窗口：①设置窗口未被禁用（模态失真）；②确认框不相对设置窗口居中；③确认框关闭时 Avalonia 激活 owner，主窗口冲到 Z 序最前把设置窗口压到下面。同款问题此前已在 Reflog 窗口跳转弹窗、SSH 密钥管理、Issue 跟踪器/外部工具设置页等处逐点显式改挂 owner 补救，本次在兼容层根治：构造期登记降级为弱兜底通道（`SetDefaultOwnerCompat`），shim owner 解析改为四级——显式登记（WPF `Owner=..`）> **模态栈顶**（shim 打开且仍可见的最内层父对话框，新增；嵌套模态的父窗口由模态嵌套关系决定、不依赖窗口焦点——headless 测试环境与生产偶发焦点缺失场景均正确）> 当前活动窗口 > 弱兜底（主窗口）。单窗口场景（活动窗口即主窗口）解析结果不变，嵌套模态 owner 正确落到父对话框——真模态禁用、相对居中、关闭后焦点回归父窗口，历史逐点补救与既有显式登记不受影响。另修复 `CustomWindow` 打开期自动居中与 shim 定位的双重定位竞争（shim 模态路径跳过二次定位，嵌套弹窗不再被拉回主窗口中心）。
 
 ### 构建
 
 - 新增布局回归断言（[E2e22RepositorySettingsTests.cs](src/ForkPlus.Tests/E2e22RepositorySettingsTests.cs)）：断言 TabWidth 行的 `Grid.Row` 索引在 `RowDefinitions` 范围内、恰为「Diff View」标题行的下一行，且两控件布局后 bounds 纵向不相交——Row 再越界时红灯并打印行号与 bounds 明细。
 - 新增图标映射回归测试（[ChangeTypeHelperTests.cs](src/ForkPlus.Tests/ChangeTypeHelperTests.cs)）：断言 Deleted 的图标实例与 Modified/Added/Renamed/Copied/Untracked 互不相同（旧代码与 Modified 同为铅笔图标静态实例，引用相等即红灯）。
+- 新增嵌套模态 owner 回归测试（[NestedModalDialogOwnerTests.cs](src/ForkPlus.Tests/NestedModalDialogOwnerTests.cs)）：①轻量断言 owner 解析语义——显式登记赢弱兜底、不可见 owner 不被采用、弱兜底不进显式通道；②按生产时序集成复现——真主窗口 + 父对话框经 shim 模态打开 + 嵌套 `MessageBoxWindow`（构造自动弱登记主窗口），断言 owner 解析落到父对话框而非主窗口（修复前红灯）、点「卸载」后确认框关闭且 shim 返回 true、嵌套 frame 链完整退栈不卡死。
 
 ### 平台构建
 

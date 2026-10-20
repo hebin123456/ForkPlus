@@ -318,7 +318,15 @@ namespace ForkPlus.UI.Dialogs
 				MainWindow instance = MainWindow.Instance;
 				if (instance != null)
 				{
-					this.SetOwnerCompat(instance);
+					// Migration note（2026-10-20，"插件卸载确认弹窗点确认后设置窗口跑主窗口下面"修复）：
+					// 原为 SetOwnerCompat(instance)——owner 硬登记 MainWindow 走显式通道，ShowDialog shim
+					// 解析中优先级高于活动窗口，嵌套模态（偏好设置窗口里弹 MessageBoxWindow 等）弹窗
+					// owner 永远是 MainWindow：关闭时 Avalonia 激活 owner，主窗口冲到父对话框上面
+					// （"窗口跑下面去了"），且父对话框未被禁用、弹窗不相对它居中（ReflogWindow/
+					// ConfigureSshKeysWindow/IssueTracker 等处被迫逐点显式 SetOwnerCompat(this) 补救）。
+					// 改走 SetDefaultOwnerCompat 弱通道：显式登记 > 活动窗口 > 此兜底。单窗口场景
+					// （活动窗口=MainWindow）解析结果不变；嵌套模态 owner 正确落到父对话框。
+					this.SetDefaultOwnerCompat(instance);
 					if (preventMainWindowRefresh)
 					{
 						instance.PreventRefreshAfterChildDialogClose(GetType().Name);

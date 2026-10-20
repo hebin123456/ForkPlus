@@ -56,6 +56,15 @@ namespace ForkPlus.UI.WpfCompat
         // WPF ComponentDispatcher.IsThreadModal 近似：记录经本 shim ShowDialog 打开的窗口。
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Window, object> _modalWindows = new();
 
+        // 模态栈（2026-10-20，"插件卸载确认弹窗点确认后设置窗口跑主窗口下面"修复的兜底层）：
+        // shim ShowDialog 按 PushFrame 嵌套深度打开，同一线程的模态链是线性的——栈顶即
+        // 当前最内层父对话框。shim ShowDialog 必须在 UI 线程调用（PushFrame），本表仅
+        // UI 线程读写，无需加锁。ResolveDialogOwner 用它做"焦点无关"的父对话框判定：
+        // headless 测试环境无焦点系统（IsActive 恒 false，ActiveWindow 退化成"第一个
+        // 可见窗口"=MainWindow），生产里窗口激活状态偶发缺失时同理——嵌套模态的父窗口
+        // 由模态嵌套关系决定，不应依赖焦点。
+        private static readonly System.Collections.Generic.List<Window> _modalStack = new();
+
         // Migration note：启动期代理 owner 全局复用。此前每对话框各建各关，对话框关闭后应用
         // 0 窗口，ClassicDesktopStyleApplicationLifetime 的 OnLastWindowClose 立即开始
         // Shutdown → 后续对话框（如 WelcomeWindow）PushFrame 抛
@@ -196,10 +205,53 @@ namespace ForkPlus.UI.WpfCompat
         public static bool IsShownAsDialog(this Window self)
             => self != null && _modalWindows.TryGetValue(self, out _);
 
+        /// <summary>
+        /// ShowDialog shim 的模态 owner 解析：显式登记（WPF Owner=.. / SetOwnerCompat）
+        /// &gt; 模态栈顶（shim 打开且仍可见的最内层父对话框——嵌套模态由模态嵌套关系
+        /// 决定父窗口，不依赖焦点；headless 测试环境 IsActive 恒 false 也走此分支）
+        /// &gt; 当前活动窗口 &gt; 构造期兜底登记（ForkPlusDialogWindow 默认指向 MainWindow）。
+        /// 解析结果不可见（启动期未 Show 等）时返回 null，由调用方走代理 owner。
+        /// </summary>
+        internal static Window ResolveDialogOwner(Window self)
+        {
+            Window owner = WindowOwnerCompat.TryGetOwner(self)
+                ?? TopmostVisibleModal(self)
+                ?? WpfApp.ActiveWindow(self)
+                ?? WindowOwnerCompat.TryGetDefaultOwner(self);
+            if (owner == null || !owner.IsVisible)
+            {
+                return null;
+            }
+            return owner;
+        }
+
+        /// <summary>模态栈中除 self 外最靠顶（最内层）的可见窗口；栈空/全不可见时 null。</summary>
+        private static Window TopmostVisibleModal(Window self)
+        {
+            for (int i = _modalStack.Count - 1; i >= 0; i--)
+            {
+                Window w = _modalStack[i];
+                if (w != null && w != self && w.IsVisible)
+                {
+                    return w;
+                }
+            }
+            return null;
+        }
+
         public static bool? ShowDialog(this Window self)
         {
             if (self == null) return null;
-            var owner = WindowOwnerCompat.TryGetOwner(self) ?? WpfApp.ActiveWindow(self);
+            // 修复（2026-10-20，"插件卸载确认弹窗点确认后设置窗口跑主窗口下面"）：
+            // 原解析为 TryGetOwner ?? ActiveWindow，而 ForkPlusDialogWindow 构造把 owner
+            // 硬登记为 MainWindow（显式通道），嵌套模态（偏好设置窗口里弹 MessageBoxWindow）
+            // owner 永远是 MainWindow——弹窗关闭时激活 MainWindow，主窗口冲到设置窗口上面
+            // （"窗口跑下面去了"），且设置窗口未被禁用、弹窗不相对它居中。
+            // 现构造期登记降级为弱兜底（SetDefaultOwnerCompat），解析改四级：显式登记 >
+            // 模态栈顶（shim 打开且仍可见的最内层父对话框）> 活动窗口 > 弱兜底——
+            // 嵌套模态 owner 由模态嵌套关系决定、不依赖焦点（headless IsActive 恒 false
+            // 也正确），顺序见 ResolveDialogOwner。
+            Window owner = ResolveDialogOwner(self);
             if (owner == null)
             {
                 // Migration note：WPF ShowDialog() 无 owner 也能模态阻塞（如启动期 ConfigureGitInstanceWindow）；
@@ -219,6 +271,9 @@ namespace ForkPlus.UI.WpfCompat
             _modalWindows.Remove(self);
             _modalWindows.Add(self, new object());
             Task<bool?> task = self.ShowDialog<bool?>(owner);
+            // 压栈在 ShowDialog 调用之后：该调用同步抛异常（owner 不可见等）时不入栈；
+            // 嵌套 frame 泵期间（PushFrame 在下方）栈顶恒为本窗口=嵌套子弹窗的直接父窗口。
+            _modalStack.Add(self);
             try
             {
                 if (task.IsCompleted) return task.Result;
@@ -235,6 +290,7 @@ namespace ForkPlus.UI.WpfCompat
             finally
             {
                 _modalWindows.Remove(self);
+                _modalStack.Remove(self);
                 // 代理窗口不随单个对话框关闭（全局复用，见 _proxyOwner 注释）
                 TryCloseProxyOwner();
             }

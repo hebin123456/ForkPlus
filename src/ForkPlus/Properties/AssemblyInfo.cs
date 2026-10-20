@@ -15,6 +15,13 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-20，v5.1.5）：修复插件卸载确认弹窗点「卸载」后偏好设置窗口被
+//   主窗口压到下面（观感"点确认没用"）——ForkPlusDialogWindow 构造把模态 owner 硬登记
+//   主窗口（显式通道），WPF 风格 ShowDialog() shim 解析中显式登记永远赢，嵌套模态
+//   （设置窗口里弹确认框）确认框 owner 错挂主窗口，关闭时激活主窗口冲到 Z 序最前。
+//   现构造期登记降级为弱兜底（SetDefaultOwnerCompat），shim owner 解析改四级：显式
+//   登记 > 模态栈顶（shim 打开且仍可见的最内层父对话框）> 活动窗口 > 弱兜底；另修复
+//   CustomWindow 打开期自动居中与 shim 定位的双重定位竞争。
 // 版本号说明（2026-10-18，v5.1.5）：修复此仓库设置页（GeneralUserControl）「Diff View」
 //   分区标题与「Tab Width」输入行叠在同一行——Grid 只定义到 Row 14，Tab Width 行放在
 //   越界的 Row 15，Avalonia 将越界 Row 钳制到最后一行所致；补足第 16 行定义即可。

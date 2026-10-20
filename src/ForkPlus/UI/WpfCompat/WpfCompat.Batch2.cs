@@ -63,6 +63,16 @@ namespace ForkPlus.UI.WpfCompat
     {
         private static readonly ConditionalWeakTable<Window, StrongBox<Window>> Owners = new();
 
+        // 修复（2026-10-20，"插件卸载确认弹窗点确认后设置窗口跑主窗口下面"）：
+        // 弱兜底 owner 通道。ForkPlusDialogWindow 构造期默认登记的 owner（MainWindow.Instance）
+        // 原走 SetOwnerCompat 显式通道，在 WindowDialogCompat.ShowDialog 的 owner 解析中
+        // 优先级高于"当前活动窗口"——嵌套模态（偏好设置窗口里弹 MessageBoxWindow 等）下
+        // 弹窗 owner 永远是 MainWindow：弹窗关闭时 Avalonia 激活 owner，主窗口冲到设置
+        // 窗口上面（观感"窗口跑下面去了"），且设置窗口未被禁用、弹窗不相对它居中。
+        // 降级为弱通道后：显式登记 > 活动窗口 > 弱兜底，单窗口场景（活动窗口即 MainWindow）
+        // 行为不变，嵌套模态 owner 正确解析到父对话框。
+        private static readonly ConditionalWeakTable<Window, StrongBox<Window>> DefaultOwners = new();
+
         /// <summary>
         /// WPF w.Owner = owner。Avalonia 的 Owner 无公开 setter；
         /// 这里记表供 WindowDialogCompat.ShowDialog 优先使用（不设置也能找活动窗口兜底）。
@@ -71,6 +81,16 @@ namespace ForkPlus.UI.WpfCompat
         {
             Owners.Remove(self);
             Owners.Add(self, new StrongBox<Window>(owner));
+        }
+
+        /// <summary>
+        /// 构造期兜底登记：语义同 SetOwnerCompat 但为弱优先级——仅当无显式 owner
+        /// 且无活动窗口时才被 ShowDialog shim 采用。
+        /// </summary>
+        public static void SetDefaultOwnerCompat(this Window self, Window owner)
+        {
+            DefaultOwners.Remove(self);
+            DefaultOwners.Add(self, new StrongBox<Window>(owner));
         }
 
         /// <summary>
@@ -84,7 +104,10 @@ namespace ForkPlus.UI.WpfCompat
         }
 
         internal static Window TryGetOwner(Window self)
-            => Owners.TryGetValue(self, out var box) ? box.Value : null;
+            => self != null && Owners.TryGetValue(self, out var box) ? box.Value : null;
+
+        internal static Window TryGetDefaultOwner(Window self)
+            => self != null && DefaultOwners.TryGetValue(self, out var box) ? box.Value : null;
 
         /// <summary>
         /// Migration note：WPF 非模态窗口 { Owner=.., WindowStartupLocation=CenterOwner } 的等价物。

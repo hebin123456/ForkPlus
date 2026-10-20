@@ -109,6 +109,18 @@ namespace ForkPlus.UI
 				return;
 			}
 
+			// 修复（2026-10-20，"插件卸载确认弹窗点确认后设置窗口跑主窗口下面"）：
+			// 经 WindowDialogCompat.ShowDialog shim 打开的窗口，shim 已按其解析的 owner
+			// （显式登记 > 活动窗口 > 弱兜底，嵌套模态下即父对话框）在 Opened 里定位。
+			// 此处二次定位在 Opened 时机晚于 shim（OnOpened 内 base 之后执行），且其
+			// owner 链（登记 owner → 活动窗口兜底）此时弹窗已抢走激活、父对话框不再
+			// IsActive，会解析到 MainWindow 把弹窗拉回主窗口中心，观感"跑偏"。
+			// 故 shim 模态路径（IsShownAsDialog=true）直接跳过；非 shim 的 Show 路径不受影响。
+			if (this.IsShownAsDialog())
+			{
+				return;
+			}
+
 			// 只有显式要求居中时才干预位置（保持其它窗口按系统默认/用户拖拽的位置打开）。
 			if (WindowStartupLocation != global::Avalonia.Controls.WindowStartupLocation.CenterOwner
 				&& WindowStartupLocation != global::Avalonia.Controls.WindowStartupLocation.CenterScreen)
