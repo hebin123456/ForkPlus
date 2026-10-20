@@ -45,6 +45,10 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <!-- 修复（2026-10-18，v5.1.5）：此仓库设置页「Diff View」分区只定义到 Row 14，
+           而 Tab Width 行放在 Row 15——Avalonia 会把越界 Row 钳制到最后一行，导致
+           「差异视图」标题与「制表符宽度」叠在同一行。补足第 16 行定义。 -->
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
     <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Text="User Information" Theme="{DynamicResource SettingsHeaderTextBlockStyle}" />
     <CheckBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,4,0,10" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Use global git credentials" IsCheckedChanged="UseGlobalGitCredentialsCheckBox_Changed" x:Name="UseGlobalGitCredentialsCheckBox" />

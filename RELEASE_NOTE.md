@@ -2,6 +2,27 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.1.5
+
+> 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**：General 分区最后两项挤在同一行。应用版本号升至 5.1.5。
+
+### 修复
+
+- **设置页布局重叠**（[GeneralUserControl.axaml](src/ForkPlus/UI/UserControls/RepositorySettings/GeneralUserControl.axaml)）：General 分区的 Grid 只定义到 Row 14，而「Tab Width」标签与输入框写在越界的 `Grid.Row="15"` 上——Avalonia 会把越界行号钳制到最后一行，于是「Diff View」标题与制表符宽度输入框被排进同一行、直接叠在一起。补足第 16 行的 `RowDefinition` 后，标题与输入行各占一行。
+
+### 构建
+
+- 新增布局回归断言（[E2e22RepositorySettingsTests.cs](src/ForkPlus.Tests/E2e22RepositorySettingsTests.cs)）：断言 TabWidth 行的 `Grid.Row` 索引在 `RowDefinitions` 范围内、恰为「Diff View」标题行的下一行，且两控件布局后 bounds 纵向不相交——Row 再越界时红灯并打印行号与 bounds 明细。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.1.5-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.1.5-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.1.5-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.1.5-macos-arm64.zip` |
+
 ## v5.1.4
 
 > 修复 **对比视图（FileDiff）暂存浮窗飘来飘去**：暂存/丢弃悬浮按钮在跨 hunk 悬停时先闪到编辑器顶部再跳回、滚轮经过浮窗转发滚动时反复消失又重现、滚动时浮窗跟随滞后一帧。应用版本号升至 5.1.4。

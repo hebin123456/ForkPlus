@@ -60,6 +60,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -239,6 +240,13 @@ namespace ForkPlus.Tests
 			}
 		}
 
+		/// <summary>控件相对 ancestor 坐标系的轴对齐 bounds（布局回归断言用）。</summary>
+		private static Rect TransformedBoundsOf(Visual ancestor, Visual visual)
+		{
+			Matrix transform = visual.TransformToVisual(ancestor) ?? Matrix.Identity;
+			return new Rect(visual.Bounds.Size).TransformToAABB(transform);
+		}
+
 		// ============================ 1) General：身份/主分支/杂项 ============================
 
 		[Fact]
@@ -338,6 +346,26 @@ namespace ForkPlus.Tests
 							Assert.Equal(8, gitModule.Settings.TabWidth);
 							SetText(general2.TabWidthTextBox, "abc");
 							Assert.Equal(8, gitModule.Settings.TabWidth); // 解析失败回退当前值
+
+							// —— 回归（v5.1.5）：「Diff View」分区标题与 Tab Width 输入行曾叠在同一行——
+							//    GeneralUserControl 的 Grid 只定义到 Row 14，而 Tab Width 行写在越界的
+							//    Row 15；Avalonia 把越界 Row 钳制到最后一行，输入框与标题同格重叠。
+							//    断言 Row 索引有效、标题与输入行各占一行，且 bounds 纵向不相交。
+							TextBlock diffViewHeader = general2.GetVisualDescendants().OfType<TextBlock>()
+								.FirstOrDefault(t => t.Text == Tr("Diff View") || t.Text == "Diff View");
+							Assert.NotNull(diffViewHeader);
+							Grid generalGrid = general2.TabWidthTextBox.GetVisualParent<Grid>();
+							Assert.NotNull(generalGrid);
+							int tabWidthRow = Grid.GetRow(general2.TabWidthTextBox);
+							Assert.True(tabWidthRow < generalGrid.RowDefinitions.Count,
+								"TabWidth 行索引越界：Row=" + tabWidthRow
+								+ "，RowDefinitions.Count=" + generalGrid.RowDefinitions.Count);
+							Assert.Equal(Grid.GetRow(diffViewHeader) + 1, tabWidthRow);
+							Dispatcher.UIThread.RunJobs();
+							Rect headerBounds = TransformedBoundsOf(general2, diffViewHeader);
+							Rect inputBounds = TransformedBoundsOf(general2, general2.TabWidthTextBox);
+							Assert.True(headerBounds.Bottom <= inputBounds.Top + 0.5,
+								"「Diff View」标题与 Tab Width 行重叠：header=" + headerBounds + "，input=" + inputBounds);
 
 							CloseAndSave(dialog2);
 						}
