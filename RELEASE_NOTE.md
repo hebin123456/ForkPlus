@@ -4,15 +4,17 @@
 
 ## v5.1.5
 
-> 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**：General 分区最后两项挤在同一行。应用版本号升至 5.1.5。
+> 修复 **此仓库设置页里「差异视图」标题与「制表符宽度」叠在一起**（General 分区最后两项挤在同一行），以及 **变更文件树/列表里删除文件显示黄色 Modify（铅笔）图标而非删除图标**。应用版本号升至 5.1.5。
 
 ### 修复
 
 - **设置页布局重叠**（[GeneralUserControl.axaml](src/ForkPlus/UI/UserControls/RepositorySettings/GeneralUserControl.axaml)）：General 分区的 Grid 只定义到 Row 14，而「Tab Width」标签与输入框写在越界的 `Grid.Row="15"` 上——Avalonia 会把越界行号钳制到最后一行，于是「Diff View」标题与制表符宽度输入框被排进同一行、直接叠在一起。补足第 16 行的 `RowDefinition` 后，标题与输入行各占一行。
+- **删除文件显示黄色 Modify 图标**（[BridgeExtensions.cs](src/ForkPlus/UI/Extensions/BridgeExtensions.cs)）：`ChangeTypeExtensions.GetIconKey` 对 Deleted 返回 `IconKeys.StatusRemove`（"Status.Remove"），而图标桥接的 switch 只认 `StatusDelete`（"Status.Delete"）——两个键虽都是删除语义却是不同常量，"Status.Remove" 落入默认分支返回铅笔图标。补上 `StatusRemove => DeletedIcon`（[Status_Remove.png](src/ForkPlus/Assets/Status_Remove.png)）分支后，`ChangeType.Deleted` 与 `StatusType.Deleted` 在变更文件树/列表中恢复显示红色删除图标。
 
 ### 构建
 
 - 新增布局回归断言（[E2e22RepositorySettingsTests.cs](src/ForkPlus.Tests/E2e22RepositorySettingsTests.cs)）：断言 TabWidth 行的 `Grid.Row` 索引在 `RowDefinitions` 范围内、恰为「Diff View」标题行的下一行，且两控件布局后 bounds 纵向不相交——Row 再越界时红灯并打印行号与 bounds 明细。
+- 新增图标映射回归测试（[ChangeTypeHelperTests.cs](src/ForkPlus.Tests/ChangeTypeHelperTests.cs)）：断言 Deleted 的图标实例与 Modified/Added/Renamed/Copied/Untracked 互不相同（旧代码与 Modified 同为铅笔图标静态实例，引用相等即红灯）。
 
 ### 平台构建
 

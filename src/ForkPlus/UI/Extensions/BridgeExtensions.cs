@@ -42,6 +42,11 @@ namespace ForkPlus.Git
 		// Warning 分支 → 全部落入 _ => EditIcon（铅笔）；原有的 StatusUnmerged 分支永远匹配不到。
 		// 补上 Warning => UnmergedIcon（Assets/Warning.png），使文件树/列表/冲突视图的
 		// Unmerged 均显示冲突警告标识。
+		// 修复（2026-10-18，v5.1.5 重发布）：变更文件树/列表里删除文件显示黄色铅笔（Modify）
+		// 而非删除图标——ChangeTypeExtensions.GetIconKey 对 Deleted 返回 IconKeys.StatusRemove
+		// （"Status.Remove"），与 StatusDelete（"Status.Delete"）是两个不同的常量，下面的 switch
+		// 只认 StatusDelete → "Status.Remove" 落入 _ => EditIcon（铅笔）。补上
+		// StatusRemove => DeletedIcon（Assets/Status_Remove.png），Deleted 恢复显示删除图标。
 		public static global::Avalonia.Media.IImage GetImageSource(this ChangeType changeType)
 		{
 			return changeType.GetIconKey() switch
@@ -49,6 +54,7 @@ namespace ForkPlus.Git
 				IconKeys.StatusAdd => AddIcon,
 				IconKeys.StatusCopy => CopyIcon,
 				IconKeys.StatusDelete => DeletedIcon,
+				IconKeys.StatusRemove => DeletedIcon,
 				IconKeys.StatusRename => RenamedIcon,
 				IconKeys.StatusTypeChanged => TypeChangedIcon,
 				IconKeys.StatusUnmerged => UnmergedIcon,
@@ -64,6 +70,7 @@ namespace ForkPlus.Git
 				IconKeys.StatusAdd => AddIcon,
 				IconKeys.StatusCopy => CopyIcon,
 				IconKeys.StatusDelete => DeletedIcon,
+				IconKeys.StatusRemove => DeletedIcon,
 				IconKeys.StatusRename => RenamedIcon,
 				IconKeys.StatusTypeChanged => TypeChangedIcon,
 				IconKeys.StatusUnmerged => UnmergedIcon,

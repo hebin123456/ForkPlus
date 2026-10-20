@@ -18,6 +18,10 @@ using Avalonia.Styling;
 // 版本号说明（2026-10-18，v5.1.5）：修复此仓库设置页（GeneralUserControl）「Diff View」
 //   分区标题与「Tab Width」输入行叠在同一行——Grid 只定义到 Row 14，Tab Width 行放在
 //   越界的 Row 15，Avalonia 将越界 Row 钳制到最后一行所致；补足第 16 行定义即可。
+//   同版修复变更文件树/列表里删除文件显示黄色铅笔（Modify）图标而非删除图标——
+//   ChangeTypeExtensions.GetIconKey 对 Deleted 返回 IconKeys.StatusRemove（"Status.Remove"），
+//   与 StatusDelete（"Status.Delete"）是两个不同常量，BridgeExtensions 图标桥接 switch
+//   只认后者 → 落入默认分支返回铅笔；补上 StatusRemove => DeletedIcon 分支。
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.1.5"；
 //   程序集标识与文件版本同为 5.1.5（.0）。

@@ -33,5 +33,29 @@ namespace ForkPlus.Tests
 		{
 			Assert.Equal(expected, ChangeTypeHelper.Parse(text));
 		}
+
+		[Fact]
+		public void GetImageSource_DeletedUsesRemoveIconNotEdit()
+		{
+			// 回归（2026-10-18，v5.1.5 重发布）：GetIconKey 对 Deleted 返回 IconKeys.StatusRemove
+			//（"Status.Remove"），而图标桥接（BridgeExtensions）的 switch 只认 StatusDelete
+			//（"Status.Delete"）→ 落入默认分支返回铅笔（黄色 Modify 图标）。断言 Deleted 的
+			// 图标实例与 Modified/Added/Renamed/Copied/Untracked 互不相同（旧代码与 Modified
+			// 同为 EditIcon 静态实例 → 引用相等 → 回归红灯）。
+			HeadlessAppBootstrap.Run(delegate
+			{
+				var deletedChange = ChangeType.Deleted.GetImageSource();
+				Assert.NotSame(ChangeType.Modified.GetImageSource(), deletedChange);
+				Assert.NotSame(ChangeType.Added.GetImageSource(), deletedChange);
+				Assert.NotSame(ChangeType.Untracked.GetImageSource(), deletedChange);
+				Assert.NotSame(ChangeType.Renamed.GetImageSource(), deletedChange);
+				Assert.NotSame(ChangeType.Copied.GetImageSource(), deletedChange);
+
+				var deletedStatus = StatusType.Deleted.GetImageSource();
+				Assert.NotSame(StatusType.Modified.GetImageSource(), deletedStatus);
+				Assert.NotSame(StatusType.Added.GetImageSource(), deletedStatus);
+				Assert.NotSame(StatusType.Renamed.GetImageSource(), deletedStatus);
+			});
+		}
 	}
 }
