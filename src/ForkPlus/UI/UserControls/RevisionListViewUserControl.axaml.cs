@@ -1689,14 +1689,18 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			if (!AiWindowService.EnsureAiConfigured())
+			{
+				// v3.10.3：未配置拦截统一走 AiWindowService（带"打开偏好设置"深链）
+				return;
+			}
 			string srcStr = src.ToString();
 			string dstStr = dst.ToString();
 			string rangeLabel = name ?? dst.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI PR Description: {0}", rangeLabel);
-			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
+			AiWindowService.Show(window); // v3.10.3：弹窗行为统一（非模态+owner=主窗口+任务栏+跟随主窗口屏幕）
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try
@@ -1753,18 +1757,17 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
-			if (!OpenAiService.IsAiReviewConfigured())
+			if (!AiWindowService.EnsureAiConfigured())
 			{
-				new MessageBoxWindow("AI Explain Commit", "AI is not configured. Please configure AI review settings in Preferences first.", "OK", showCancelButton: false, showWarningIcon: true).ShowDialog();
+				// v3.10.3：未配置拦截统一走 AiWindowService（带"打开偏好设置"深链）
 				return;
 			}
 			string shaStr = sha.ToString();
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-			window.SetOwnerCompat(WpfApp.MainWindow);
 			string title = PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
-			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
+			AiWindowService.Show(window); // v3.10.3：弹窗行为统一（非模态+owner=主窗口+任务栏+跟随主窗口屏幕）
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try

@@ -11,8 +11,7 @@
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />
     <Setter Property="IsIndeterminate" Value="True" />
-    <!-- 修复（2026-09-14，"loading 动画转不起来"）：WPF Storyboard 被注释后 spinner 静止，
-         由 SpinnerBehavior 附加行为复刻追逐动画（见 UI/CircularProgressBar/SpinnerBehavior.cs）。 -->
+    <!-- 修复�?026-09-14�?loading 动画转不起来"）：WPF Storyboard 被注释后 spinner 静止�?         �?SpinnerBehavior 附加行为复刻追逐动画（�?UI/CircularProgressBar/SpinnerBehavior.cs）�?-->
     <Setter Property="circularProgressBar:SpinnerBehavior.IsActive" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
@@ -20,9 +19,13 @@
           <Grid Background="{TemplateBinding Background}" ClipToBounds="False" x:Name="TemplateRoot">
             <Border x:Name="PART_Indicator" IsVisible="False" />
             <Viewbox>
-              <Canvas Height="16" Width="16">
-                <Rectangle Height="4.198" Width="0.999" Canvas.Left="7.498" Canvas.Top="0.7" RadiusX="0.85" RadiusY="0.85" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle01" />
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.198" Width="1" Canvas.Left="6.376" Canvas.Top="0.398" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle02">
+              <!-- 修复（2026-10-22，"loading 圆环变成四块/不均匀"）：Avalonia UseLayoutRounding
+                     默认开启，把 12 个矩形的亚像素布点（16x16 设计面上精确到 0.001px）量化成
+                     整数网格，圆环半径 4.5~5.9 不等、角距 17°~44° 跳变；WPF 默认关闭该行为。
+                     显式关闭后 12 点恢复半径 5.2±0.1、角距 30° 的均匀圆。 -->
+              <Canvas Height="16" Width="16" UseLayoutRounding="False">
+                <Rectangle UseLayoutRounding="False" Height="4.198" Width="0.999" Canvas.Left="7.498" Canvas.Top="0.7" RadiusX="0.85" RadiusY="0.85" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle01" />
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.198" Width="1" Canvas.Left="6.376" Canvas.Top="0.398" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle02">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="30" />
@@ -30,7 +33,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-0.422" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle03">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-0.422" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle03">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="60" />
@@ -38,7 +41,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="5.244" Canvas.Top="-1.546" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle04">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="5.244" Canvas.Top="-1.546" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle04">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="90" />
@@ -46,7 +49,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-2.678" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle05">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="0.998" Canvas.Left="5.548" Canvas.Top="-2.678" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle05">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="120" />
@@ -54,7 +57,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="6.376" Canvas.Top="-3.5" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle06">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="6.376" Canvas.Top="-3.5" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle06">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="150" />
@@ -62,8 +65,8 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="0.999" Canvas.Left="7.498" Canvas.Top="11.2" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle07" />
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="8.62" Canvas.Top="11.502" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle08">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="0.999" Canvas.Left="7.498" Canvas.Top="11.2" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle07" />
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="8.62" Canvas.Top="11.502" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle08">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="30" />
@@ -71,7 +74,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="9.454" Canvas.Top="12.324" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle09">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.202" Width="1" Canvas.Left="9.454" Canvas.Top="12.324" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle09">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="60" />
@@ -79,7 +82,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.744" Canvas.Top="13.448" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle10">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.744" Canvas.Top="13.448" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle10">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="90" />
@@ -87,7 +90,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.454" Canvas.Top="14.576" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle11">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="9.454" Canvas.Top="14.576" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle11">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="120" />
@@ -95,7 +98,7 @@
                     </TransformGroup>
                   </Rectangle.RenderTransform>
                 </Rectangle>
-                <Rectangle RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="8.62" Canvas.Top="15.398" RenderTransformOrigin="0.5,0.5" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle12">
+                <Rectangle UseLayoutRounding="False" RadiusX="0.85" RadiusY="0.85" Height="4.2" Width="1" Canvas.Left="8.62" Canvas.Top="15.398" RenderTransformOrigin="50%,50%" Opacity="0.3" Fill="{DynamicResource BusyIndicatorBrush}" x:Name="Rectangle12">
                   <Rectangle.RenderTransform>
                     <TransformGroup>
                       <RotateTransform Angle="150" />
@@ -112,9 +115,7 @@
     </Setter>
   
     <!--
-      WPF migration note: MultiTrigger 条件或 Setter 为空，已注释保留。
-      原始片段：
-      <MultiTrigger xmlns="https://github.com/avaloniaui">
+      WPF migration note: MultiTrigger 条件�?Setter 为空，已注释保留�?      原始片段�?      <MultiTrigger xmlns="https://github.com/avaloniaui">
                     <MultiTrigger.Conditions>
                       <Condition Property="ProgressBar.IsIndeterminate" Value="True" />
                       <Condition Property="UIElement.IsVisible" Value="True" />
@@ -219,7 +220,6 @@
     </DoubleAnimationUsingKeyFrames>
   </Storyboard>
  -->
-  <!-- LfsProgressBar ControlTheme 已迁至 UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml
-       （Style Selector="ProgressBar.lfs"）：ControlTheme 无 BasedOn 会失去 Fluent 模板，
-       且 {x:Type ProgressBar} 键在延迟构建场景 StaticResource 找不到。 -->
+  <!-- LfsProgressBar ControlTheme 已迁�?UI/UserControls/BinaryDiff/BinaryContentUserControl.axaml
+       （Style Selector="ProgressBar.lfs"）：ControlTheme �?BasedOn 会失�?Fluent 模板�?       �?{x:Type ProgressBar} 键在延迟构建场景 StaticResource 找不到�?-->
 </ResourceDictionary>

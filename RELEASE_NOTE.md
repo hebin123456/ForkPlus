@@ -2,6 +2,40 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.2.0
+
+> 新增 **提交签名（GPG/SSH）与空提交支持**，收口 **AI 窗口弹窗行为**；修复 **链接 worktree 分支显示错误**、**打开仓库慢（轨道图刷出来慢）**、**loading 动画台阶感**、**历史列表作者颜色框中间断开** 四项。应用版本号升至 5.2.0。
+
+### 新功能
+
+- **提交签名**（[CommitUserControl.axaml.cs](src/ForkPlus/UI/UserControls/CommitUserControl.axaml.cs)、[GetCommitSigningGitCommand.cs](src/ForkPlus/Git/Commands/GetCommitSigningGitCommand.cs)、[SetCommitSigningGitCommand.cs](src/ForkPlus/Git/Commands/SetCommitSigningGitCommand.cs)、[GetSigningKeyGitCommand.cs](src/ForkPlus/Git/Commands/GetSigningKeyGitCommand.cs)）：提交面板 ⋯ 菜单新增 **「Sign Commit」**——读写本仓库 `git config commit.gpgsign`（`--local`，显式写 `false` 而非 `--unset`，保证「全局默认开启 + 本仓库关闭」语义可预期），squash / AI WIP 拆分 / amend 等所有 `git commit` 路径由 git 自身读配置天然继承；**「Signing Key」** 子菜单列出可选签名密钥（`gpg.program`/SSH key 等），无 SSH 密钥时提示 "No SSH keys found"。
+- **签名徽标**（[CommitSignatureStatus.cs](src/ForkPlus/Git/CommitSignatureStatus.cs)、[RevisionDetails.cs](src/ForkPlus/Git/RevisionDetails.cs)、[RevisionSummaryUserControl.axaml.cs](src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.axaml.cs)）：提交详情面板按 git pretty format `%G?` / `%GS` 解析签名状态与签名者，显示 **Verified / Unverified / Bad Signature / Expired / ExpiredKey / RevokedKey** 徽标与 "Signed by {0}"；未签名（`N`）不显示徽标。状态枚举与 `%G?` 单字符一一映射，未知字符归为 Error（UI 灰显）。
+- **签名标签**（[CreateTagWindow.axaml.cs](src/ForkPlus/UI/Dialogs/CreateTagWindow.axaml.cs)、[CreateTagGitCommand.cs](src/ForkPlus/Git/Commands/CreateTagGitCommand.cs)、[ForkPlusSettings.cs](src/ForkPlus/Settings/ForkPlusSettings.cs)）：创建标签弹窗新增 **「Sign」** 勾选项（`git tag -s`），命令预览同步展示 `-s`；勾选状态经 `CreateTag_Sign` 持久化（与 `CreateTag_Push` 同一模式）。
+- **空提交**（[CommitUserControl.axaml](src/ForkPlus/UI/UserControls/CommitUserControl.axaml)、[CommitGitCommand.cs](src/ForkPlus/Git/Commands/CommitGitCommand.cs)）：提交面板新增 **「Allow Empty Commit」**（`--allow-empty`）与 **「Skip Commit Hooks」**（`--no-verify`）复选框；勾选空提交后无暂存文件也放行提交按钮并刷新警告文案。
+- **AI 窗口行为收口**（[AiWindowService.cs](src/ForkPlus/UI/Dialogs/AiWindowService.cs)、[AiModelComboBoxHelper.cs](src/ForkPlus/UI/Dialogs/AiModelComboBoxHelper.cs)）：AI 解释 commit / AI PR 描述 / AI 检视 / AI 辅助开发 / AI 提交编排此前各自 new 窗口、各自设 owner/尺寸/未配置提示，行为漂移。现统一为：**非模态、owner=主窗口、统一尺寸 1080×720（最小 720×480）、居中主窗口所在屏幕（多显示器不乱跳）、主窗口最大化时跟随最大化、显示在任务栏**（被主窗口遮住时可从任务栏找回）；**未配置 AI 统一拦截**——模态提示框带「打开偏好设置」按钮，直达 AI Enhancement 标签；右上角**模型下拉框统一**——先以当前选中模型占位，后台拉 `/v1/models` 完整列表后替换填充，切换模型即保存设置。
+
+### 修复
+
+- **链接 worktree 分支显示错误**（[GitModule.cs](src/ForkPlus/Git/GitModule.cs)、[BtReferencesExtensions.cs](src/ForkPlus/Git/Commands/BtReferencesExtensions.cs)、[GetReferencesGitCommand.cs](src/ForkPlus/Git/Commands/GetReferencesGitCommand.cs)）：链接 worktree 的 gitdir 里没有 `refs/`（全部在 common dir），native `bt_get_references` 手工扫 `<gitdir>/refs + packed-refs` 又不解析 commondir，只能扫出 ORIG_HEAD 等伪 ref——分支列表为空、ActiveBranchIndex 恒 null（UI 误显示 "detached HEAD"），或把**主 worktree 的 HEAD 分支显示成本 worktree 的当前分支**。现 refs 枚举改用 `GitModule.ReferencesGitDir()`（worktree 场景返回 common dir），HEAD symref 由 `ResolveRepositoryHead` 按**本 worktree 自身的 `<worktreeGitDir>/HEAD`** 修正/补齐；本 worktree 处于 detached HEAD 时移除 HEAD 条目，UI 与 git 一致显示 detached 状态。其余 native 调用走 libgit2 语义、正确解析 commondir，不受影响。
+- **打开仓库慢（轨道图刷出来慢）**（[GitModule.cs](src/ForkPlus/Git/GitModule.cs)）：HEAD unborn 检测由 `git rev-parse --verify HEAD`（RefreshRepositoryReferences / GetRepositoryState 各 spawn 一次；在进程创建被终端安全软件拦截的机器上一次 spawn 实测 1~2.4s，占打开仓库 3.3s 数据管线的 2.4s）改为**纯文件检查** `IsHeadUnborn()`——读 `<gitdir>/HEAD` 判 symref，再查 loose ref + packed-refs 确认目标分支不存在即 unborn；detached HEAD / 读失败保守走原流程，orphan 分支行为与旧版一致，不引入回归。
+- **loading 动画台阶感**（[SpinnerBehavior.cs](src/ForkPlus/UI/CircularProgressBar/SpinnerBehavior.cs)、[Progressbar.axaml](src/ForkPlus/Theme/Styles/Progressbar.axaml)）：30ms 采样下 0.05s 的爬升/衰减段只剩 1~2 个可见档位，追逐呈台阶感——「突然闪白再淡出」。采样间隔 30ms→16ms（对齐 WPF Storyboard 的 60fps 节奏）；并补**峰前爬升段**（峰前 0.05s 由 0.3 线性爬升至 1，首矩形例外与原 Storyboard 首帧一致）——缺失此段时各矩形在波峰处由 0.3 瞬间跳 1。
+- **历史列表作者颜色框中间断开**（[RevisionListViewUserControl.axaml](src/ForkPlus/UI/UserControls/RevisionListViewUserControl.axaml)）：头像半框无右边框且右 Margin 4、作者半框无左边框——两半之间 4px 空档导致边框不闭合。对齐 WPF 原版闭合结构：头像右 Margin 归零，作者半框补左边框，两半相邻拼接闭合。
+- **作者邮箱选色弹窗过期数据**（[RevisionSummaryUserControl.axaml.cs](src/ForkPlus/UI/UserControls/RevisionSummaryUserControl.axaml.cs)）：详情刷新落地后对账选色弹窗——仍开着的弹窗若来自上一行（邮箱已变）立即关闭，避免对旧邮箱选色；延迟开窗（详情过期期间用户已点箭头）在数据就绪后自动补开。
+
+### 构建
+
+- 新增 7 个回归测试：[BtReferencesHeadResolutionTests.cs](src/ForkPlus.Tests/BtReferencesHeadResolutionTests.cs)（worktree HEAD symref 修正）、[CommitSigningTests.cs](src/ForkPlus.Tests/CommitSigningTests.cs)（签名配置读写与徽标解析）、[CircularProgressBarSpinnerGeometryTests.cs](src/ForkPlus.Tests/CircularProgressBarSpinnerGeometryTests.cs)（spinner 时序几何）、[StartupGitSpawnPerfTests.cs](src/ForkPlus.Tests/StartupGitSpawnPerfTests.cs)（打开仓库不再 spawn rev-parse）、[UserColorsE2eTests.cs](src/ForkPlus.Tests/UserColorsE2eTests.cs)、[UserColorsPopupTests.cs](src/ForkPlus.Tests/UserColorsPopupTests.cs)（选色弹窗对账）、[WorktreeRefreshShortCircuitTests.cs](src/ForkPlus.Tests/WorktreeRefreshShortCircuitTests.cs)（worktree 刷新短路）；覆盖率清单同步登记（[ClassCoverageManifest.cs](src/ForkPlus.Tests/ClassCoverageManifest.cs)、[SourceFileCoverageManifest.cs](src/ForkPlus.Tests/SourceFileCoverageManifest.cs)）。
+- 八语言文件补签名 / 空提交 / AI 未配置提示等新文案（[Languages/](src/ForkPlus/Languages)）。
+
+### 平台构建
+
+| 平台 | RID | 包名 |
+|------|-----|------|
+| Windows x64 | `win-x64` | `ForkPlus-5.2.0-windows-x64.zip` |
+| Linux x64 | `linux-x64` | `ForkPlus-5.2.0-linux-x64.zip` |
+| Linux ARM64 | `linux-arm64` | `ForkPlus-5.2.0-linux-arm64.zip` |
+| macOS ARM64 | `osx-arm64` | `ForkPlus-5.2.0-macos-arm64.zip` |
+
 ## v5.1.6
 
 > 修复 **FileDiff（对比）视图里选中 2 行时，外面的暂存/丢弃浮窗范围却有约 4 行**——选区边框块纵向虚高 1.5~2.5 倍，浮窗按钮定位也随之偏移。应用版本号升至 5.1.6。

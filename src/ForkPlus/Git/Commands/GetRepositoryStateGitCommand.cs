@@ -15,8 +15,9 @@ namespace ForkPlus.Git.Commands
 			// 直接返回 OK，跳过 GetReferencesGitCommand 调用——该命令直接调用 native
 			// bt_get_references，在空仓库时行为不确定（可能返回错误导致整个 status 刷新
 			// 失败，UI 看不到 untracked 文件；用户反馈"新建文件夹感知不到"即此问题）。
-			// 检测方式同 RefreshRepositoryReferencesGitCommand.IsEmptyRepository。
-			if (IsEmptyRepository(gitModule))
+			// 检测方式同 RefreshRepositoryReferencesGitCommand：IsHeadUnborn 纯文件检测
+			//（2026-10 性能修复：旧版每次 spawn git rev-parse，首屏状态路径多付 ~2.4s）。
+			if (gitModule.IsHeadUnborn())
 			{
 				return GitCommandResult<RepositoryState>.Success(new RepositoryState.OK());
 			}
@@ -436,22 +437,7 @@ namespace ForkPlus.Git.Commands
 		}
 
 		/// <summary>检测仓库是否为空（git init 完毕，没有任何 commit）。
-		/// 与 RefreshRepositoryReferencesGitCommand.IsEmptyRepository 相同的实现：
-		/// git rev-parse --verify HEAD 失败即说明空仓库。</summary>
-		private static bool IsEmptyRepository(GitModule gitModule)
-		{
-			try
-			{
-				GitRequestResult result = new GitRequest(gitModule)
-					.Command("rev-parse", "--verify", "HEAD")
-					.Execute(silent: true);
-				return !result.Success;
-			}
-			catch (Exception ex)
-			{
-				Log.Warn("IsEmptyRepository check failed: " + ex.Message);
-				return false;
-			}
-		}
+		/// 已改为 <see cref="GitModule.IsHeadUnborn"/> 的纯文件检测（零 git 子进程），
+		/// 语义与旧版 git rev-parse --verify HEAD 一致，见调用处注释。</summary>
 	}
 }

@@ -1,4 +1,7 @@
-<dialogs:ForkPlusDialogWindow Height="520" Width="860" MinHeight="320" MinWidth="560" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiSuggestionPreviewWindow" xmlns="https://github.com/avaloniaui" CanResize="True">
+<!-- 尺寸与 AiWindowService.DefaultWidth/DefaultHeight/MinimumWidth/MinimumHeight 同规格（1080×720，最小 720×480）。
+     此处不走 AiWindowService.ApplyWindowMetrics（该窗口是模态 ForkPlusDialogWindow 子窗口），
+     声明在 XAML 以保留 ForkPlusDialogWindow.InitializeDialogChrome 的 LayoutScaling 缩放机制。 -->
+<dialogs:ForkPlusDialogWindow Height="720" Width="1080" MinHeight="480" MinWidth="720" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:dialogs="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiSuggestionPreviewWindow" xmlns="https://github.com/avaloniaui" CanResize="True">
   <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="80" />

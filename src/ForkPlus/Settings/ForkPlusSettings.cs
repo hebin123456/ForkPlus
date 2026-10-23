@@ -899,6 +899,8 @@ namespace ForkPlus.Settings
 
 		private bool _createTag_push;
 
+		private bool _createTag_sign;
+
 		private bool _applyStash_DeleteAfterApply;
 
 		private bool _cherryPick_AppendOriginSha;
@@ -1308,6 +1310,19 @@ namespace ForkPlus.Settings
 			set
 			{
 				_createTag_push = value;
+			}
+		}
+
+		// WS：创建标签时默认勾选"Sign"（git tag -s）。与 CreateTag_Push 同一持久化模式。
+		public bool CreateTag_Sign
+		{
+			get
+			{
+				return _createTag_sign;
+			}
+			set
+			{
+				_createTag_sign = value;
 			}
 		}
 
@@ -2826,6 +2841,7 @@ namespace ForkPlus.Settings
 			bool pull_StashAndReapply = json["Pull_StashAndReapply"]?.Value<bool>() ?? false;
 			bool push_PushAllTags = json["Push_PushAllTags"]?.Value<bool>() ?? false;
 			bool createTag_Push = json["CreateTag_Push"]?.Value<bool>() ?? false;
+			bool createTag_Sign = json["CreateTag_Sign"]?.Value<bool>() ?? false;
 			bool saveStash_StageNewFiles = json["SaveStash_StageNewFiles"]?.Value<bool>() ?? false;
 			bool applyStash_DeleteAfterApply = json["ApplyStash_DeleteAfterApply"]?.Value<bool>() ?? false;
 			bool interactiveRebase_CreateBackup = json["InteractiveRebase_CreateBackup"]?.Value<bool>() ?? false;
@@ -2976,6 +2992,7 @@ namespace ForkPlus.Settings
 				Pull_StashAndReapply = pull_StashAndReapply,
 				Push_PushAllTags = push_PushAllTags,
 				CreateTag_Push = createTag_Push,
+				CreateTag_Sign = createTag_Sign,
 				SaveStash_StageNewFiles = saveStash_StageNewFiles,
 				ApplyStash_DeleteAfterApply = applyStash_DeleteAfterApply,
 				InteractiveRebase_CreateBackup = interactiveRebase_CreateBackup,
@@ -3244,6 +3261,10 @@ namespace ForkPlus.Settings
 				{
 					"CreateTag_Push",
 					new JValue(target.CreateTag_Push)
+				},
+				{
+					"CreateTag_Sign",
+					new JValue(target.CreateTag_Sign)
 				},
 				{
 					"CreateBranch_Checkout",

@@ -526,6 +526,15 @@ namespace ForkPlus.UI
 					uncachedShas.Add(shaAtRow);
 				}
 			}
+			// 全部命中缓存的页（预加载路径常见）：无需任何 bt 调用。必须在此短路——
+			// 空 oid 数组会被 bt_get_revision_headers 以 "invalid input" 拒绝（2026-10
+			// "轨道图好卡"审计：用户日志 3 分钟 291 次该错误，即此路径每次刷新白付一次
+			// 失败的 native 调用 + Error 日志）。
+			if (uncachedShas.Count == 0)
+			{
+				_activePageRequests.Remove(requestedPage.Index);
+				return;
+			}
 			RevisionVisualGraph revisionVisualGraph = _visualGraph;
 			_jobQueue.Add(PreferencesLocalization.Current("Load revision headers"), delegate
 			{
@@ -533,6 +542,13 @@ namespace ForkPlus.UI
 				if (!gitCommandResult.Succeeded)
 				{
 					Log.Error(gitCommandResult.Error.FriendlyDescription);
+					// 失败同样必须解除本页占用——旧代码只在成功分支移除，失败页会永久滞留
+					// _activePageRequests，被上方 Contains 守卫挡死，该页 headers 从此不再
+					// 加载（用户感知：某些行的作者/日期列一直空白，且不再自愈）。
+					global::Avalonia.Threading.Dispatcher.UIThread.Post(delegate
+					{
+						_activePageRequests.Remove(requestedPage.Index);
+					});
 				}
 				else
 				{

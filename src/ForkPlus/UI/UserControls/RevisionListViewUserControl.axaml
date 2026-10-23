@@ -441,7 +441,10 @@
               </controls:RevisionSubjectTextField.HighlightString>
             </controls:RevisionSubjectTextField>
           </Grid>
-          <Border Grid.Column="1" Margin="4,2,4,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
+          <!-- Bug 修复（作者颜色框中间断开）：头像半框无右边框（1,1,0,1）+ 右 Margin 4、
+               作者半框无左边框（0,1,1,1）→ 两半之间 4px 空档，框不闭合。对齐 WPF 原版
+               闭合结构：头像右 Margin 归零，作者半框补左边框，两半相邻拼接闭合。 -->
+          <Border Grid.Column="1" Margin="4,2,0,2" Width="18" BorderThickness="1,1,0,1" CornerRadius="3,0,0,3">
             <Border.Background>
               <Binding Path="UserBackgroundBrush" />
             </Border.Background>
@@ -454,7 +457,7 @@
               </controls:AvatarImage.UserIdentity>
             </controls:AvatarImage>
           </Border>
-          <Border Grid.Column="2" Margin="0,2,0,2" Width="120" BorderThickness="0,1,1,1" CornerRadius="0,3,3,0">
+          <Border Grid.Column="2" Margin="0,2,0,2" Width="120" BorderThickness="1" CornerRadius="0,3,3,0">
             <Border.BorderBrush>
               <Binding Path="UserBackgroundBrush" />
             </Border.BorderBrush>

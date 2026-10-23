@@ -134,6 +134,8 @@ namespace ForkPlus.UI.Commands
 			}
 			string message = commitUserControl.FullCommitMessage;
 			bool amend = commitUserControl.AmendMode;
+			bool noVerify = commitUserControl.NoVerifyMode;
+			bool allowEmpty = commitUserControl.AllowEmptyMode;
 			int stagedCount = commitUserControl.StageFileUserControl.StagedItemsCount;
 			string name = amend
 			 ? PreferencesLocalization.Current("Amend")
@@ -148,7 +150,7 @@ namespace ForkPlus.UI.Commands
 		  ? PreferencesLocalization.FormatCurrent("{0} file...", stagedCount)
 		  : PreferencesLocalization.FormatCurrent("{0} files...", stagedCount);
 		 monitor.Update(0.0, monitorMsg);
-			GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor);
+			GitCommandResult gitResult = new CommitGitCommand().Execute(gitModule, message, amend, commitAndPush, monitor, noVerify, allowEmpty);
 			repositoryUserControl.Dispatcher.Post(delegate
 			{
 				commitUserControl.CommittingInProgress = false;

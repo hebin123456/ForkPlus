@@ -41,9 +41,13 @@ namespace ForkPlus.UI.UserControls
 		private void ColorButton_Changed(object sender, RoutedEventArgs e)
 		{
 			e.Handled = true;
-			if (sender is ToggleButton { DataContext: UserColorViewModel dataContext })
+			if (sender is ToggleButton toggleButton && toggleButton.DataContext is UserColorViewModel dataContext)
 			{
-				int selectedColor = (dataContext.IsSelected ? (dataContext.BrushIndex - 1) : (-1));
+				// Bug 修复（点色块无效果）：Avalonia 的 TwoWay 绑定写回发生在 IsCheckedChanged
+				// 事件之后（headless 实证见 UserColorsPopupTests），原代码读 dataContext.IsSelected
+				// 恒为点击前旧值 false → selectedColor 恒为 -1 → 写入 colorId 0（无色）。
+				// 改读 sender 的 IsChecked（事件触发时已是新值）。
+				int selectedColor = (toggleButton.IsChecked == true ? (dataContext.BrushIndex - 1) : (-1));
 				UpdateUserColor(selectedColor);
 			}
 			HidePopup();

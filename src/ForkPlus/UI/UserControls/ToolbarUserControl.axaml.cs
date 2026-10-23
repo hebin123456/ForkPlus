@@ -142,30 +142,13 @@ namespace ForkPlus.UI.UserControls
 				{
 					return;
 				}
-				if (!ForkPlus.Accounts.AiServices.OpenAiService.IsAiReviewConfigured())
+				if (!ForkPlus.UI.Dialogs.AiWindowService.EnsureAiConfigured())
 			{
-				// 用 ForkPlus 自带 MessageBoxWindow 替代原生 MessageBox，文案走 i18n。
-				// Submit 按钮 = 打开偏好设置（AI Enhancement 标签），Cancel = 关闭。
-				bool openPrefs = new ForkPlus.UI.Dialogs.MessageBoxWindow(
-					"AI is not configured.",
-					"AI development requires API configuration. Please configure service URL and API Key in Preferences → AI Enhancement.",
-					"Open Preferences",
-					"Close",
-					showCancelButton: true,
-					width: 560.0,
-					showWarningIcon: false
-				).ShowDialog().GetValueOrDefault();
-				if (openPrefs)
-				{
-					ForkPlus.UI.Dialogs.PreferencesWindow prefs = new ForkPlus.UI.Dialogs.PreferencesWindow();
-					// 程序集内可访问 internal 字段，直接定位到 AI Enhancement 标签
-					try { prefs.PreferencesTabControl.SelectedItem = prefs.AiReviewTabItem; } catch { }
-					prefs.ShowDialog();
-				}
+				// v3.10.3：未配置拦截统一走 AiWindowService（提示框带"打开偏好设置"深链，直达 AI Enhancement 标签）
 				return;
 			}
 			ForkPlus.UI.Dialogs.AiDevelopmentWindow window = new ForkPlus.UI.Dialogs.AiDevelopmentWindow(repositoryUserControl, gitModule);
-			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
+			ForkPlus.UI.Dialogs.AiWindowService.Show(window); // v3.10.3：弹窗行为统一（非模态+owner+任务栏+跟随主窗口屏幕）
 			};
 			BranchToolbarButton.Click += delegate
 			{

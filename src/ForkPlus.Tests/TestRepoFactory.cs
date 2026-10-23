@@ -45,6 +45,21 @@ namespace ForkPlus.Tests
 			return root;
 		}
 
+		/// <summary>双作者仓库（供颜色标记目标回归）：Test（test@example.com）提交 +
+		/// Other（other@example.com，--author 指定）提交，作者不同、可区分"标记到哪一行"。
+		/// 切换选中行后修订详情异步加载存在窗口——颜色弹窗必须标记当前选中行的作者，
+		/// 而非详情尚未刷新完成的上一行作者（Newest first：Other 行在上，Test 行在下）。</summary>
+		public static string CreateTwoAuthors()
+		{
+			string root = NewTempDir("twoauthors");
+			Init(root);
+			Commit(root, "a.txt", "a\n", "commit by Test");
+			File.WriteAllText(Path.Combine(root, "b.txt"), "b\n");
+			Run(root, "add b.txt");
+			Run(root, "commit -q -m " + Quote("commit by Other") + " --author=" + Quote("Other <other@example.com>"));
+			return root;
+		}
+
 		/// <summary>搜索滚动仓库：最早一条含唯一关键词 zqneedle（列表行号最大、初始视口外），其后 80 条填充提交。</summary>
 		public static string CreateSearchScroll()
 		{

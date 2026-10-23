@@ -14,7 +14,7 @@ namespace ForkPlus.UI.CircularProgressBar
 	/// <summary>
 	/// 修复（2026-09-14，"loading 动画转不起来"）：WPF 原版 CircularProgressBar 靠
 	/// BusyIndicatorStoryboard 驱动 12 个矩形的透明度追逐（周期 0.55s、相邻矩形相位差
-	/// 0.05s、亮度 1→0.85→0.6→0.3 线性衰减后保持 0.3）；迁移 Avalonia 时 Storyboard/
+			/// 0.05s、峰前 0.05s 由 0.3 爬升至 1，峰后 1→0.85→0.6→0.3 线性衰减后保持 0.3）；迁移 Avalonia 时 Storyboard/
 	/// MultiTrigger 无对应物被整体注释（见 Theme/Styles/Progressbar.axaml），spinner
 	/// 退化为 12 个静止半透明点。本附加行为用 DispatcherTimer 按原 Storyboard 时序逐帧
 	/// 计算各矩形 Opacity，在 CircularProgressBar ControlTheme 中统一挂载（IsActive=True），
@@ -26,7 +26,9 @@ namespace ForkPlus.UI.CircularProgressBar
 		private const double CycleSeconds = 0.55;
 		private const double StepSeconds = 0.05;
 		private const double IdleOpacity = 0.3;
-		private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(30);
+		// 修复（2026-10-22，"loading 动画看着奇怪"）：30ms 采样下 0.05s 的爬升/衰减段
+		// 只剩 1~2 个可见档位，追逐呈台阶感；对齐 WPF Storyboard 的 60fps 节奏取 ~1 帧。
+		private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(16);
 
 		public static readonly AttachedProperty<bool> IsActiveProperty =
 			AvaloniaProperty.RegisterAttached<SpinnerBehavior, ProgressBar, bool>("IsActive");
@@ -238,11 +240,19 @@ namespace ForkPlus.UI.CircularProgressBar
 				return null;
 			}
 
-			/// <summary>WPF Storyboard 等价时序：矩形 i 的"波峰"在 0.05*i 秒处抵达，随后线性衰减并保持暗态。</summary>
+			/// <summary>WPF Storyboard 等价时序：矩形 i 的"波峰"在 0.05*i 秒处抵达，峰前
+			/// 0.05s 由 0.3 线性爬升至 1（首矩形例外，原 Storyboard 首帧 KeyTime=0 即为 1，
+			/// 周期边界直接跳变），峰后 0.15s 按 1→0.85→0.6→0.3 线性衰减并保持暗态。</summary>
 			private static double OpacityAt(double elapsed, int index)
 			{
 				double u = elapsed - StepSeconds * index;
 				u -= Math.Floor(u / CycleSeconds) * CycleSeconds;
+				if (index > 0 && u >= CycleSeconds - StepSeconds)
+				{
+					// 峰前爬升段：0.3→1。缺失此段时各矩形在波峰处由 0.3 瞬间跳 1，
+					// 呈"突然闪白再淡出"而非平滑追逐（原 Storyboard 每段动画的末段）。
+					return IdleOpacity + (1.0 - IdleOpacity) * ((u - (CycleSeconds - StepSeconds)) / StepSeconds);
+				}
 				if (u < StepSeconds)
 				{
 					return 1.0 + (0.85 - 1.0) * (u / StepSeconds);

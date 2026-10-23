@@ -162,8 +162,11 @@ namespace ForkPlus.Git.Commands
 			// RefreshReferences 阶段（这里），根本走不到那段。v2.1.4 把快速路径前移到这里，
 			// 在任何 native biturbo 调用之前就检测空仓库并直接返回 ReferenceStorage。
 			//
-			// 检测方式：git rev-parse --verify HEAD 失败说明仓库没有任何 commit（git init 完毕状态）。
-			// 这是 100% 准确的判定，开销是一次 git 子进程调用（仅首次加载时，可接受）。
+			// 性能修复（2026-10，"打开仓库首屏轨道图慢"）：原检测方式 git rev-parse --verify HEAD
+			// 每次引用刷新 spawn 一个 git 子进程，在进程创建被终端安全软件拦截的机器上实测
+			// 一次 ~1-2.4s，且位于首屏关键路径（3.3s 数据管线里它占 2.4s）。改为
+			// GitModule.IsHeadUnborn() 纯文件检查（loose ref + packed-refs），零子进程，
+			// 判定语义与 rev-parse --verify HEAD 一致（unborn HEAD ⇔ 空仓库）。
 			//
 			// v2.1.4 修订：早期版本返回完全空的 ReferenceStorage（refs=[]），导致 ActiveBranchIndex
 			// 为 null，下游 RepositoryReferences.ActiveBranch 也为 null，StatusUserControl 把它
@@ -171,7 +174,7 @@ namespace ForkPlus.Git.Commands
 			// branch 名。这里读 .git/HEAD 解析 symref target，构建一个 unborn local branch
 			// （Sha.Zero），让 UI 能正确显示 branch 名。HeadSha 保持 null，让 GetRevisionStorageGitCommand
 			// 的空仓库快速路径仍然生效（避免 bt_get_commits 死循环）。
-			if (IsEmptyRepository(gitModule))
+			if (gitModule.IsHeadUnborn())
 			{
 				Log.Info("Empty repository detected (no commits yet), skipping native biturbo calls");
 				ReferenceStorage.UpstreamTrackingReference[] emptyUpstreams = gitConfig.ReadUpstreams();
@@ -179,9 +182,10 @@ namespace ForkPlus.Git.Commands
 			}
 			ReferenceStorage.UpstreamTrackingReference[] array = gitConfig.ReadUpstreams();
 			int hashCode = HashHelper.GetHashCode(array);
+			bool isWorktree = gitModule.Type == ModuleType.Worktree;
 			Benchmarker benchmarker = new Benchmarker("bt_get_references");
 			BtReferences out_result = default(BtReferences);
-			BtResult btResult = Bt.bt_get_references(gitModule.GitDir(), skipTags, ref out_result);
+			BtResult btResult = Bt.bt_get_references(gitModule.ReferencesGitDir(), skipTags, ref out_result);
 			benchmarker.ReportElapsed();
 			if (btResult != 0)
 			{
@@ -194,7 +198,20 @@ namespace ForkPlus.Git.Commands
 			DateTime[] committerDates;
 			if (oldReferences != null)
 			{
-				if (oldReferences.RefsHash == out_result.hash && oldReferences.UpstreamsHash == hashCode)
+				// worktree 快路径（2026-10 修订，"轨道图好卡"审计）：此前对 worktree 一刀切
+				// 禁用 RefsHash 相等快路径——refs 从 common dir 枚举（见 GitModule.ReferencesGitDir），
+				// bt 的 hash 只覆盖 common refs + **主 worktree** 的 HEAD symref，不含本链接
+				// worktree 的 HEAD，在 worktree 里切换分支后 hash 不变，直接返回旧引用会让
+				// ActiveBranch 停留旧值。但一刀切禁用的代价远超预期：worktree 每次刷新都新建
+				// ReferenceStorage，下游 RefreshRepositoryDataGitCommand 的"数据未变"短路
+				//（引用相等比较）永不命中 → 每次刷新都判定"数据已变" → 全量重建轨道图 +
+				// 重置选中项 + git show 重启（用户日志实测：worktree 仓库 3 分钟 293 次全量
+				// 刷新，普通仓库同期仅 2-5 次；普通仓库正是靠这条快路径把刷新降级为 no-op）。
+				// 正确做法是把本 worktree 自身的 HEAD 原文纳入比较键：HEAD 未变（含 detached
+				// sha 场景，比较的是 HEAD 文件全文）且 hash/上游未变 → 安全复用旧引用；
+				// HEAD 变了 → 走下面的部分复用路径，ResolveRepositoryHead 按新 HEAD 修正。
+				if (oldReferences.RefsHash == out_result.hash && oldReferences.UpstreamsHash == hashCode
+					&& (!isWorktree || WorktreeHeadUnchanged(gitModule, oldReferences.HeadSnapshot)))
 				{
 					return GitCommandResult<ReferenceStorage>.Success(oldReferences);
 				}
@@ -260,36 +277,54 @@ namespace ForkPlus.Git.Commands
 			}
 			ulong hash = out_result.hash;
 			Bt.bt_release_references(ref out_result);
-			// Migration note：native biturbo 在 Linux 上 bt_get_references 不返回 "HEAD" symref
-			// （实测仅返回 refs/remotes/origin/HEAD；Windows 原版返回 HEAD）。缺失导致
-			// ReferenceStorage.New 里 text=null → ActiveBranchIndex=null → 本地分支
-			// IsActive 恒 false：侧栏当前分支不加粗、不显示 ActiveBranch 对勾图标、
-			// 引用徽章当前分支不加粗。读 .git/HEAD 兜底补一条 HEAD symref。
-			(symrefs2, symrefTargets) = BtReferencesExtensions.EnsureHeadSymref(gitModule.GitDir(), symrefs2, symrefTargets);
-			return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(refs, shas, hash, committerDates, symrefs2, symrefTargets, array, hashCode));
+			// Migration note：把 symrefs 里的 HEAD 条目对齐到本模块自己的 HEAD。
+			// ① Linux 上 bt_get_references 不返回 "HEAD" symref（实测仅返回 refs/remotes/origin/HEAD；
+			// Windows 原版返回 HEAD），缺失导致 ReferenceStorage.New 里 ActiveBranchIndex=null →
+			// 本地分支 IsActive 恒 false（侧栏当前分支不加粗、无对勾、引用徽章不加粗），
+			// 读 .git/HEAD 兜底补齐。② 链接 worktree 的 refs 从 common dir 枚举，bt 返回的
+			// HEAD symref 是主 worktree 的 HEAD（错的），需按 <worktreeGitDir>/HEAD 覆盖/移除，
+			// 否则把主 worktree 的分支显示成本仓库当前分支、或本 worktree detached 时误显示
+			// 主 worktree 的分支。
+			(symrefs2, symrefTargets) = BtReferencesExtensions.ResolveRepositoryHead(gitModule, symrefs2, symrefTargets);
+			// worktree 记录本 worktree HEAD 原文快照（快路径比较键，见上方注释）；
+			// 非 worktree 传 null（bt 的 hash 已覆盖其 HEAD，无需额外键）。
+			return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(refs, shas, hash, committerDates, symrefs2, symrefTargets, array, hashCode, isWorktree ? ReadHeadFileContent(gitModule) : null));
 		}
 
-		/// <summary>检测仓库是否为空（git init 完毕，没有任何 commit）。
-		/// 用 git rev-parse --verify HEAD——失败即说明 HEAD 无法解析为有效 commit，
-		/// 这是空仓库的 100% 准确判定（detached HEAD 但有 commit 时也能正确返回成功）。
-		/// 开销是一次 git 子进程调用，仅首次加载时执行，可接受。</summary>
-		private static bool IsEmptyRepository(GitModule gitModule)
+		/// <summary>本 worktree 的 HEAD 文件自旧引用构造以来是否未变。
+		/// 比较键是 <see cref="GitModule.GitDir"/> 下 HEAD 文件的原文（trimmed）——
+		/// symref（"ref: refs/heads/xxx"）与 detached sha 两种形态都覆盖。
+		/// 旧快照为 null（旧实例建于本机制之前，或非 worktree 实例）时视为已变，
+		/// 走重建路径一次后即恢复正常比较。</summary>
+		private static bool WorktreeHeadUnchanged(GitModule gitModule, [Null] string oldHeadSnapshot)
+		{
+			if (oldHeadSnapshot == null)
+			{
+				return false;
+			}
+			return string.Equals(ReadHeadFileContent(gitModule), oldHeadSnapshot, StringComparison.Ordinal);
+		}
+
+		/// <summary>读取 gitDir 下 HEAD 文件原文（trimmed）。读取失败返回 null
+		///（视为"已变"，保守走重建路径，绝不因 I/O 异常误复用旧引用）。
+		/// 不复用 ReadHeadSymrefTarget：那个只返回 symref target，detached HEAD 返回 null
+		/// 无法区分"detached 未变"和"读取失败"，这里比较的是文件全文。</summary>
+		[Null]
+		private static string ReadHeadFileContent(GitModule gitModule)
 		{
 			try
 			{
-				// silent:true 避免空仓库时 stderr 输出 "fatal: Needed a single revision" 污染日志
-				GitRequestResult result = new GitRequest(gitModule)
-					.Command("rev-parse", "--verify", "HEAD")
-					.Execute(silent: true);
-				return !result.Success;
+				return File.ReadAllText(PathHelper.Combine(gitModule.GitDir(), "HEAD")).Trim();
 			}
-			catch (Exception ex)
+			catch
 			{
-				// 检测失败时不阻塞加载，让原流程继续走（保守策略：宁可尝试 native 也不要误判为空）
-				Log.Warn("IsEmptyRepository check failed: " + ex.Message);
-				return false;
+				return null;
 			}
 		}
+
+		/// <summary>检测仓库是否为空（git init 完毕，没有任何 commit）。
+		/// 已改为 <see cref="GitModule.IsHeadUnborn"/> 的纯文件检测（零 git 子进程），
+		/// 语义与旧版 git rev-parse --verify HEAD 一致，见调用处注释。</summary>
 
 		/// <summary>为空仓库构建含 unborn branch 的 ReferenceStorage。
 		/// 空仓库 HEAD 是 symref 指向不存在的 refs/heads/master（或其他 branch 名），

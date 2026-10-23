@@ -15,9 +15,13 @@ namespace ForkPlus.UI.Commands
 
 		public void Execute(RepositoryUserControl repositoryUserControl, AiCodeReviewTarget target, [Null] AiAgent aiAgent = null)
 		{
-			// 修复链 23：非模态窗口用 ShowAtOwnerScreen 跟随主窗口所在屏幕
-			// （原 Show() + 构造函数 CenterScreen 会把窗口甩到主显示器）。
-			new AiCodeReviewWindow(repositoryUserControl, target, aiAgent).ShowAtOwnerScreen();
+			// v3.10.3：弹窗行为统一走 AiWindowService（非模态 + owner=主窗口 + 任务栏 + 跟随主窗口所在屏幕）。
+			// agent 路径（如 Claude CLI）不依赖 OpenAI 配置，不做未配置拦截。
+			if (aiAgent == null && !AiWindowService.EnsureAiConfigured())
+			{
+				return;
+			}
+			AiWindowService.Show(new AiCodeReviewWindow(repositoryUserControl, target, aiAgent));
 		}
 	}
 }

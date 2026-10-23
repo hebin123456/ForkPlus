@@ -80,7 +80,8 @@ namespace ForkPlus.Git.Interaction
 			try
 			{
 				monitor?.Append(_path, _command);
-				string path = _path ?? App.GitPath;
+				// 性能（2026-10）：bin/cmd shim → mingw64 真实 exe，省一次进程创建（见 GitExecutableResolver）
+				string path = GitExecutableResolver.Resolve(_path ?? App.GitPath);
 				string currentDir = _currentDir;
 				string[] args = _command?.ToArray() ?? new string[0];
 				string[] env = CreateDefaultEnv(currentDir, _env);
@@ -149,7 +150,8 @@ namespace ForkPlus.Git.Interaction
 			{
 				using (new GCHandleProvider(this))
 				{
-					string path = _path ?? App.GitPath;
+					// 性能（2026-10）：bin/cmd shim → mingw64 真实 exe，省一次进程创建（见 GitExecutableResolver）
+					string path = GitExecutableResolver.Resolve(_path ?? App.GitPath);
 					string currentDir = _currentDir;
 					string[] args = _command?.ToArray() ?? new string[0];
 					string[] env = CreateDefaultEnv(currentDir, _env);
@@ -618,7 +620,8 @@ namespace ForkPlus.Git.Interaction
 		{
 			ProcessStartInfo processStartInfo = new ProcessStartInfo
 			{
-				FileName = App.GitPath,
+				// 性能（2026-10）：bin/cmd shim → mingw64 真实 exe，省一次进程创建（见 GitExecutableResolver）
+				FileName = GitExecutableResolver.Resolve(App.GitPath),
 				Arguments = (_command?.ArgumentsString ?? ""),
 				UseShellExecute = false,
 				RedirectStandardOutput = true,

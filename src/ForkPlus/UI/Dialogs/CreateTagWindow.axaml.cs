@@ -63,6 +63,11 @@ namespace ForkPlus.UI.Dialogs
 				tagName = "<tag-name>";
 			}
 			var parts = new System.Collections.Generic.List<string> { "git", "tag", "-a" };
+			// WS：签名标签（git tag -s）在预览中同步展示
+			if (SignCheckBox.IsChecked.GetValueOrDefault())
+			{
+				parts.Add("-s");
+			}
 			string message = TagMessageTextBox.Text;
 			if (!string.IsNullOrEmpty(message))
 			{
@@ -99,9 +104,12 @@ namespace ForkPlus.UI.Dialogs
 			ReferenceTextBox tagNameTextBox = TagNameTextBox;
 			ForkPlus.Git.Reference[] tags = _tags;
 			tagNameTextBox.SetAutocompleteProvider(new ReferenceNameAutocompleteProvider(tags));
-			PushCheckBox.Content = Translate((remotes.Length > 1) ? "Push to all remotes" : "Push");
-			PushCheckBox.IsChecked = ForkPlusSettings.Default.CreateTag_Push;
-			RefreshButtonTitle();
+		PushCheckBox.Content = Translate((remotes.Length > 1) ? "Push to all remotes" : "Push");
+		PushCheckBox.IsChecked = ForkPlusSettings.Default.CreateTag_Push;
+		// WS：签名标签开关（git tag -s），持久化模式与 CreateTag_Push 一致
+		SignCheckBox.Content = Translate("Sign");
+		SignCheckBox.IsChecked = ForkPlusSettings.Default.CreateTag_Sign;
+		RefreshButtonTitle();
 			// InitializeComponent 期间 AddCommandPreview 已执行，但此时 TagNameTextBox 等控件尚未赋值，
 			// 导致首次 RefreshCommandPreview 返回 null 折叠了预览。此处补刷一次以显示默认命令。
 			RefreshCommandPreview();
@@ -118,19 +126,21 @@ namespace ForkPlus.UI.Dialogs
 			string tagMessage = TagMessageTextBox.Text;
 			bool push = PushCheckBox.IsChecked.GetValueOrDefault();
 			ForkPlusSettings.Default.CreateTag_Push = push;
+			bool sign = SignCheckBox.IsChecked.GetValueOrDefault();
+			ForkPlusSettings.Default.CreateTag_Sign = sign;
 			ForkPlusSettings.Default.Save();
 			DisableEditableControls();
 			string name = Translate(push ? ("Create and push tag '" + tagName + "'") : ("Create tag '" + tagName + "'"));
 			activeRepositoryUserControl.AddUndoable(name, delegate(JobMonitor monitor)
 		{
-			GitCommandResult result = PerformCreateTag(tagName, tagMessage, push, monitor);
+			GitCommandResult result = PerformCreateTag(tagName, tagMessage, push, sign, monitor);
 			base.Dispatcher.Post(delegate
 			{
 				Close(result);
 			});
 			return result;
 		}, JobFlags.SaveToLog);
-	}
+		}
 
 		private void TagNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -149,13 +159,18 @@ namespace ForkPlus.UI.Dialogs
 			RefreshCommandPreview();
 		}
 
-		private GitCommandResult PerformCreateTag(string tagName, string tagMessage, bool push, JobMonitor monitor)
+		private void SignCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			RefreshCommandPreview();
+		}
+
+		private GitCommandResult PerformCreateTag(string tagName, string tagMessage, bool push, bool sign, JobMonitor monitor)
 		{
 			base.Dispatcher.Post(delegate
 			{
 				SetStatus(ForkPlusDialogStatus.InProgress, "Creating '" + tagName + "'...");
 			});
-			GitCommandResult gitCommandResult = new CreateTagGitCommand().Execute(_gitModule, tagName, tagMessage, _gitPoint, monitor);
+			GitCommandResult gitCommandResult = new CreateTagGitCommand().Execute(_gitModule, tagName, tagMessage, _gitPoint, monitor, sign);
 			if (!gitCommandResult.Succeeded)
 			{
 				return gitCommandResult;

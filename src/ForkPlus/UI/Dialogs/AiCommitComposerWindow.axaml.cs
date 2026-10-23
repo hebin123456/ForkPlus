@@ -103,15 +103,10 @@ namespace ForkPlus.UI.Dialogs
 			{
 				return;
 			}
-			if (!OpenAiService.IsAiReviewConfigured())
+			if (!AiWindowService.EnsureAiConfigured())
 			{
-				// v3.9.0：统一用 ForkPlus 自定义弹窗 MessageBoxWindow 替换原生 MessageBox
-				new MessageBoxWindow(
-					PreferencesLocalization.Current("AI Commit Composer"),
-					PreferencesLocalization.Current("AI is not configured. Please configure AI review settings in Preferences first."),
-					"OK",
-					showCancelButton: false,
-					showWarningIcon: true).ShowDialog();
+				// v3.10.3：未配置拦截统一走 AiWindowService（带"打开偏好设置"深链）。
+				// 入口 OpenAiCommitComposer 已拦截，这里覆盖"窗口开着时清掉配置后点重试"的场景。
 				return;
 			}
 			if (_stagedFiles.Length == 0)

@@ -10,7 +10,11 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Grid Margin="1">
-              <ToggleButton IsCheckedChanged="ColorButton_Changed" x:Name="UserColorRadioButton" Theme="{DynamicResource UserColorToggleButton}">
+              <!-- Bug 修复（标记颜色后弹窗秒关）：原绑 IsCheckedChanged —— 打开弹窗时
+                   Refresh() 预选中已有颜色的色块，TwoWay 绑定把 IsChecked 置 true 也会
+                   触发该事件 → 被当作用户点击 → 立即应用颜色 + HidePopup，弹窗打开即自关。
+                   改绑 Click：仅用户点击触发；绑定初始化/程序置值不触发。 -->
+              <ToggleButton Click="ColorButton_Changed" x:Name="UserColorRadioButton" Theme="{DynamicResource UserColorToggleButton}">
                 <ToggleButton.Background>
                   <Binding Path="Brush" />
                 </ToggleButton.Background>

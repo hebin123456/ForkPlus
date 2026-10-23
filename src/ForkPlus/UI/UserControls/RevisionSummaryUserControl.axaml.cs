@@ -81,8 +81,9 @@ namespace ForkPlus.UI.UserControls
 				Grid.SetColumnSpan(AuthorDetailsContainer, 4);
 				CommitterDetailsContainer.Collapse();
 			}
-			UpdateReferences(revisionDetails.Sha);
-			ShaTextBlock.Text = revisionDetails.Sha.ToString();
+		UpdateReferences(revisionDetails.Sha);
+		ShaTextBlock.Text = revisionDetails.Sha.ToString();
+		UpdateSignatureBadge(revisionDetails);
 			RevisionRemoteButtonsContainer.Children.Clear();
 			RepositoryData repositoryData = RepositoryUserControl.RepositoryData;
 			if (repositoryData != null && !revisionDetails.IsStash(repositoryData.Stashes))
@@ -115,6 +116,33 @@ namespace ForkPlus.UI.UserControls
 			RebuildDiffRows(fullRevisionDetails.ChangedFiles.Take(num));
 			UpdateExpandAllButtonTitle();
 			UpdateDiffListLimitText(fullRevisionDetails.ChangedFiles.Length, num);
+			ReconcileColorsPopupWithRefreshedSummary();
+		}
+
+		// Refresh() 落地新详情后的弹窗对账：
+		// (a) 仍开着的弹窗若来自上一行（邮箱已变），立即关闭——避免对旧邮箱选色；
+		// (b) 延迟开窗（详情过期期间用户已点箭头）在数据就绪后自动补开。
+		private void ReconcileColorsPopupWithRefreshedSummary()
+		{
+			ToggleButton openButton = _openColorsToggleButton;
+			if (openButton != null && _openColorsPopupEmail != null)
+			{
+				string currentEmail = ((openButton == AuthorColorsToggleButton) ? AuthorEmailTextBlock.Text : CommitterEmailTextBlock.Text);
+				if (_openColorsPopupEmail != currentEmail)
+				{
+					// IsOpen←IsChecked 绑定：置 false 即关窗，Closed 里完成清理
+					openButton.IsChecked = false;
+				}
+			}
+			if (_pendingColorsToggleButton != null && !IsColorsSummaryStale())
+			{
+				ToggleButton pendingButton = _pendingColorsToggleButton;
+				if (pendingButton.IsChecked == true)
+				{
+					_pendingColorsToggleButton = null;
+					OpenColorsPopup(pendingButton);
+				}
+			}
 		}
 
 		public void ApplyLocalization()
@@ -199,11 +227,18 @@ namespace ForkPlus.UI.UserControls
 
 		private void AuthorColorsToggleButton_Changed(object sender, RoutedEventArgs args)
 		{
+			// Bug fix: IsCheckedChanged also fires when unchecked (after a light-dismiss close, IsChecked is manually reset to false),
+			// only create the popup in the checked state, to avoid "no response on alternate clicks".
 			if (sender == AuthorColorsToggleButton)
 			{
-				string text = AuthorEmailTextBlock.Text;
-				byte colorId = _userColors.GetColorId(text);
-				CreateColorsPopup(AuthorColorsToggleButton, text, colorId);
+				if (AuthorColorsToggleButton.IsChecked == true)
+				{
+					TryOpenColorsPopup(AuthorColorsToggleButton);
+				}
+				else if (_pendingColorsToggleButton == AuthorColorsToggleButton)
+				{
+					_pendingColorsToggleButton = null;
+				}
 			}
 		}
 
@@ -211,10 +246,76 @@ namespace ForkPlus.UI.UserControls
 		{
 			if (sender == CommitterColorsToggleButton)
 			{
-				string text = CommitterEmailTextBlock.Text;
-				byte colorId = _userColors.GetColorId(text);
-				CreateColorsPopup(CommitterColorsToggleButton, text, colorId);
+				if (CommitterColorsToggleButton.IsChecked == true)
+				{
+					TryOpenColorsPopup(CommitterColorsToggleButton);
+				}
+				else if (_pendingColorsToggleButton == CommitterColorsToggleButton)
+				{
+					_pendingColorsToggleButton = null;
+				}
 			}
+		}
+
+		// Bug fix（选中 b 行却标记到 a 行）：切换选中行后，修订详情（含作者/提交者邮箱）由
+		// 异步 job 加载（含提交签名验证，耗时可观）；job 完成前 summary 仍显示上一行的邮箱，
+		// 此时打开颜色弹窗会捕获旧邮箱 → 选色标记到上一行。详情过期时延迟开窗
+		//（按钮呈按下态作反馈），Refresh() 收到新数据后自动补开——弹窗永不捕获过期邮箱。
+		private ToggleButton _pendingColorsToggleButton;
+
+		private ToggleButton _openColorsToggleButton;
+
+		private string _openColorsPopupEmail;
+
+		private void TryOpenColorsPopup(ToggleButton parentButton)
+		{
+			if (IsColorsSummaryStale())
+			{
+				_pendingColorsToggleButton = parentButton;
+				return;
+			}
+			OpenColorsPopup(parentButton);
+		}
+
+		private void OpenColorsPopup(ToggleButton parentButton)
+		{
+			string text = ((parentButton == AuthorColorsToggleButton) ? AuthorEmailTextBlock.Text : CommitterEmailTextBlock.Text);
+			byte colorId = GetCurrentUserColorId(text);
+			_openColorsToggleButton = parentButton;
+			_openColorsPopupEmail = text;
+			CreateColorsPopup(parentButton, text, colorId);
+		}
+
+		// 仅 MainWindow 模式存在驱动详情的"当前选中行"，可据此判断过期；
+		// 其他模式（独立窗口 / AI 审查 / 交互式 rebase）显示固定修订，保持原行为。
+		private bool IsColorsSummaryStale()
+		{
+			RevisionDetailsUserControl detailsControl = RevisionDetailsUserControl;
+			if (detailsControl == null || detailsControl.Mode != RevisionDetailsUserControlMode.MainWindow)
+			{
+				return false;
+			}
+			DecoratedRevision selectedRevision = RepositoryUserControl?.Content?.RevisionListViewUserControl?.SelectedRevision;
+			if (selectedRevision == null)
+			{
+				return false;
+			}
+			Sha? displayedSha = detailsControl.FullRevisionDetails?.RevisionDetails?.Sha;
+			return displayedSha.HasValue && displayedSha.GetValueOrDefault() != selectedRevision.Sha;
+		}
+
+		// Bug 修复（取消颜色后弹窗仍显示旧选中态）：_userColors 只在 SummaryUserControl.Refresh
+		// 时更新，而 UserColors-only 刷新不会重跑详情面板 → 取消/修改颜色后缓存过期，
+		// 重开弹窗仍显示旧选中态。改为打开时从 RepositoryUserControl.RepositoryData 现取
+		//（刷新完成后即为最新），_userColors 仅作 RepositoryData 缺失时的兜底。
+		private byte GetCurrentUserColorId(string email)
+		{
+			UserColors userColors = RepositoryUserControl?.RepositoryData?.UserColors;
+			if (userColors != null)
+			{
+				return userColors.GetColorId(email);
+			}
+			return _userColors.GetColorId(email);
 		}
 
 		private static Button CreateRevisionRemoteButton(Remote remote, Sha sha, string revisionShaUrl)
@@ -248,7 +349,12 @@ namespace ForkPlus.UI.UserControls
 			if (gitModule != null)
 			{
 				Popup popup = new Popup();
-				popup.HorizontalOffset = -270.0;
+				// Bug 修复（弹窗位置太偏左）：WPF 原版用 HorizontalOffset=-270 手工右对齐；
+				// Avalonia 里默认定位+该偏移会把弹窗甩到按钮左侧 270px。改为 Bottom 定位、
+				// 左缘对齐箭头按钮，弹窗出现在按钮正下方。
+				popup.Placement = PlacementMode.Bottom;
+				popup.HorizontalOffset = 0.0;
+				popup.VerticalOffset = 2.0;
 				popup.IsLightDismissEnabled= (!false);
 				/* Migration note: AllowsTransparency 已删除 */;
 				/* Migration note: PopupAnimation 已删除 */;
@@ -257,23 +363,65 @@ namespace ForkPlus.UI.UserControls
 				{
 					parentButton.Disable();
 				};
-				popup.Closed += delegate
+			popup.Closed += delegate
+			{
+				global::ForkPlus.UI.WpfCompat.BindingCompat.ClearBinding(popup, Popup.IsOpenProperty);
+				// After light-dismiss close, IsChecked is still true; reset to false; the Changed handler only handles the checked state, so it will not retrigger here.
+				parentButton.IsChecked = false;
+				parentButton.Enable();
+				if (_openColorsToggleButton == parentButton)
 				{
-					global::ForkPlus.UI.WpfCompat.BindingCompat.ClearBinding(popup, Popup.IsOpenProperty);
-					parentButton.Enable();
-				};
-				global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
-				{
-					Source = parentButton
-				});
+					_openColorsToggleButton = null;
+					_openColorsPopupEmail = null;
+				}
+				DetachColorsPopup(popup);
+			};
 				UserColorsUserControl userColorsUserControl = new UserColorsUserControl(parentButton, email, userBrushIndex);
 				userColorsUserControl.SelectedColorChanged += delegate(object s, (string, byte) colormap)
 				{
 					new UpdateUserColorGitCommand().Execute(gitModule, colormap.Item1, colormap.Item2);
 					RepositoryUserControl.InvalidateAndRefresh(SubDomain.UserColors);
 				};
+				// Bug fix (clicking the email color dropdown arrow has no response):
+				// 1) The original code first set the IsOpen←IsChecked binding (synchronously pushes IsChecked=true to immediately open the window), and only then set Child.
+				//    In Avalonia, an already-opened Popup does not backfill the host's content when Child is subsequently assigned (unlike WPF),
+				//    causing the popup to open empty → seemingly unresponsive on click. Must set Child first, then set the binding.
+				// 2) An orphaned Popup (not in the logical tree) has its DynamicResource resolution chain truncated at itself (all themes resolve to null),
+				//    same fix as GraphCellView: attach it to an ancestor Panel (occupying no layout space), and remove it on close to prevent leaks.
 				VisualTreeAttachmentHelper.TrySetPopupChild(popup, userColorsUserControl, GetType().Name + ".Popup");
+				AttachColorsPopup(popup);
+				global::ForkPlus.UI.WpfCompat.BindingCompat.SetBinding(popup, Popup.IsOpenProperty, new Binding("IsChecked")
+				{
+					Source = parentButton
+				});
 			}
+		}
+
+		private global::Avalonia.Controls.Panel _colorsPopupHost;
+
+		private void AttachColorsPopup(Popup popup)
+		{
+			if (_colorsPopupHost == null)
+			{
+				global::Avalonia.Visual ancestor = this;
+				while ((ancestor = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(ancestor)) != null)
+				{
+					if (ancestor is global::Avalonia.Controls.Panel panel)
+					{
+						_colorsPopupHost = panel;
+						break;
+					}
+				}
+			}
+			if (_colorsPopupHost != null && !_colorsPopupHost.Children.Contains(popup))
+			{
+				_colorsPopupHost.Children.Add(popup);
+			}
+		}
+
+		private void DetachColorsPopup(Popup popup)
+		{
+			_colorsPopupHost?.Children.Remove(popup);
 		}
 
 		// Migration note：WPF UIElement 返回类型 → Avalonia Control（Children.Add 需要 Control）。
@@ -361,19 +509,63 @@ namespace ForkPlus.UI.UserControls
 			return true;
 		}
 
+		/// <summary>SHA 行的签名徽标：Good=绿 Verified，Bad=红 Bad Signature，
+		/// U/X/Y/R（有效但未知/过期/吊销）=灰 Unverified，E/未知=灰 Unknown，None 隐藏。
+		/// 颜色复用 Merge.StatusLabel.Green/Red（各主题均有定义）与次级信息前景。</summary>
+		private void UpdateSignatureBadge(RevisionDetails revisionDetails)
+		{
+			string label;
+			string brushKey;
+			switch (revisionDetails.SignatureStatus)
+			{
+			case CommitSignatureStatus.Good:
+				label = "Verified";
+				brushKey = "Merge.StatusLabel.Green";
+				break;
+			case CommitSignatureStatus.Bad:
+				label = "Bad Signature";
+				brushKey = "Merge.StatusLabel.Red";
+				break;
+			case CommitSignatureStatus.Unverified:
+			case CommitSignatureStatus.Expired:
+			case CommitSignatureStatus.ExpiredKey:
+			case CommitSignatureStatus.RevokedKey:
+				label = "Unverified";
+				brushKey = "ForegroundBrush.WindowsInfo";
+				break;
+			case CommitSignatureStatus.Error:
+			case CommitSignatureStatus.Unknown:
+				label = "Unknown";
+				brushKey = "ForegroundBrush.WindowsInfo";
+				break;
+			default:
+				SignatureBadgeTextBlock.IsVisible = false;
+				global::Avalonia.Controls.ToolTip.SetTip(SignatureBadgeTextBlock, null);
+				return;
+			}
+			SignatureBadgeTextBlock.Text = Preferences.PreferencesLocalization.Current(label);
+			if (Application.Current?.TryFindResource(brushKey) is global::Avalonia.Media.IBrush brush)
+			{
+				SignatureBadgeTextBlock.Foreground = brush;
+			}
+			if (!string.IsNullOrEmpty(revisionDetails.Signer))
+			{
+				global::Avalonia.Controls.ToolTip.SetTip(SignatureBadgeTextBlock, Preferences.PreferencesLocalization.FormatCurrent("Signed by {0}", revisionDetails.Signer));
+			}
+			else
+			{
+				global::Avalonia.Controls.ToolTip.SetTip(SignatureBadgeTextBlock, null);
+			}
+			SignatureBadgeTextBlock.IsVisible = true;
+		}
+
 		/// <summary>AI 解释当前 commit：拉取 commit 的 subject/body/diff，打开 AiTextResultWindow 流式展示 AI 解释。</summary>
 		private void AiExplainCommitButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (!OpenAiService.IsAiReviewConfigured())
+			if (!AiWindowService.EnsureAiConfigured())
 			{
-				// v3.9.0：统一用 MessageBoxWindow 替换原生 MessageBox
-			new ForkPlus.UI.Dialogs.MessageBoxWindow(
-				"AI Explain Commit",
-				"AI is not configured. Please configure AI review settings in Preferences first.",
-				"OK",
-				showCancelButton: false,
-				showWarningIcon: true).ShowDialog();
-			return;
+				// v3.10.3：未配置拦截统一走 AiWindowService（带"打开偏好设置"深链）
+				return;
 			}
 			if (!_sha.HasValue)
 			{
@@ -397,9 +589,8 @@ namespace ForkPlus.UI.UserControls
 			string abbreviatedSha = sha.ToAbbreviatedString();
 
 			AiTextResultWindow window = new AiTextResultWindow();
-                        window.SetOwnerCompat(global::Avalonia.Controls.TopLevel.GetTopLevel(this) as global::Avalonia.Controls.Window); // Migration note：TopLevel → Window（SetOwnerCompat 需要）。
 			string title = Preferences.PreferencesLocalization.FormatCurrent("AI Explain {0}", abbreviatedSha);
-			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
+			AiWindowService.Show(window); // v3.10.3：弹窗行为统一（非模态+owner=主窗口+任务栏+跟随主窗口屏幕）
 			window.StartStreaming(title, delegate(AiTextResultWindow w, JobMonitor monitor)
 			{
 				try

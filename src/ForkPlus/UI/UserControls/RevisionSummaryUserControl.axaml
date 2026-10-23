@@ -87,6 +87,8 @@
         <TextBlock Grid.Row="1" HorizontalAlignment="Right" Margin="16,2,0,0" Foreground="{DynamicResource SecondaryLabelBrush}" Text="SHA" />
         <DockPanel Grid.Row="1" Grid.Column="1" Margin="16,2,0,0" HorizontalAlignment="Left">
           <controls:SelectableTextBlock DockPanel.Dock="Left" Margin="0" x:Name="ShaTextBlock" />
+          <!-- WS：提交签名徽标（Verified / Bad Signature / Unverified / Unknown），未签名隐藏 -->
+          <TextBlock DockPanel.Dock="Left" Margin="8,0,0,0" FontSize="11" FontWeight="Medium" VerticalAlignment="Center" IsVisible="False" x:Name="SignatureBadgeTextBlock" />
           <controls:AiActionButton ActionVerb="Explain" DockPanel.Dock="Left" Margin="8,0,0,0" Click="AiExplainCommitButton_Click" ToolTip.Tip="Use AI to explain this commit" x:Name="AiExplainCommitButton" />
           <StackPanel Orientation="Horizontal" x:Name="RevisionRemoteButtonsContainer" />
         </DockPanel>

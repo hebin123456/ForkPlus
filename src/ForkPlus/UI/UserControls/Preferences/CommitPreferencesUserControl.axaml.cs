@@ -4,10 +4,12 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup;
+using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using Avalonia.Interactivity;
 
 namespace ForkPlus.UI.UserControls.Preferences
 {
@@ -40,6 +42,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 			CommitSubjectHighLimitTextBox.Text = ForkPlusSettings.Default.CommitSubjectHighLimit.ToString();
 			PageGuideLinePositionTextBox.Text = ForkPlusSettings.Default.PageGuideLinePosition.ToString();
 			CommitMessageRegexTextBox.Text = ForkPlusSettings.Default.CommitMessageRegex;
+			// WS：全局默认签名开关。真实状态存 git config --global commit.gpgsign（而非 ForkPlusSettings），
+			// 与单仓库开关（--local）同一存储，local 覆盖 global 的语义由 git 保证。
+			GitCommandResult<bool> globalSigningResult = new GetCommitSigningGitCommand().ExecuteGlobal();
+			SignByDefaultCheckBox.IsChecked = globalSigningResult.Succeeded && globalSigningResult.Result;
 			_initialized = true;
 		}
 
@@ -104,6 +110,14 @@ namespace ForkPlus.UI.UserControls.Preferences
 			if (_initialized)
 			{
 				ForkPlusSettings.Default.CommitMessageRegex = CommitMessageRegexTextBox.Text ?? "";
+			}
+		}
+
+		private void SignByDefaultCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			if (_initialized)
+			{
+				new SetCommitSigningGitCommand().ExecuteGlobal(SignByDefaultCheckBox.IsChecked.GetValueOrDefault());
 			}
 		}
 

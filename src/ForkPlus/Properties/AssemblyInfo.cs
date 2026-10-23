@@ -15,6 +15,32 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-23，v5.2.0）：新增提交签名与空提交支持，收口 AI 窗口行为，修复
+//   worktree 分支显示与打开仓库慢等四项。
+//   新增：① 提交签名——提交面板 ⋯ 菜单新增「Sign Commit」（读写本仓库 git config
+//   commit.gpgsign --local）与「Signing Key」（选择签名密钥，无 SSH 密钥时提示），
+//   squash / AI WIP 拆分 / amend 等所有 git commit 路径由 git 自身读配置天然继承；
+//   提交详情面板按 git %G? / %GS 显示签名徽标（Verified / Unverified / Bad Signature /
+//   Expired / Revoked 等）与签名者；创建标签新增「Sign」选项（git tag -s），预览命令同步
+//   展示，勾选状态经 CreateTag_Sign 持久化。
+//   ② 空提交——提交面板新增「Allow Empty Commit」（--allow-empty）与「Skip Commit Hooks」
+//   （--no-verify）复选框，勾选空提交后无暂存文件也放行提交按钮。
+//   ③ AI 窗口行为收口（AiWindowService）——AI 解释 commit / AI PR 描述 / AI 检视 /
+//   AI 辅助开发 / AI 提交编排统一为：非模态、owner=主窗口、统一尺寸 1080×720、居中主窗口
+//   所在屏幕、主窗口最大化时跟随最大化、显示在任务栏；未配置 AI 统一拦截（提示框带
+//   「打开偏好设置」深链直达 AI Enhancement 标签）；右上角模型下拉框统一
+//   （AiModelComboBoxHelper：占位 + 后台拉 /v1/models + 切换保存）。
+//   修复：① 链接 worktree 分支显示错误——bt 枚举 refs 改用 common dir
+//   （GitModule.ReferencesGitDir），HEAD symref 按「本 worktree 自己的 HEAD」修正
+//   （BtReferencesExtensions.ResolveRepositoryHead），detached HEAD 时 UI 与 git 一致显示
+//   detached，不再把主 worktree 的分支显示成本仓库当前分支；
+//   ② 打开仓库慢（轨道图刷出来慢）——HEAD unborn 检测由 git rev-parse --verify HEAD
+//   （一次 spawn 在进程创建被终端安全软件拦截的机器上实测 1~2.4s，占打开仓库 3.3s 数据
+//   管线的 2.4s）改为纯文件检查 GitModule.IsHeadUnborn()，不再 spawn 子进程；
+//   ③ loading 动画台阶感——CircularProgressBar 采样间隔 30ms→16ms（对齐 60fps），并补
+//   峰前爬升段（0.3→1），不再「突然闪白再淡出」；
+//   ④ 历史列表作者颜色框中间断开——头像半框与作者半框间 4px 空档致边框不闭合，对齐
+//   WPF 原版闭合结构；详情刷新后作者邮箱选色弹窗对账（旧邮箱弹窗自动关闭、延迟开窗补开）。
 // 版本号说明（2026-10-20，v5.1.6）：修复 FileDiff 视图选区浮窗范围虚高——选中 2 行
 //   时暂存/丢弃浮窗（及块背景）覆盖约 4 行。根因：ChunkSelectionLayer.DrawSelectionBorder
 //   对 BackgroundGeometryBuilder.GetRectsForSegment 返回的全部矩形做高度累加
@@ -125,8 +151,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.1.6")]
-[assembly: AssemblyInformationalVersion("5.1.6")]
+[assembly: AssemblyFileVersion("5.2.0")]
+[assembly: AssemblyInformationalVersion("5.2.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.1.6.0")]
+[assembly: AssemblyVersion("5.2.0.0")]

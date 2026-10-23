@@ -8,7 +8,7 @@ namespace ForkPlus.Git.Commands
 {
 	public class CommitGitCommand
 	{
-		public GitCommandResult Execute(GitModule gitModule, string message, bool amend, bool commitAndPush, JobMonitor monitor, bool noVerify = false)
+		public GitCommandResult Execute(GitModule gitModule, string message, bool amend, bool commitAndPush, JobMonitor monitor, bool noVerify = false, bool allowEmpty = false)
 		{
 			string text = gitModule.CommitMessagePath();
 			try
@@ -33,6 +33,10 @@ namespace ForkPlus.Git.Commands
 			if (noVerify)
 			{
 				gitCommand.Add("--no-verify");
+			}
+			if (allowEmpty)
+			{
+				gitCommand.Add("--allow-empty");
 			}
 			gitCommand.Add("--file");
 			gitCommand.Add(text.Quotify());

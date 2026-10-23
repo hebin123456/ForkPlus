@@ -10,7 +10,9 @@ namespace ForkPlus.Git.Commands
 		public GitCommandResult Execute(GitModule gitModule, string email, byte colorId)
 		{
 			Dictionary<string, byte> dictionary = new GetUserColorsGitCommand().Execute(gitModule);
-			if (colorId == -1)
+			// 0 = 无色（UserColorsUserControl 取消选择时传 0）；原代码 `colorId == -1` 对 byte 参数是
+			// 死代码（恒 false），取消颜色会写入 "email 0" 而非删除条目。改为 0 时移除。
+			if (colorId == 0)
 			{
 				dictionary.Remove(email);
 			}

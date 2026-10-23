@@ -29,6 +29,8 @@ using ForkPlus.UI.Dialogs;
 using ForkPlus.UI.UserControls.Preferences;
 using ForkPlus.Utils.Http;
 using ForkPlus.UI.Helpers;
+using ForkPlus.Shell;
+using ForkPlus.Shell.Commands;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
@@ -88,6 +90,12 @@ namespace ForkPlus.UI.UserControls
 				}
 			}
 		}
+
+		/// <summary>提交时附加 --no-verify（跳过 pre-commit / commit-msg 钩子）。</summary>
+		public bool NoVerifyMode => CheckBoxNoVerify.IsChecked.GetValueOrDefault();
+
+		/// <summary>提交时附加 --allow-empty（允许没有暂存变更的空提交）。</summary>
+		public bool AllowEmptyMode => CheckBoxAllowEmpty.IsChecked.GetValueOrDefault();
 
 		private bool SquashMode => RepositoryUserControl.RepositoryStatus?.RepositoryState is RepositoryState.SquashInProgress;
 
@@ -180,7 +188,7 @@ namespace ForkPlus.UI.UserControls
 				{
 					return !StageFileUserControl.ContainsUnmergedItems;
 				}
-				if (StageFileUserControl.StagedFilesFileListUserControl.TreeView.Items.Count == 0 && !AmendMode)
+				if (StageFileUserControl.StagedFilesFileListUserControl.TreeView.Items.Count == 0 && !AmendMode && !AllowEmptyMode)
 				{
 					return false;
 				}
@@ -2150,6 +2158,13 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		/// <summary>勾选"允许空提交"后无暂存文件也应放行提交按钮，需刷新按钮状态与警告。</summary>
+		private void AllowEmptyCheckBox_Changed(object sender, RoutedEventArgs e)
+		{
+			UpdateCommitButtonState();
+			UpdateCommitWarningMessage();
+		}
+
 		public void UpdateCommitMode()
 		{
 			if (AmendMode)
@@ -2498,6 +2513,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				Commands.Commit.Execute(this, !commitAndPushEnabled);
 			}));
+			// WS：提交签名开关。状态落 git config commit.gpgsign（--local），squash / AI WIP 拆分 /
+			// amend 等所有 git commit 路径由 git 自身读取该配置，天然继承。
+			obj.Items.Add(new Separator());
+			obj.Items.Add(CreateSignCommitMenuItem());
+			obj.Items.Add(CreateSigningKeyMenuItem());
 			// AI Commit Composer (WIP拆分)：仅在 AI 配置完毕时显示
 			if (OpenAiService.IsAiReviewConfigured())
 			{
@@ -2510,10 +2530,75 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		/// <summary>"Sign Commit" 勾选项：读写本仓库 git config commit.gpgsign。
+		/// 勾选状态取 local 覆盖 global 后的有效值；切换时写 --local true/false
+		/// （显式写 false 而非 --unset，保证"全局默认开启 + 本仓库关闭"语义可预期）。</summary>
+		private MenuItem CreateSignCommitMenuItem()
+		{
+			MenuItem menuItem = new MenuItem();
+			menuItem.Header = PreferencesLocalization.MenuHeader("Sign Commit");
+			GitCommandResult<bool> signingResult = new GetCommitSigningGitCommand().Execute(GitModule);
+			menuItem.IsChecked = signingResult.Succeeded && signingResult.Result;
+			menuItem.Click += delegate
+			{
+				bool enable = !menuItem.IsChecked;
+				GitCommandResult result = new SetCommitSigningGitCommand().Execute(GitModule, enable);
+				if (!result.Succeeded)
+				{
+					new ErrorWindow(RepositoryUserControl, result.Error).ShowDialog();
+					return;
+				}
+				menuItem.IsChecked = enable;
+			};
+			return menuItem;
+		}
+
+		/// <summary>"Signing Key" 子菜单：列出本机 SSH 密钥（复用 GetLocalSshKeysCommand），
+		/// 点击写 user.signingkey + gpg.format=ssh（--local）。已配置的密钥打勾。</summary>
+		private MenuItem CreateSigningKeyMenuItem()
+		{
+			MenuItem keyMenuItem = new MenuItem();
+			keyMenuItem.Header = PreferencesLocalization.MenuHeader("Signing Key");
+			GitCommandResult<string> currentKeyResult = new GetSigningKeyGitCommand().Execute(GitModule);
+			string currentKey = (currentKeyResult.Succeeded ? currentKeyResult.Result : string.Empty);
+			SshKey[] sshKeys = new GetLocalSshKeysCommand().Execute();
+			SshKey[] array = sshKeys;
+			for (int i = 0; i < array.Length; i++)
+			{
+				SshKey sshKey = array[i];
+				MenuItem keyItem = new MenuItem();
+				keyItem.Header = sshKey.Title;
+				keyItem.IsChecked = string.Equals(sshKey.FilePath, currentKey, StringComparison.OrdinalIgnoreCase);
+				keyItem.Click += delegate
+				{
+					GitCommandResult result = new SetCommitSigningGitCommand().SetSigningKey(GitModule, sshKey.FilePath);
+					if (!result.Succeeded)
+					{
+						new ErrorWindow(RepositoryUserControl, result.Error).ShowDialog();
+					}
+				};
+				keyMenuItem.Items.Add(keyItem);
+			}
+			if (sshKeys.Length == 0)
+			{
+				MenuItem emptyItem = new MenuItem();
+				emptyItem.Header = PreferencesLocalization.MenuHeader("No SSH keys found");
+				emptyItem.IsEnabled = false;
+				keyMenuItem.Items.Add(emptyItem);
+			}
+			return keyMenuItem;
+		}
+
 		/// <summary>AI Commit Composer (WIP拆分) 入口：把当前 staged 区的多个变更交给 AI 拆分成多个有逻辑意义的提交。
 		/// 弹出 AiCommitComposerWindow 让用户预览/编辑分组后再一键应用。</summary>
 		private void OpenAiCommitComposer()
 		{
+			if (!AiWindowService.EnsureAiConfigured())
+			{
+				// v3.10.3：未配置拦截统一走 AiWindowService（带"打开偏好设置"深链）。
+				// Ctrl+Alt+Enter 快捷键不经过右键菜单的可见性过滤，这里必须兜底拦截。
+				return;
+			}
 			ChangedFile[] stagedFiles = StageFileUserControl.ExpandedStagedFiles;
 			if (stagedFiles == null || stagedFiles.Length == 0)
 			{
@@ -2522,8 +2607,7 @@ namespace ForkPlus.UI.UserControls
 			}
 			// 至少 2 个 staged 文件才有拆分意义；只有 1 个时也允许（让 AI 生成单条 message）
 			AiCommitComposerWindow window = new AiCommitComposerWindow(GitModule, stagedFiles, AmendMode);
-			window.SetOwnerCompat(MainWindow.Instance); // Migration note：WPF { Owner=.. }（非模态 Show）→ SetOwnerCompat。
-			window.ShowAtOwnerScreen(); // 修复链 23：跟随主窗口所在屏幕
+			AiWindowService.Show(window); // v3.10.3：弹窗行为统一（非模态+owner=主窗口+任务栏+跟随主窗口屏幕）
 		}
 
 		private static int GetUniqueFilesCount(ChangedFile[] changedFiles)

@@ -116,6 +116,9 @@ namespace ForkPlus.UI.WpfCompat
                 dialog.Opened -= Handler;
                 try
                 {
+                    // v3.10.3：最大化打开的窗口（AI 窗口跟随主窗口最大化）无需定位，
+                    // 对最大化窗口设 Position 会破坏其全屏工作区占位。
+                    if (dialog.WindowState == WindowState.Maximized) return;
                     // 本轮25 修正"跟随"语义：不再做"owner 屏幕工作区居中"（主窗口非最大化、
                     // 不在屏幕中央时，弹窗落在屏幕中央 ≠ 跟随主窗口，观感仍是"跑偏"），
                     // 而是相对 owner 窗口矩形居中（CenterOwner 语义），并 clamp 到屏幕工作区：

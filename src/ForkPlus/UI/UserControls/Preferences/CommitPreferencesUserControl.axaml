@@ -55,6 +55,10 @@
       <TextBox Text="" Grid.Row="3" Grid.Column="1" Margin="10,8,0,0" Width="30" HorizontalAlignment="Left" TextChanged="PageGuideLinePositionTextBox_TextChanged" x:Name="PageGuideLinePositionTextBox" />
       <TextBlock Grid.Row="4" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Commit message regex:" />
       <TextBox Text="" Grid.Row="4" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Stretch" Height="64" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextChanged="CommitMessageRegexTextBox_TextChanged" x:Name="CommitMessageRegexTextBox" />
+      <!-- WS：提交签名。全局默认开关直接写 git config（global）的 commit.gpgsign；
+           单仓库的开关在提交按钮下拉菜单（Sign Commit，写 local 覆盖全局）。 -->
+      <TextBlock Grid.Row="5" Grid.Column="0" Margin="0,8,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" Text="Sign commits by default:" />
+      <CheckBox Grid.Row="5" Grid.Column="1" Margin="10,8,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" IsCheckedChanged="SignByDefaultCheckBox_Changed" x:Name="SignByDefaultCheckBox" />
     </Grid.Children>
   </Grid>
 </UserControl>

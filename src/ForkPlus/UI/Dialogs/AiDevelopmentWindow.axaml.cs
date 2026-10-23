@@ -63,7 +63,6 @@ namespace ForkPlus.UI.Dialogs
 		private const int MaxContextTokenEstimate = 6000;
 		private const int KeepRecentMessagesOnCompress = 6;
 		private bool _isCompressingContext;
-		private bool _modelListLoaded;
 
 		// 流式输出的实时 Markdown 缓冲（边收边渲染到 WebView）
 		private StringBuilder _streamingMarkdown;
@@ -156,145 +155,26 @@ namespace ForkPlus.UI.Dialogs
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", OnApplicationThemeChanged);
 			LoadSkillList();
 			// 初始化模型下拉：先显示当前选中模型，再后台拉取完整模型列表
-			InitializeModelComboBox();
+			// v3.10.3：委托 AiModelComboBoxHelper，与 AiResultWindowBase 派生窗口共用同一份逻辑
+			AiModelComboBoxHelper.Initialize(ModelComboBox, Dispatcher);
 			// 显示欢迎信息
 			ShowWelcomeMessage();
 		}
 
-		/// <summary>
-		/// 初始化右上角模型下拉框：
-		/// 1. 先用当前选中模型作为唯一项，避免下拉为空；
-		/// 2. 后台异步调用 /v1/models 拉取完整列表，替换填充。
-		/// </summary>
-		private void InitializeModelComboBox()
+		/// <summary>切换模型时保存到设置，并提示用户。v3.10.3：共用逻辑委托 AiModelComboBoxHelper。</summary>
+		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			string currentModel = ForkPlusSettings.Default.AiReviewSelectedModel;
-			if (!string.IsNullOrWhiteSpace(currentModel))
+			AiModelComboBoxHelper.HandleSelectionChanged(ModelComboBox, delegate(string selected)
 			{
-				ModelComboBox.Items.Add(currentModel);
-				ModelComboBox.SelectedIndex = 0;
-			}
-			else
-			{
-				ModelComboBox.Items.Add(PreferencesLocalization.Current("Select model..."));
-				ModelComboBox.SelectedIndex = 0;
-			}
-
-			// 后台拉取模型列表（不阻塞 UI 线程）
-			System.Threading.ThreadPool.QueueUserWorkItem(delegate(object state)
-			{
-				List<string> models = null;
-				try
-				{
-					if (OpenAiService.IsAiReviewConfigured())
-					{
-						OpenAiService aiService = OpenAiService.CreateFromAiReviewSettings();
-						ServiceResult<string[]> result = aiService.ListModels();
-						if (result.Succeeded && result.Result != null)
-						{
-							models = new List<string>(result.Result);
-						}
-					}
-				}
-				catch (Exception ex)
-				{
-					Log.Warn("Failed to load AI model list: " + ex.Message);
-				}
-
-				if (models == null || models.Count == 0)
-				{
-					return;
-				}
-
-				// 回到 UI 线程更新下拉框
-				base.Dispatcher.Post(delegate
-				{
-					try
-					{
-						if (_modelListLoaded)
-						{
-							return;
-						}
-						_modelListLoaded = true;
-						string selected = ForkPlusSettings.Default.AiReviewSelectedModel;
-						ModelComboBox.Items.Clear();
-						foreach (string m in models)
-						{
-							if (!string.IsNullOrWhiteSpace(m))
-							{
-								ModelComboBox.Items.Add(m);
-							}
-						}
-						// 选中当前模型；若列表中不包含，插入到首位并选中
-						int idx = -1;
-						for (int i = 0; i < ModelComboBox.Items.Count; i++)
-						{
-							if (string.Equals((string)ModelComboBox.Items[i], selected, StringComparison.OrdinalIgnoreCase))
-							{
-								idx = i;
-								break;
-							}
-						}
-						if (idx >= 0)
-						{
-							ModelComboBox.SelectedIndex = idx;
-						}
-						else if (!string.IsNullOrWhiteSpace(selected))
-						{
-							ModelComboBox.Items.Insert(0, selected);
-							ModelComboBox.SelectedIndex = 0;
-						}
-						else if (ModelComboBox.Items.Count > 0)
-						{
-							ModelComboBox.SelectedIndex = 0;
-						}
-					}
-					catch (Exception ex)
-					{
-						Log.Warn("Failed to populate model combo box: " + ex.Message);
-					}
-				});
+				AddStatusMessage(
+					PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected),
+					Brushes.Gray);
 			});
 		}
 
-		/// <summary>切换模型时保存到设置，并提示用户。</summary>
-		private void ModelComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			// 首次初始化时也会触发，此时 _modelListLoaded 可能尚未完成；仅在有有效选中项时保存
-			if (ModelComboBox.SelectedItem == null)
-			{
-				return;
-			}
-			string selected = (string)ModelComboBox.SelectedItem;
-			if (string.IsNullOrWhiteSpace(selected) || selected == PreferencesLocalization.Current("Select model..."))
-			{
-				return;
-			}
-			if (string.Equals(selected, ForkPlusSettings.Default.AiReviewSelectedModel, StringComparison.OrdinalIgnoreCase))
-			{
-				return;
-			}
-			ForkPlusSettings.Default.AiReviewSelectedModel = selected;
-			ForkPlusSettings.Default.Save();
-			AddStatusMessage(
-				PreferencesLocalization.FormatCurrent("Model switched to: {0}", selected),
-				Brushes.Gray);
-		}
-
-		// Migration note（根因）：WPF OnSourceInitialized 在 Avalonia 无对应生命周期（原为死代码，
-		// 窗口位置从未恢复）。改 OnOpened override（CustomWindow 已提供 OnOpened 虚链）。
-		protected override void OnOpened(EventArgs e)
-		{
-			base.OnSourceInitialized(e);
-			if (global::ForkPlus.DesignTimeHelper.IsInDesignMode())
-			{
-				return;
-			}
-			if (WpfApp.MainWindow?.WindowState == global::Avalonia.Controls.WindowState.Maximized)
-		{
-			WindowState = global::Avalonia.Controls.WindowState.Maximized; // Migration note：自动转换误将属性名写成全限定类型名，恢复属性赋值。
-		}
-		}
+		// v3.10.3：原 OnOpened override（主窗口最大化时跟随最大化）移至 AiWindowService.Show 统一处理，
+		// 所有 AI 结果窗口行为一致。该 override 还漏调 base.OnOpened，导致 CustomWindow.OnOpened 的
+		// 全局按键跟踪/居中逻辑在本窗口被跳过；删除后恢复与其他窗口一致的基类行为。
 
 		private void AiDevelopmentWindow_Loaded(object sender, RoutedEventArgs e)
 		{

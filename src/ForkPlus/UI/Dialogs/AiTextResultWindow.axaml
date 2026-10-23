@@ -1,4 +1,5 @@
-<fud:AiResultWindowBase Height="640" Width="820" MinHeight="360" MinWidth="480" xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiTextResultWindow" CanResize="True">
+<!-- 尺寸与 AiWindowService 统一常量一致（1080×720，最小 720×480）；AiWindowService.Show 会再应用一次作为运行时纠偏 -->
+<fud:AiResultWindowBase Height="720" Width="1080" MinHeight="480" MinWidth="720" xmlns="https://github.com/avaloniaui" xmlns:ui="clr-namespace:ForkPlus.UI" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:fud="clr-namespace:ForkPlus.UI.Dialogs" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Dialogs.AiTextResultWindow" CanResize="True">
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />

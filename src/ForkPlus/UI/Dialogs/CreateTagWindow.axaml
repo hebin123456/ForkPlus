@@ -26,7 +26,11 @@
       <controls:ReferenceTextBox TextChanged="TagNameTextBox_TextChanged" Grid.Row="1" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" VerticalAlignment="Center" Placeholder="Enter tag name" Icon="{DynamicResource TagIcon}" x:Name="TagNameTextBox" />
       <TextBlock Grid.Row="2" Grid.Column="0" Text="Message:" FontSize="13" VerticalAlignment="Top" Margin="0,7,0,0" HorizontalAlignment="Right" />
       <controls:PlaceholderTextBox TextChanged="TagMessageTextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" HorizontalAlignment="Stretch" Height="100" TextWrapping="Wrap" AcceptsReturn="True" VerticalAlignment="Stretch" Placeholder="Enter tag message (optional)" x:Name="TagMessageTextBox" />
-      <CheckBox Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" HorizontalAlignment="Left" IsCheckedChanged="PushCheckBox_Changed" x:Name="PushCheckBox" />
+      <!-- WS：Sign=git tag -s（签名的附注标签）；Push 原行为不变。两个复选框并排放。 -->
+      <StackPanel Grid.Column="1" Grid.Row="3" Margin="8,4,0,4" Orientation="Horizontal">
+        <CheckBox IsCheckedChanged="SignCheckBox_Changed" x:Name="SignCheckBox" />
+        <CheckBox Margin="16,0,0,0" IsCheckedChanged="PushCheckBox_Changed" x:Name="PushCheckBox" />
+      </StackPanel>
     </Grid>
   </Grid>
 </dialogs:ForkPlusDialogWindow>

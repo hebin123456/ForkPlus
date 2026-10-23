@@ -56,13 +56,20 @@ namespace ForkPlus.Tests
 			string repoB = TestRepoFactory.CreateBranches();
 			try
 			{
-				var instance = RepositoryManager.Instance;
-				// 快照全局状态，测试后还原
-				var prevRepos = instance.Repositories;
-				var prevDirs = instance.SourceDirs;
+			var instance = RepositoryManager.Instance;
+			// 快照全局状态，测试后还原
+			var prevRepos = instance.Repositories;
+			var prevDirs = instance.SourceDirs;
+			// 隔离真实设置的 git-mm 工作区：RepositoryManagerUserControl.Refresh 每次都会把
+			// ForkPlusSettings.Default.GitMm.Workspaces 里仍在磁盘上的工作区导回仓库列表
+			//（ImportKnownGitMmWorkspaces），RemoveAll 后一刷新就回来——用户机器上真实
+			// settings.json 累积了 16 个 git-mm 工作区（2026-10 实证），空态回退断言因此
+			// 确定性失败。换成默认空实例（仅内存，不 Save 不落盘），finally 还原。
+			var prevGitMm = ForkPlus.Settings.ForkPlusSettings.Default.GitMm;
+			ForkPlus.Settings.ForkPlusSettings.Default.GitMm = ForkPlus.Settings.ForkPlusSettings.GitMmSettings.CreateDefault();
 
-				HeadlessAppBootstrap.Run(delegate
-				{
+			HeadlessAppBootstrap.Run(delegate
+			{
 					instance.RemoveAll();
 					instance.SetSourceDirs(new string[0]);
 					instance.AddRepositories(new[] { repoA, repoB });
@@ -106,16 +113,17 @@ namespace ForkPlus.Tests
 					Assert.False(tree.IsVisible, "无仓库时树应隐藏");
 					window.Close();
 				});
-				try
-				{
-					// 还原全局仓库状态（避免污染同进程其他测试）
-					instance.RemoveAll();
-					instance.AddRepositories(prevRepos.Select(r => r.Path).ToArray());
-					instance.SetSourceDirs(prevDirs);
-				}
-				catch
-				{
-				}
+			try
+			{
+				// 还原全局仓库状态（避免污染同进程其他测试）
+				instance.RemoveAll();
+				instance.AddRepositories(prevRepos.Select(r => r.Path).ToArray());
+				instance.SetSourceDirs(prevDirs);
+				ForkPlus.Settings.ForkPlusSettings.Default.GitMm = prevGitMm;
+			}
+			catch
+			{
+			}
 			}
 			finally
 			{

@@ -5,7 +5,10 @@ namespace ForkPlus.Git.Commands
 {
 	public static class RevisionDetailsParser
 	{
-		public static string FormatString = "%H±.%aN±.%aE±.%at±.%cN±.%cE±.%ct±.%P±.%B";
+		// WS：在 %P 与 %B 之间插入 %G?（签名状态单字符）与 %GS（签名者，未签名时为空串）。
+		// 注意 %GS 为空时输出两个连续分隔符，Split(StringSplitOptions.None) 会保留空字段，
+		// 字段序号恒定：0=SHA 1,2=author 3=authorDate 4,5=committer 6=committerDate 7=parents 8=%G? 9=%GS 10=message。
+		public static string FormatString = "%H±.%aN±.%aE±.%at±.%cN±.%cE±.%ct±.%P±.%G?±.%GS±.%B";
 
 		private static readonly string[] RevisionDetailsSeparator = new string[1] { "±." };
 
@@ -13,7 +16,7 @@ namespace ForkPlus.Git.Commands
 		public static RevisionDetails Parse(string input)
 		{
 			string[] array = input.Split(RevisionDetailsSeparator, StringSplitOptions.None);
-			if (array.Length <= 8)
+			if (array.Length <= 10)
 			{
 				Log.Error("Cannot parse revision details line: '" + input + "'");
 				return null;
@@ -39,7 +42,39 @@ namespace ForkPlus.Git.Commands
 				}
 			}
 			Sha.TryParse(array[0], out var result4);
-			return new RevisionDetails(result4, new UserIdentity(array[1], array[2]), result, new UserIdentity(array[4], array[5]), result2, list.ToArray(), array[8]);
+			return new RevisionDetails(result4, new UserIdentity(array[1], array[2]), result, new UserIdentity(array[4], array[5]), result2, list.ToArray(), array[10], ParseSignatureStatus(array[8]), array[9] ?? string.Empty);
+		}
+
+		/// <summary>把 git <c>%G?</c> 输出（单字符，未签名为 "N"，可能带换行残留）映射为
+		/// <see cref="CommitSignatureStatus"/>；空串/未知字符归为 Error（保守起见 UI 仍提示"未知"）。</summary>
+		public static CommitSignatureStatus ParseSignatureStatus(string code)
+		{
+			string text = (code ?? string.Empty).Trim();
+			if (text.Length == 0)
+			{
+				return CommitSignatureStatus.Error;
+			}
+			switch (text[0])
+			{
+			case 'G':
+				return CommitSignatureStatus.Good;
+			case 'B':
+				return CommitSignatureStatus.Bad;
+			case 'U':
+				return CommitSignatureStatus.Unverified;
+			case 'X':
+				return CommitSignatureStatus.Expired;
+			case 'Y':
+				return CommitSignatureStatus.ExpiredKey;
+			case 'R':
+				return CommitSignatureStatus.RevokedKey;
+			case 'E':
+				return CommitSignatureStatus.Error;
+			case 'N':
+				return CommitSignatureStatus.None;
+			default:
+				return CommitSignatureStatus.Error;
+			}
 		}
 
 		public static GitCommandResult<ChangedFile[]> ParseChangedFiles(string input, Submodule[] submodules)

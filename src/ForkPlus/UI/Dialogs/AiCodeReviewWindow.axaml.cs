@@ -93,7 +93,7 @@ namespace ForkPlus.UI.Dialogs
 
 		public AiCodeReviewWindow()
 		{
-			base.ShowInTaskbar = true;
+			// v3.10.3：ShowInTaskbar 由 AiWindowService.Show 统一设置（所有 AI 结果窗口一致）。
 			// 修复链 23：删除 WindowStartupLocation=CenterScreen——多显示器下它把窗口
 			// 居中到主显示器而非主窗口所在屏（打开方改用 ShowAtOwnerScreen 定位）。
 			InitializeComponent();

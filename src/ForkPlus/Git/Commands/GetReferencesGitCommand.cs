@@ -11,7 +11,7 @@ namespace ForkPlus.Git.Commands
 		{
 			return BtRequest.Run(() => default(BtReferences), delegate(ref BtReferences x)
 			{
-				return Bt.bt_get_references(gitModule.GitDir(), skip_tags: false, ref x);
+				return Bt.bt_get_references(gitModule.ReferencesGitDir(), skip_tags: false, ref x);
 			}, delegate(ref BtReferences x)
 			{
 				GitCommandResult<(string[], Sha[])> refs = x.GetRefs();
@@ -33,9 +33,12 @@ namespace ForkPlus.Git.Commands
 				(string[], string[]) result2 = symrefs.Result;
 			string[] item = result2.Item1;
 			string[] item2 = result2.Item2;
-			// Migration note：Linux 上 bt_get_references 缺 HEAD symref（见 BtReferencesExtensions.EnsureHeadSymref），
+			// Migration note：把 HEAD symref 对齐到本模块自己的 HEAD——
+			// ① Linux 上 bt_get_references 缺 HEAD symref（见 BtReferencesExtensions.EnsureHeadSymref），
 			// 补齐后 ReferenceStorage.New 才能推导出 ActiveBranchIndex（当前分支 IsActive）。
-			(item, item2) = BtReferencesExtensions.EnsureHeadSymref(gitModule.GitDir(), item, item2);
+			// ② 链接 worktree 的 refs 从 common dir 枚举，bt 返回的 HEAD 是主 worktree 的 HEAD，
+			// 需按本 worktree 的 HEAD 覆盖/移除（见 BtReferencesExtensions.ResolveRepositoryHead）。
+			(item, item2) = BtReferencesExtensions.ResolveRepositoryHead(gitModule, item, item2);
 			ReferenceStorage.UpstreamTrackingReference[] array = gitConfig.ReadUpstreams();
 				return GitCommandResult<ReferenceStorage>.Success(ReferenceStorage.New(names, shas, x.hash, new DateTime[0], item, item2, array, HashHelper.GetHashCode(array)));
 			}, delegate(ref BtReferences x)

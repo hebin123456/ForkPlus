@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.1.3</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,17 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.2.0 更新</h2>
+  <ul>
+    <li><strong>提交签名（GPG/SSH）</strong>：提交面板 <code>⋯</code> 菜单新增<strong>「Sign Commit」</strong>开关（读写本仓库 <code>git config commit.gpgsign</code>）与<strong>「Signing Key」</strong>签名密钥选择；提交详情面板新增<strong>签名徽标</strong>——Verified / Unverified / Bad Signature / Expired / Revoked 等，并显示签名者；创建标签弹窗新增<strong>「Sign」</strong>选项（<code>git tag -s</code>），勾选状态可持久化。详见<a href="ch-05-commit.html">第 5 章 · 提交</a>、<a href="ch-04-revision-details.html">第 4 章 · 提交详情</a>、<a href="ch-10-tags.html">第 10 章 · 标签</a>。</li>
+    <li><strong>空提交</strong>：提交面板新增<strong>「Allow Empty Commit」</strong>（<code>--allow-empty</code>）与<strong>「Skip Commit Hooks」</strong>（<code>--no-verify</code>）复选框，勾选空提交后无暂存文件也可提交。详见<a href="ch-05-commit.html">第 5 章 · 提交</a>。</li>
+    <li><strong>AI 窗口行为统一</strong>：全部 AI 功能（解释 commit / PR 描述 / 检视 / 辅助开发 / 提交编排）窗口统一为非模态 + 统一尺寸 + 任务栏可见 + 跟随主窗口所在屏幕；未配置 AI 时统一提示并附<strong>「打开偏好设置」</strong>直达入口；右上角模型下拉框统一为「占位 + 后台拉取模型列表 + 切换即保存」。详见<a href="ch-24-ai.html">第 24 章 · AI 功能</a>、<a href="ch-21-preferences.html">第 21 章 · 偏好设置</a>。</li>
+    <li><strong>worktree 分支显示修复</strong>：链接 worktree 下不再误显示「detached HEAD」或主 worktree 的分支——refs 改从 common dir 枚举，HEAD 按<strong>本 worktree 自己的 HEAD</strong> 修正，detached 时与 git 一致地显示 detached。详见<a href="ch-15-submodule-worktree.html">第 15 章 · 子模块与 Worktree</a>。</li>
+    <li><strong>打开仓库提速</strong>：HEAD unborn 检测不再 spawn <code>git rev-parse</code> 子进程（在被安全软件拦截进程创建的机器上单次可达 1~2.4 秒），改为纯文件检查——打开仓库首屏（轨道图）明显加快。</li>
+    <li><strong>界面细节修复</strong>：loading 动画补峰前爬升段并提升采样率（不再「突然闪白再淡出」的台阶感）；历史列表作者颜色框中间 4px 断开修复；作者邮箱选色弹窗在详情刷新后自动对账（不再对旧邮箱选色）。详见<a href="ch-03-history.html">第 3 章 · 历史</a>。</li>
+    <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.2.0。</li>
+  </ul>
 
   <h2>v5.1.3 更新</h2>
   <ul>

@@ -51,7 +51,18 @@ namespace ForkPlus.Git
 
 		public int? ActiveBranchIndex { get; }
 
-		public ReferenceStorage(string[] refs, Sha[] shas, ulong refsHash, DateTime[] committerDates, string[] symrefs, string[] symrefTargets, Range localBranches, Range remoteBranches, Range tags, string[] upstreams, int upstreamsHash, Sha? headSha, int? activeBranchIndex)
+		/// <summary>构造本实例时 worktree 自身 HEAD 文件的原文快照（trimmed，非 worktree 为 null）。
+		/// 用途：RefreshRepositoryReferencesGitCommand 的引用相等快路径。bt 的 RefsHash 只覆盖
+		/// common refs + 主 worktree 的 HEAD symref，不含链接 worktree 的 HEAD——worktree 里切换
+		/// 分支后 hash 不变，直接复用旧引用会让 ActiveBranch 停留旧值（历史 bug，曾因此对
+		/// worktree 一刀切禁用快路径）。改为把本 worktree 的 HEAD 原文纳入比较键：HEAD 未变且
+		/// hash 相等 → 安全复用；HEAD 变了 → 重建。一刀切禁用的代价是 worktree 仓库每次刷新
+		/// 都新建 ReferenceStorage → 下游 RefreshRepositoryDataGitCommand:144 的引用相等短路
+		/// 永不命中 → 每次"刷新"都全量重建轨道图（2026-10 "轨道图好卡"审计：worktree 仓库
+		/// 3 分钟被全量刷新 293 次，普通仓库仅 2-5 次）。</summary>
+		public string HeadSnapshot { get; }
+
+		public ReferenceStorage(string[] refs, Sha[] shas, ulong refsHash, DateTime[] committerDates, string[] symrefs, string[] symrefTargets, Range localBranches, Range remoteBranches, Range tags, string[] upstreams, int upstreamsHash, Sha? headSha, int? activeBranchIndex, string headSnapshot = null)
 		{
 			Refs = refs;
 			Shas = shas;
@@ -66,9 +77,10 @@ namespace ForkPlus.Git
 			UpstreamsHash = upstreamsHash;
 			HeadSha = headSha;
 			ActiveBranchIndex = activeBranchIndex;
+			HeadSnapshot = headSnapshot;
 		}
 
-		public static ReferenceStorage New(string[] refs, Sha[] shas, ulong refsHash, DateTime[] committerDates, string[] symrefs, string[] symrefTargets, UpstreamTrackingReference[] upstreamPairs, int upstreamsHash)
+		public static ReferenceStorage New(string[] refs, Sha[] shas, ulong refsHash, DateTime[] committerDates, string[] symrefs, string[] symrefTargets, UpstreamTrackingReference[] upstreamPairs, int upstreamsHash, string headSnapshot = null)
 		{
 			string text = null;
 			for (int i = 0; i < symrefs.Length; i++)
@@ -163,7 +175,7 @@ namespace ForkPlus.Git
 				}
 			}
 			string[] upstreams = list.ToArray();
-		return new ReferenceStorage(refs, shas, refsHash, committerDates, symrefs, symrefTargets, localBranches, remoteBranches, tags, upstreams, upstreamsHash, headSha, activeBranchIndex);
+		return new ReferenceStorage(refs, shas, refsHash, committerDates, symrefs, symrefTargets, localBranches, remoteBranches, tags, upstreams, upstreamsHash, headSha, activeBranchIndex, headSnapshot);
 		}
 
 		public ReferenceStorage WithHead(Sha? headSha)
@@ -214,7 +226,10 @@ namespace ForkPlus.Git
 				remoteBranches = new Range(RemoteBranches.Start + 1, RemoteBranches.End + 1);
 				tags = new Range(Tags.Start + 1, Tags.End + 1);
 			}
-			return new ReferenceStorage(list3.ToArray(), list4.ToArray(), RefsHash, list5.ToArray(), list.ToArray(), list2.ToArray(), localBranches, remoteBranches, tags, Upstreams, UpstreamsHash, headSha, null);
+			// 保留 HeadSnapshot：WithHead 只替换 HEAD 条目的 sha，仓库 HEAD 文件本身没变
+			//（调用方是 worktree symref 修正等场景），快路径比较键必须跟着原实例走，
+			// 否则下一次刷新会因快照丢失而误判"HEAD 变了"白重建一次。
+			return new ReferenceStorage(list3.ToArray(), list4.ToArray(), RefsHash, list5.ToArray(), list.ToArray(), list2.ToArray(), localBranches, remoteBranches, tags, Upstreams, UpstreamsHash, headSha, null, HeadSnapshot);
 		}
 
 		public string GetLocalBranchUpstream(int refIndex)
