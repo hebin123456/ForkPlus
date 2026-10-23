@@ -169,6 +169,10 @@ namespace ForkPlus.Tests
 		[Fact]
 		public void GitExecutableResolver_ResolvesBinAndCmdShims()
 		{
+			// Windows Git 发行版布局（bin/cmd 薄壳 → mingw64\bin\git.exe）只在 Windows 上解析；
+			// 非 Windows 平台 ResolveCore 的 OS 守卫应原样返回（即使文件名 git.exe、父目录
+			// bin/cmd、mingw64 姊妹文件齐备也不改写）——CI 的 core 分片在 ubuntu 上跑，
+			// 不能假设在 Windows。
 			foreach (string shimDirectoryName in new[] { "bin", "cmd" })
 			{
 				string shim = CreateShimPath(shimDirectoryName);
@@ -177,6 +181,11 @@ namespace ForkPlus.Tests
 				Directory.CreateDirectory(realGitDir);
 				string realGit = Path.Combine(realGitDir, "git.exe");
 				File.WriteAllText(realGit, "real");
+				if (!OperatingSystem.IsWindows())
+				{
+					Assert.Equal(shim, GitExecutableResolver.Resolve(shim));
+					continue;
+				}
 				Assert.Equal(realGit, GitExecutableResolver.Resolve(shim));
 			}
 		}
