@@ -2,6 +2,24 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.2.1
+
+> 新增 **macOS x64（Intel Mac）发布平台**——自 v5.2.1 起 CI 产出五平台 zip（windows-x64 / linux-x64 / linux-arm64 / macos-arm64 / **macos-x64**）。应用版本号升至 5.2.1。
+
+### 新功能
+
+- **macOS x64 构建**（[ForkPlus.csproj](src/ForkPlus/ForkPlus.csproj)、[build.yml](.github/workflows/build.yml)）：
+  - CI 构建矩阵新增 `macos-x64`（RID `osx-x64`）腿，与 macos-arm64 同跑 `macos-latest`（Apple Silicon）runner，**交叉 publish**——.NET runtime pack 走 NuGet，自包含发布与宿主架构无关，无需 Intel runner。
+  - 原生依赖盘点（v5.2.1 前置调研）：[biturbo](https://github.com/hebin123456/Biturbo) 自 v1.1.4 起新增 `libbiturbo-x64.dylib` 资产（`RestoreBiturbo` 按 `$(RuntimeIdentifier)=osx-x64` 分流拉取，落地为 `libbiturbo.dylib`，运行时 `DllImport` 库名不变，本地无 RID 构建回退宿主 `uname -m`）；SkiaSharp 3.119.4 / HarfBuzzSharp 8.3.1.3 / Avalonia.Native 12.1.1 的 macOS dylib 均为 **universal fat**（x86_64 + arm64 双切片），无需处理；tokei 直接使用现成 `tokei-x86_64-apple-darwin` 资产（osx-arm64 本就经 Rosetta 2 运行它，osx-x64 反而是原生执行）。
+  - 自动更新零代码改动：`GetCurrentPlatformId()` 在 Intel Mac 上返回 `macos-x64`，自动匹配 `ForkPlus-<版本>-macos-x64.zip`；签名待遇与 osx-arm64 一致（macOS 主机上 SDK 对 apphost 自动 ad-hoc 签名，x64 macOS 对签名要求更宽松）。
+- **文档**：README / README.zh-Hant 平台描述更新为五平台（CI 矩阵表新增 macos-x64 行）。
+
+### 修复
+
+- **CI 测试与守卫误报**（v5.2.0 发布后两连修，随本版固定）：
+  - [StartupGitSpawnPerfTests.cs](src/ForkPlus.Tests/StartupGitSpawnPerfTests.cs)：`GitExecutableResolver_ResolvesBinAndCmdShims` 按 OS 分支——实现有 `OperatingSystem.IsWindows()` 守卫（bin/cmd 薄壳解析仅 Windows Git 发行版布局生效），CI 的 ubuntu 分片上原样返回；非 Windows 断言 OS 守卫生效（即使 mingw64 姊妹文件齐备也不改写），Windows 保留原断言。
+  - [build.yml](.github/workflows/build.yml) 分片完整性守卫第三变体：core-a 纯否定式 filter 枚举（CI 上已知不稳定）偶发把 vstest 错误行 `No test matches the given testcase filter` 无分隔符拼进用例名行尾（行内无空格，既有 2+ 空格拆分归一化拆不开），虚报缺失+多余各 1；归一化追加按短语切断合并行 + 删空行（与前两变体 v5.1.4 集合口径、v5.1.5 重发布 2+ 空格拆分同类）。
+
 ## v5.2.0
 
 > 新增 **提交签名（GPG/SSH）与空提交支持**，收口 **AI 窗口弹窗行为**；修复 **链接 worktree 分支显示错误**、**打开仓库慢（轨道图刷出来慢）**、**loading 动画台阶感**、**历史列表作者颜色框中间断开** 四项。应用版本号升至 5.2.0。

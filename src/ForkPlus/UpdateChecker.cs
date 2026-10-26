@@ -173,8 +173,9 @@ namespace ForkPlus
 
 		/// <summary>
 		/// 当前运行平台标识（与 Release 资产命名一致）：windows-x64 / linux-x64 /
-		/// linux-arm64 / macos-arm64。OS 按 RuntimeInformation，架构按 OSArchitecture
-		/// （Linux ARM64 上返回 Arm64，与 CI 矩阵 rid 命名一一对应）。
+		/// linux-arm64 / macos-arm64 / macos-x64。OS 按 RuntimeInformation，架构按 OSArchitecture
+		/// （Linux ARM64 上返回 Arm64，与 CI 矩阵 rid 命名一一对应；v5.2.1 起 macOS
+		/// 新增 x64 腿，Intel Mac 上返回 X64 → macos-x64）。
 		/// </summary>
 		internal static string GetCurrentPlatformId()
 		{
@@ -187,7 +188,8 @@ namespace ForkPlus
 
 		/// <summary>
 		/// 从 Release 资产列表中挑出当前平台的安装包下载地址。
-		/// v4.0.2 起四平台资产（windows-x64 / linux-x64 / linux-arm64 / macos-arm64）
+		/// v4.0.2 起多平台资产（windows-x64 / linux-x64 / linux-arm64 / macos-arm64，
+		/// v5.2.1 起新增 macos-x64）
 		/// 并行上传，API 返回顺序不可控——不能像旧版那样直接取 assets[0]
 		/// （三平台时代恰好只有三个 zip，assets[0] 碰巧是 windows 包）。
 		/// 匹配规则：资产名以 "ForkPlus-{version}-{platformId}.zip" 结尾；找不到

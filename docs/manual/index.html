@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.0</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,12 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.2.1 更新</h2>
+  <ul>
+    <li><strong>macOS x64（Intel Mac）发布平台</strong>：自 v5.2.1 起 CI 产出五平台 zip——Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 / <strong>macOS x64</strong>。macOS x64 包与 macos-arm64 同跑 Apple Silicon runner 交叉发布（.NET 自包含运行时，目标机无需安装任何框架）；原生依赖已对齐——biturbo 自 v1.1.4 起新增 <code>libbiturbo-x64.dylib</code>，SkiaSharp / HarfBuzzSharp / Avalonia.Native 的 macOS dylib 均为 universal fat（x86_64 + arm64 双切片），tokei 使用原生 <code>x86_64-apple-darwin</code> 资产。自动更新按平台标识 <code>macos-x64</code> 自动匹配 <code>ForkPlus-&lt;版本&gt;-macos-x64.zip</code>。</li>
+    <li><strong>文档与插图</strong>：用户手册版本号更新至 v5.2.1。</li>
+  </ul>
 
   <h2>v5.2.0 更新</h2>
   <ul>

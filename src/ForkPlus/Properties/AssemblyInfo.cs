@@ -15,6 +15,17 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-23，v5.2.1）：新增 macOS x64（Intel Mac）发布平台，应用版本号升至 5.2.1。
+//   CI 构建矩阵在 macos-latest（Apple Silicon）runner 上交叉 publish -r osx-x64（.NET
+//   runtime pack 走 NuGet，交叉发布与宿主架构无关）；biturbo 原生库自 Biturbo v1.1.4 起
+//   提供 libbiturbo-x64.dylib（RestoreBiturbo 按 $(RuntimeIdentifier)=osx-x64 分流拉取，
+//   落地为 libbiturbo.dylib，运行时 DllImport 库名不变）；SkiaSharp / HarfBuzzSharp /
+//   Avalonia.Native 的 macOS dylib 均为 universal fat（x86_64+arm64 双切片）无需处理；
+//   tokei 直接使用现成 tokei-x86_64-apple-darwin 资产（osx-arm64 本就经 Rosetta 运行它，
+//   osx-x64 反而是原生执行）。自动更新按 GetCurrentPlatformId()（Intel Mac 返回
+//   macos-x64）匹配 ForkPlus-<版本>-macos-x64.zip，零代码改动。
+//   另随包带入 v5.2.0 后的 CI 修复：GitExecutableResolver shim 测试按 OS 分支（非
+//   Windows 断言 OS 守卫生效），分片守卫归一化免疫第三变体（vstest 错误行拼入用例名行尾）。
 // 版本号说明（2026-10-23，v5.2.0）：新增提交签名与空提交支持，收口 AI 窗口行为，修复
 //   worktree 分支显示与打开仓库慢等四项。
 //   新增：① 提交签名——提交面板 ⋯ 菜单新增「Sign Commit」（读写本仓库 git config
@@ -151,8 +162,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.0")]
-[assembly: AssemblyInformationalVersion("5.2.0")]
+[assembly: AssemblyFileVersion("5.2.1")]
+[assembly: AssemblyInformationalVersion("5.2.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.0.0")]
+[assembly: AssemblyVersion("5.2.1.0")]

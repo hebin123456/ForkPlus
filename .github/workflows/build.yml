@@ -89,6 +89,18 @@ jobs:
             name: macos-arm64
             rid: osx-arm64
             platformtarget: arm64
+          # macOS x64（Intel Mac，v5.2.1 起）：同一 macos-latest（Apple Silicon）runner
+          # 上交叉 publish（-r osx-x64，runtime pack 走 NuGet，.NET 交叉发布与宿主
+          # 架构无关）。biturbo 原生库自 Biturbo v1.1.4 起有 libbiturbo-x64.dylib 资产，
+          # csproj RestoreBiturbo 按 $(RuntimeIdentifier)=osx-x64 分流拉取并落地为
+          # libbiturbo.dylib（运行时库名不变）；SkiaSharp/HarfBuzzSharp/Avalonia.Native
+          # 的 macOS dylib 均为 universal fat（x86_64+arm64 双切片），tokei 直接用现成的
+          # x86_64-apple-darwin 资产（osx-arm64 本来就靠 Rosetta 跑它）。apphost 在
+          # macOS 主机上由 SDK 自动 ad-hoc 签名，与 osx-arm64 同待遇。
+          - os: macos-latest
+            name: macos-x64
+            rid: osx-x64
+            platformtarget: x64
 
     steps:
       - name: Checkout
@@ -653,7 +665,7 @@ jobs:
           set -e
           tag="${GITHUB_REF_NAME#v}"
           cd artifacts
-          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-linux-arm64 ForkPlus-macos-arm64; do
+          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-linux-arm64 ForkPlus-macos-arm64 ForkPlus-macos-x64; do
             [ -d "$name" ] || { echo "MISSING artifact: $name"; exit 1; }
             zip -qr "ForkPlus-${tag}-${name#ForkPlus-}.zip" "$name"
             ls -la "ForkPlus-${tag}-${name#ForkPlus-}.zip"

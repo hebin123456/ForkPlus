@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <!-- .NET 10 LTS。UI 已迁移 Avalonia（跨平台），TFM 用 net10.0（不带 -windows 后缀）；
-         CI 四平台（win/linux/linux-arm64/macos）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
+         CI 五平台（win/linux/linux-arm64/macos-arm64/macos-x64）构建，UI 冒烟测试统一走 Avalonia.Headless（跨平台，随单测跑）。-->
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>ForkPlus</AssemblyName>
     <TargetName>ForkPlus</TargetName>
@@ -134,25 +134,31 @@
     <ProjectReference Include="..\ForkPlus.AutoUpdater\ForkPlus.AutoUpdater.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
   <!-- biturbo 原生库（Rust cdylib，封装 libgit2 + zlib）不再以二进制提交到仓库，改为构建期从
-       Biturbo 仓库最新 release 拉取。Biturbo v1.1.3 起发布四平台 asset：
+       Biturbo 仓库最新 release 拉取。Biturbo v1.1.4 起发布五平台 asset：
          Windows        → biturbo.dll
          Linux x64      → libbiturbo.so
          Linux ARM64    → libbiturbo-arm64.so（落地重命名为 libbiturbo.so，运行时库名不变）
-         macOS          → libbiturbo.dylib
-       本 target 按 $(OS)（Unix 上再按 uname -m）选择对应 asset，缺失时下载到 third_party/；
-       已存在则跳过。CI 每次全新 checkout 都会拉最新版。-->
+         macOS ARM64    → libbiturbo.dylib
+         macOS x64      → libbiturbo-x64.dylib（落地重命名为 libbiturbo.dylib，运行时库名不变）
+       本 target 按 $(OS)（Unix 上再按目标 RID / uname -m）选择对应 asset，缺失时下载到
+       third_party/；已存在则跳过。macOS 两架构按目标 RID 分流——osx-x64 发布跑在
+       Apple Silicon runner（macos-latest）上，宿主 uname 是 Darwin/aarch64，不能按
+       宿主选资产（会错拉 arm64 dylib，P/Invoke 直接崩）；带 -r 时以 $(RuntimeIdentifier)
+       为准，本地无 RID 构建回退 uname -m。CI 每次全新 checkout 都会拉最新版。-->
   <Target Name="RestoreBiturbo" BeforeTargets="Build">
     <PropertyGroup>
       <BiturboBaseUrl>https://github.com/hebin123456/Biturbo/releases/latest/download</BiturboBaseUrl>
     </PropertyGroup>
     <!-- Windows: PowerShell 拉取 biturbo.dll -->
     <Exec Condition="'$(OS)' == 'Windows_NT' And !Exists('..\..\third_party\biturbo.dll')" Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; New-Item -ItemType Directory -Force -Path '..\..\third_party' | Out-Null; Invoke-WebRequest -Uri '$(BiturboBaseUrl)/biturbo.dll' -OutFile '..\..\third_party\biturbo.dll'; Write-Host 'Restored biturbo.dll from Biturbo latest release'&quot;" />
-    <!-- Unix (Linux/macOS): bash + curl，按 uname -s 选 .so / .dylib；Linux 再按 uname -m
-         分流 aarch64（资产名 libbiturbo-arm64.so，落地为 libbiturbo.so）。
+    <!-- Unix (Linux/macOS): bash + curl。macOS 按目标 RID 分流（osx-x64 →
+         libbiturbo-x64.dylib，osx-arm64 → libbiturbo.dylib，无 RID 回退 uname -m）；
+         Linux 再按 uname -m 分流 aarch64（资产名 libbiturbo-arm64.so，落地为 libbiturbo.so）。
+         资产名都落地为运行时库名（libbiturbo.dylib / libbiturbo.so），运行时 DllImport 不变。
          用反引号 `uname -s` 做 bash 命令替换，避免 MSBuild 把 $(...) 当属性展开；
-         $(BiturboBaseUrl) 仍由 MSBuild 正常展开。
+         $(BiturboBaseUrl) / $(RuntimeIdentifier) 仍由 MSBuild 正常展开。
          带 3 次重试（指数退避）——CI 上 GitHub release 下载偶发连接中断（与 RestoreTokei 同模式）。-->
-    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo.dylib&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; elif [ &quot;`uname -m`&quot; = &quot;aarch64&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo-arm64.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release&quot;'" />
+    <Exec Condition="'$(OS)' == 'Unix' And !Exists('..\..\third_party\libbiturbo.so') And !Exists('..\..\third_party\libbiturbo.dylib')" Command="bash -c 'set -e; mkdir -p ../../third_party; os=`uname -s`; rid=&quot;$(RuntimeIdentifier)&quot;; if [ &quot;$os&quot; = &quot;Darwin&quot; ]; then if [ &quot;$rid&quot; = &quot;osx-x64&quot; ]; then asset=&quot;libbiturbo-x64.dylib&quot;; elif [ &quot;$rid&quot; = &quot;osx-arm64&quot; ]; then asset=&quot;libbiturbo.dylib&quot;; elif [ &quot;`uname -m`&quot; = &quot;x86_64&quot; ]; then asset=&quot;libbiturbo-x64.dylib&quot;; else asset=&quot;libbiturbo.dylib&quot;; fi; url=&quot;$(BiturboBaseUrl)/$asset&quot;; out=&quot;../../third_party/libbiturbo.dylib&quot;; elif [ &quot;`uname -m`&quot; = &quot;aarch64&quot; ]; then url=&quot;$(BiturboBaseUrl)/libbiturbo-arm64.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; else url=&quot;$(BiturboBaseUrl)/libbiturbo.so&quot;; out=&quot;../../third_party/libbiturbo.so&quot;; fi; ok=0; for i in 1 2 3; do if curl -fsSL --retry 3 &quot;$url&quot; -o &quot;$out&quot;; then ok=1; break; fi; sleep $((i*5)); done; [ &quot;$ok&quot; = &quot;1&quot; ] || { echo &quot;Failed to download $url after 3 attempts&quot; &gt;&amp;2; exit 1; }; echo &quot;Restored $out from Biturbo latest release ($asset)&quot;'" />
   </Target>
   <!-- tokei（代码行数统计，MIT 协议）从 hebin123456/tokei 仓库最新 release 拉取预编译二进制，
        不再从源码 cargo 编译（与 biturbo 一致的发布产物拉取模式）。v14.0.1 release 覆盖四平台：
