@@ -156,6 +156,8 @@ jobs:
             linux-x64)   asset=libbiturbo.so;       out=libbiturbo.so ;;
             linux-arm64) asset=libbiturbo-arm64.so; out=libbiturbo.so ;;
             macos-arm64) asset=libbiturbo.dylib;    out=libbiturbo.dylib ;;
+            # macOS x64：Biturbo v1.1.4 起的裸资产名，落地为运行时库名 libbiturbo.dylib
+            macos-x64)   asset=libbiturbo-x64.dylib; out=libbiturbo.dylib ;;
           esac
           echo "Downloading $asset -> third_party/$out ..."
           ok=0
@@ -171,12 +173,13 @@ jobs:
           [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
       # tokei 与 biturbo 同模式显式下载（不走 csproj 的 RestoreTokei Exec，
-      # 规避 macOS runner 上 MSBuild Exec 行为差异）。四平台资产：
+      # 规避 macOS runner 上 MSBuild Exec 行为差异）。五平台资产：
       #   windows → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
       #   linux-x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
       #   linux-arm64 → tokei-aarch64-unknown-linux-gnu.tar.gz（同上，aarch64 资产）
-      #   macos   → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无 aarch64-apple-darwin
-      #             资产，arm64 目标机经 Rosetta 2 运行——CI 只打包不执行，不受影响）
+      #   macos-arm64 / macos-x64 → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无
+      #             aarch64-apple-darwin 资产——arm64 目标机经 Rosetta 2 运行，x64 反而是
+      #             原生执行；CI 只打包不执行，不受影响）
       - name: Download tokei
         shell: bash
         run: |
@@ -187,6 +190,7 @@ jobs:
             linux-x64)   asset="tokei-x86_64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
             linux-arm64) asset="tokei-aarch64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
             macos-arm64) asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
+            macos-x64)   asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
           esac
           echo "Downloading $asset ..."
           ok=0
@@ -273,6 +277,7 @@ jobs:
             linux-x64)   native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
             linux-arm64) native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
             macos-arm64) native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
+            macos-x64)   native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
           esac
           [ -f "$native" ] || { echo "MISSING native: $native"; missing=1; }
           [ -f "$tokei_file" ] || { echo "MISSING tokei: $tokei_file"; missing=1; }
