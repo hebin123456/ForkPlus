@@ -15,6 +15,12 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-23，v5.2.2）：偏好设置 → 插件页新增搜索框，应用版本号升至 5.2.2。
+//   搜索框按插件名称、插件描述与匹配扩展名（逐项子串匹配，带不带点均可）不区分大小写
+//   过滤插件列表（PluginsUserControl.MatchesPluginFilter，internal static + 8 个回归
+//   用例 PluginsSearchFilterTests）；搜索词跨启用/禁用、卸载、重载保留，过滤后无匹配
+//   显示空态提示；「全选」只作用于过滤后可见行，已勾选项跨过滤保留（卸载计数为真实
+//   卸载数）。本页文案固定中文，搜索框占位文本不随界面语言翻译（与该页既有约定一致）。
 // 版本号说明（2026-10-23，v5.2.1）：新增 macOS x64（Intel Mac）发布平台，应用版本号升至 5.2.1。
 //   CI 构建矩阵在 macos-latest（Apple Silicon）runner 上交叉 publish -r osx-x64（.NET
 //   runtime pack 走 NuGet，交叉发布与宿主架构无关）；biturbo 原生库自 Biturbo v1.1.4 起
@@ -162,8 +168,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.1")]
-[assembly: AssemblyInformationalVersion("5.2.1")]
+[assembly: AssemblyFileVersion("5.2.2")]
+[assembly: AssemblyInformationalVersion("5.2.2")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.1.0")]
+[assembly: AssemblyVersion("5.2.2.0")]

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -44,6 +45,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 		/// <summary>批量修改勾选状态时抑制单行/全选事件回环。</summary>
 		private bool _syncingSelection;
 
+		/// <summary>v5.2.2：当前搜索词（原样保存，匹配时 Trim；空 = 不过滤）。</summary>
+		private string _searchFilter = string.Empty;
+
 		public PluginsUserControl()
 		{
 			InitializeComponent();
@@ -83,17 +87,72 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			else
 			{
+				// v5.2.2：按搜索词过滤（名称 / 描述 / 匹配扩展名）；过滤后无匹配时给空态提示。
+				int visibleCount = 0;
 				foreach (DiffViewPluginInfo info in infos)
 				{
+					if (!MatchesPluginFilter(info, _searchFilter))
+					{
+						continue;
+					}
 					if (info.CanUninstall)
 					{
 						_checkableCount++;
 					}
 					PluginsListPanel.Children.Add(BuildPluginRow(info));
+					visibleCount++;
+				}
+				if (visibleCount == 0)
+				{
+					PluginsListPanel.Children.Add(new TextBlock
+					{
+						Text = "没有插件匹配搜索词：" + _searchFilter.Trim() + "。",
+						FontSize = 13,
+						Opacity = 0.7,
+						Margin = new Thickness(0, 4, 0, 4)
+					});
 				}
 			}
 			SelectAllCheckBox.IsEnabled = _checkableCount > 0;
 			UpdateUninstallButton();
+		}
+
+		/// <summary>
+		/// v5.2.2：插件搜索过滤——按名称、描述与匹配扩展名（对每个扩展名单独匹配）做
+		/// 不区分大小写的子串匹配（名称/描述已按宿主语言本地化，搜索词大小写不敏感）。
+		/// 空白搜索词视为匹配全部；搜索扩展名时带不带点均可（".png"/"png" 命中同一条）。
+		/// internal static 供回归测试直接用 <see cref="DiffViewPluginInfo"/> 样例验证，
+		/// 不依赖 Headless 与真实 plugins/ 目录。
+		/// </summary>
+		internal static bool MatchesPluginFilter(DiffViewPluginInfo info, string filter)
+		{
+			string query = filter?.Trim();
+			if (string.IsNullOrEmpty(query))
+			{
+				return true;
+			}
+			if (info.Name != null && info.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+			if (info.Description != null && info.Description.Contains(query, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+			foreach (string extension in info.FileExtensions)
+			{
+				if (extension != null && extension.Contains(query, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			_searchFilter = SearchBox.Text ?? string.Empty;
+			LoadPlugins();
 		}
 
 		private Control BuildPluginRow(DiffViewPluginInfo info)

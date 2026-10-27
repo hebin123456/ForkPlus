@@ -2,6 +2,18 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.2.2
+
+> 偏好设置 → 插件页新增 **搜索框**——按插件名称、插件描述或匹配扩展名过滤插件列表。应用版本号升至 5.2.2。
+
+### 新功能
+
+- **插件页搜索**（[PluginsUserControl.axaml.cs](src/ForkPlus/UI/UserControls/Preferences/PluginsUserControl.axaml.cs)、[PluginsSearchFilterTests.cs](src/ForkPlus.Tests/PluginsSearchFilterTests.cs)）：
+  - 插件列表上方新增搜索框（占位文本「搜索插件：名称 / 描述 / 匹配扩展名」），按**插件名称 / 插件描述 / 匹配扩展名**做**不区分大小写的子串匹配**；扩展名逐项匹配且**带不带点均可**（`.png` / `png` 命中同一条）。
+  - 搜索词跨操作保留：启用/禁用、卸载、重新加载插件后，列表仍按当前搜索词过滤；过滤后无匹配显示空态提示「没有插件匹配搜索词：…」，与「未发现插件」的零插件空态区分。
+  - 与勾选/卸载联动语义：「全选」只作用于**过滤后可见行**；已勾选项**跨过滤保留**——先勾选 A 再搜索后勾选 B，点「卸载选中」仍会卸载 A 与 B（计数为真实卸载数）。
+  - 匹配逻辑提取为 `internal static MatchesPluginFilter`（经 `InternalsVisibleTo` 直测），配 **8 个回归用例**（空白词全匹配、名称/描述/扩展名命中与不命中、大小写、多扩展名、无扩展名条目、Trim），不依赖 Headless 与真实 `plugins/` 目录。
+
 ## v5.2.1
 
 > 新增 **macOS x64（Intel Mac）发布平台**——自 v5.2.1 起 CI 产出五平台 zip（windows-x64 / linux-x64 / linux-arm64 / macos-arm64 / **macos-x64**）。应用版本号升至 5.2.1。

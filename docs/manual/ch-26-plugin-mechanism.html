@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.2.1</p>
+  <p>ForkPlus 用户手册 · 版本 v5.2.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -137,6 +137,7 @@
   <p>从 <strong>v5.0.1</strong> 起，可在「偏好设置 → 插件」页集中管理对比视图插件，无需手工改文件、也无需重启：</p>
   <ul>
     <li><strong>查看插件信息</strong>：每个插件展示<strong>名称、插件版本、最低支持主软件版本</strong>与描述，以及它认领的<strong>匹配扩展名</strong>与<strong>优先级</strong>；加载失败或不兼容的插件会单独列出并标明原因（如「需要主程序 ≥ 5.1.0」），不影响其他插件。</li>
+    <li><strong>搜索过滤（v5.2.2）</strong>：页面顶部的<strong>搜索框</strong>可按<strong>插件名称、插件描述</strong>或<strong>匹配扩展名</strong>过滤插件列表（不区分大小写的子串匹配，扩展名带不带点均可，如 <code>.png</code> / <code>png</code>）。搜索词会保留——启用/禁用、卸载、重新加载后列表仍按当前搜索词过滤；过滤后无匹配时显示空态提示。</li>
     <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。</li>
     <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 下各插件子目录</strong>——放入或删除插件后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
     <li><strong>安装插件</strong>：点击<strong>「安装插件...」</strong>选择从发布页下载的插件压缩包（<strong>合集包或单插件包</strong>均可），ForkPlus 会自动识别包内各插件目录、逐个校验 <code>plugin.json</code> 兼容性后安装到 <code>plugins/&lt;程序集名&gt;/</code> 并重新加载——无需手工解压；<strong>不兼容或缺少清单的插件会被跳过并提示</strong>。</li>
