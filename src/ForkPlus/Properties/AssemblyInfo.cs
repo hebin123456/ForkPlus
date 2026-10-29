@@ -15,6 +15,14 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-30，v5.2.3）：修复轨道图合并节点悬浮小窗的两处交互缺陷，应用版本号升至 5.2.3。
+//   1) 浮窗内点击展开/收拢后浮窗立即消失——点击触发 Reload + RefreshHeight 高度动画，
+//      浮窗尺寸/位置变化对静止鼠标重算命中产生布局性假 PointerExited，原实现 Exited 即
+//      启动 200ms 关闭定时器导致误关（GraphCellView._closePending 状态机：关闭判定改为
+//      「真实鼠标移动」语义，与外层单元格假 PointerExited 修复同一口径）；
+//   2) 鼠标在浮窗上滚动滚轮，滚的是外面的轨道图列表——overlay 模式 Popup 事件在主窗口
+//      视觉树冒泡，浮窗内容无溢出时滚轮穿透。修复：浮窗内容 PointerWheelChanged 阻断
+//      冒泡并驱动内部 ScrollViewer（内容不足一屏时仅吞掉事件不滚动）。
 // 版本号说明（2026-10-23，v5.2.2）：偏好设置 → 插件页新增搜索框，应用版本号升至 5.2.2。
 //   搜索框按插件名称、插件描述与匹配扩展名（逐项子串匹配，带不带点均可）不区分大小写
 //   过滤插件列表（PluginsUserControl.MatchesPluginFilter，internal static + 8 个回归
@@ -168,8 +176,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.2")]
-[assembly: AssemblyInformationalVersion("5.2.2")]
+[assembly: AssemblyFileVersion("5.2.3")]
+[assembly: AssemblyInformationalVersion("5.2.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.2.0")]
+[assembly: AssemblyVersion("5.2.3.0")]

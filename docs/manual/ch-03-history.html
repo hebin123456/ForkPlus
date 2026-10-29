@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 3 章 · 提交历史与修订列表</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.2.2</p>
+  <p>ForkPlus 用户手册 · 版本 v5.2.3</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -39,6 +39,15 @@
   </figure>
 
   <div class="note"><strong>说明：</strong>选中某行后，行高亮为蓝色；分支线颜色对应不同分支（如蓝色 = main、黄色 = feature/two、紫红 = feature/one），便于快速辨认提交归属。</div>
+
+  <h2>合并节点悬浮详情（轨道图小窗）</h2>
+  <p>把鼠标悬停在轨道图的<strong>合并节点</strong>（大圆点）上，约半秒后会弹出悬浮小窗，列出该合并范围（收拢的子提交）的明细——迷你轨道图、上游状态、分支/标签标记、提交说明、头像与日期。小窗交互约定：</p>
+  <ul>
+    <li><strong>移入小窗不关闭</strong>：鼠标从小窗进入小窗内部，小窗保持显示；移出小窗且不再回到轨道图单元格后才关闭。</li>
+    <li><strong>小窗内可展开 / 收拢</strong>：点击小窗内列出的节点行即可展开或收拢对应的子提交——操作后小窗<strong>不会消失</strong>，内容随展开/收拢即时刷新（v5.2.3 修复：此前点击后小窗会立即关闭）。</li>
+    <li><strong>滚轮滚动小窗内容</strong>：鼠标悬停在小窗上滚动滚轮时，滚动的是<strong>小窗内部的内容</strong>（内容不足一屏时忽略），不会带动外面的轨道图列表（v5.2.3 修复：此前滚轮会穿透到轨道图）。</li>
+  </ul>
+  <div class="tip"><strong>小贴士：</strong>点击轨道图上的合并节点本身，同样可以展开/收拢该范围的子提交；小窗只在鼠标未按下时出现。</div>
 
   <p><strong>多选两条提交</strong>（按住 <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> 加选）后右键：顶部会提供「比较完整文件树」入口——用配置的外部工具（Beyond Compare、WinMerge 等）对这两条提交（通常是两个分支的最新提交）的<strong>全量文件树</strong>做整树比对，详见<a href="ch-04-revision-details.html#filetree">第 4 章·导出文件树与跨版本比对</a>。</p>
 

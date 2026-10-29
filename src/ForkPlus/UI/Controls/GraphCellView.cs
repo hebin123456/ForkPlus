@@ -48,6 +48,15 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		private global::Avalonia.Controls.TopLevel _popupPointerMoveRoot;
 
+		// v5.2.3（Bug 修复"浮窗内点击展开/收拢后浮窗消失"）：内容/弹窗 PointerExited 不再直接
+		// 启动关闭定时器，改为置 _closePending，等【真实鼠标移动】时统一判定——点击展开/收拢
+		// 会触发 Reload + RefreshHeight 高度动画，浮窗尺寸/位置变化（收拢缩小、展开时 Placement
+		// 翻转跳位）把静止鼠标"甩出"内容区，产生布局性假 PointerExited；原实现 Exited 即启动
+		// 200ms 关闭定时器，tick 时鼠标确实不在内容上 → 弹窗在用户点击后立刻消失。关闭语义
+		// 修正为：鼠标【真实移动】且此刻不在浮窗内容、也不在外层单元格上时才关（与外层单元格
+		// 假 PointerExited 的修复同一口径）。
+		private bool _closePending;
+
 		// 弹窗打开期间订阅顶层 PointerMoved（只有鼠标真实移动才触发；滚动/布局变化导致的
 		// 命中测试重算不会触发）——鼠标移出单元格且不在弹窗上时才启动关闭定时器。
 		private void OnPopupRootPointerMoved(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -60,6 +69,14 @@ namespace ForkPlus.UI.Controls
 			if (IsPointerOver || overContent)
 			{
 				_closePopupTimer.Stop();
+				// v5.2.3：鼠标真实移动后又回到浮窗/单元格上，清除待关闭状态。
+				_closePending = false;
+			}
+			else if (_closePending)
+			{
+				// v5.2.3：之前的 PointerExited（可能是布局假事件，见 _closePending 注释）后发生
+				// 了真实移动，且此刻既不在浮窗上也不在单元格上 → 用户主动移开，关闭。
+				ClosePopup();
 			}
 			else
 			{
@@ -72,6 +89,8 @@ namespace ForkPlus.UI.Controls
 			if (_popupPointerMoveRoot != null)
 			{
 				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerMovedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved);
+				// v5.2.3：同步解除顶层 PointerExited 兜底（与 AddHandler 成对）。
+				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerExitedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerExited);
 				_popupPointerMoveRoot = null;
 			}
 		}
@@ -430,6 +449,9 @@ namespace ForkPlus.UI.Controls
 				_popup = null;
 				_popupContent = null;
 			}
+			// v5.2.3：无论是否真的关闭，待关闭状态到此终结（未关闭说明鼠标仍在浮窗/单元格上，
+			// 回到了"保持打开"语义；已关闭则状态随弹窗一起作废）。
+			_closePending = false;
 		}
 
 		private void DetachPopupFromHost(Popup popup)
@@ -471,14 +493,26 @@ namespace ForkPlus.UI.Controls
 			VisualTreeAttachmentHelper.TrySetPopupChild(popup, revisionGraphTooltipUserControl, GetType().Name + ".Popup");
 			_popupContent = revisionGraphTooltipUserControl;
 			// 鼠标进入弹窗内容时取消关闭定时器（可在弹窗上自由移动/点击），离开后再启动关闭。
+			// v5.2.3：Exited 不再直接启动关闭定时器——点击浮窗内的展开/收拢会触发 Reload +
+			// RefreshHeight 高度动画，浮窗尺寸/位置变化（收拢缩小、展开时 Placement 翻转跳位）
+			// 把静止鼠标"甩出"内容区，产生布局性假 PointerExited，原实现会在这时把刚被点击的
+			// 浮窗关掉。改为置 _closePending，等顶层真实 PointerMoved 时统一判定（见其注释）。
 			revisionGraphTooltipUserControl.PointerEntered += delegate
 			{
 				_closePopupTimer.Stop();
+				_closePending = false;
 			};
 			revisionGraphTooltipUserControl.PointerExited += delegate
 			{
-				_closePopupTimer.Start();
+				_closePending = true;
+				_closePopupTimer.Stop();
 			};
+			// v5.2.3（Bug 修复"鼠标在浮窗上滚动滚轮，滚的是外面的轨道图"）：Avalonia 11.1+ 的
+			// Popup 可能以 overlay（同窗口合成）呈现——浮窗内容在主窗口视觉树内，滚轮事件沿
+			// 主窗口冒泡；浮窗内列表无溢出（≤10 行全显示）时不消费滚轮 → 冒泡到主列表的
+			// ScrollViewer → 滚的是浮窗下面的轨道图/提交列表。统一处理：滚轮命中浮窗内容时
+			// 优先驱动浮窗内列表滚动，并标记 Handled——任何呈现模式下都不再冒泡到主窗口。
+			revisionGraphTooltipUserControl.PointerWheelChanged += OnPopupContentWheel;
 			// Bug 修复（合并节点悬浮详情弹窗空白）：孤立 Popup（不在逻辑树中）的子控件
 			// DynamicResource 解析链在自身截止（BorderBrush/ListBox.Static.Background/主题全部
 			// 解析为 null）→ 弹窗只剩宿主白底、无边框无内容。与 GitMmUserControl 本轮25 修复
@@ -533,12 +567,59 @@ namespace ForkPlus.UI.Controls
 					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved,
 					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
 					true);
+				// v5.2.3：鼠标离开主窗口（甩出窗口外）的兜底——overlay 模式下浮窗内容在主窗口
+				// 视觉树内，鼠标从浮窗直接甩出窗口会先触发内容 Exited（置 _closePending）再触发
+				// 顶层 Exited，此时无后续 PointerMoved 判定机会，直接按待关闭语义关窗。
+				// 真实弹窗（独立窗口）模式下鼠标从主窗口移入浮窗会触发顶层 Exited，但那时
+				// _closePending == false（鼠标此前不在浮窗内容上），不会误关。
+				_popupPointerMoveRoot.AddHandler(global::Avalonia.Input.InputElement.PointerExitedEvent,
+					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerExited,
+					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+					true);
 			}
 			popup.PointerExited += delegate
 			{
-				_closePopupTimer.Start();
+				_closePending = true;
+				_closePopupTimer.Stop();
 			};
 			return popup;
+		}
+
+		// v5.2.3：顶层 PointerExited 兜底（见 CreatePopup 内订阅注释）。
+		private void OnPopupRootPointerExited(object sender, global::Avalonia.Input.PointerEventArgs e)
+		{
+			if (_popup == null || !_popup.IsOpen || !_closePending)
+			{
+				return;
+			}
+			ClosePopup();
+		}
+
+		// v5.2.3：浮窗内容上的滚轮——优先滚内部列表（有溢出时），并阻止冒泡到主窗口
+		//（overlay 模式下冒泡会滚到浮窗下面的轨道图/提交列表）。
+		private void OnPopupContentWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
+		{
+			global::Avalonia.Controls.ScrollViewer scrollViewer = null;
+			if (_popupContent is global::Avalonia.Visual contentVisual)
+			{
+				foreach (global::Avalonia.Visual descendant in global::Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(contentVisual))
+				{
+					if (descendant is global::Avalonia.Controls.ScrollViewer candidate)
+					{
+						scrollViewer = candidate;
+						break;
+					}
+				}
+			}
+			if (scrollViewer != null && scrollViewer.Extent.Height > scrollViewer.Viewport.Height + 0.5)
+			{
+				// 步长近似两行（折叠行高 23px）；向上滚（Delta.Y > 0）→ Offset.Y 减小。
+				double delta = e.Delta.Y * 46.0;
+				double maxY = Math.Max(0.0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
+				double newY = Math.Max(0.0, Math.Min(maxY, scrollViewer.Offset.Y - delta));
+				scrollViewer.Offset = scrollViewer.Offset.WithY(newY);
+			}
+			e.Handled = true;
 		}
 	}
 }

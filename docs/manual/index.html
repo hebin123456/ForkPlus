@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.2</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.3</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,11 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.2.3 更新</h2>
+  <ul>
+    <li><strong>轨道图悬浮小窗交互修复</strong>：合并节点悬浮小窗的两处缺陷——<strong>①</strong> 在小窗内点击节点展开/收拢后，小窗不再立即消失（此前布局变化产生的假 PointerExited 会误触发 200ms 关闭定时器，现改为「真实鼠标移动」才判定关闭）；<strong>②</strong> 鼠标悬停在小窗上滚动滚轮时，滚动的是<strong>小窗内部内容</strong>，不再穿透到外面的轨道图列表（滚轮事件在小窗内消费并驱动内部 ScrollViewer）。详见<a href="ch-03-history.html">第 3 章 · 修订列表与图表视图</a>。</li>
+  </ul>
 
   <h2>v5.2.2 更新</h2>
   <ul>
