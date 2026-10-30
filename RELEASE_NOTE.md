@@ -14,6 +14,9 @@
 - **浮窗上滚动滚轮穿透到轨道图**（[GraphCellView.cs](src/ForkPlus/UI/Controls/GraphCellView.cs)）：
   - **根因**：Windows 上浮窗是**独立 HWND 且不激活**（不抢键盘焦点），Win32 把 `WM_MOUSEWHEEL` 发给**键盘焦点窗口**——即主窗口；滚轮事件根本不进入浮窗，挂在浮窗内容上的滚轮处理器永远收不到事件（首版只在 overlay 合成模式下有效，Windows 上"完全没修好"的原因），滚轮继续沿主窗口树驱动轨道图/提交列表滚动。
   - **修复**：浮窗打开期间在**主窗口顶层以 Tunnel 挂滚轮拦截**——隧道阶段先于主窗口树内任何元素（包括主列表 `ScrollViewer`）；鼠标物理位置在浮窗上（`_popupContent.IsPointerOver`，浮窗 HWND 自行维护悬停状态）时，把滚轮增量转给浮窗内部 `ScrollViewer`（步长约两行 46px，带边界钳制）并 **`e.Handled = true` 吞掉事件**；内容不足一屏时仅吞掉不滚动。overlay 合成模式下浮窗内容上的滚轮处理器继续兜底——两条路径覆盖全部呈现模式。
+- **按住浮窗内滚动条拖动时浮窗消失**（[GraphCellView.cs](src/ForkPlus/UI/Controls/GraphCellView.cs)）：
+  - **根因**：Avalonia 拖动滚动条 thumb 会**捕获指针**——拖出浮窗边界后（Win32 `SetCapture` 使鼠标消息仍进浮窗 HWND，但指针悬停状态重算），`_popupContent.IsPointerOver` 变为 false，200ms 关闭定时器 tick 时实况判定不通过 → 浮窗在用户还按着鼠标拖动时被关掉。
+  - **修复**：跟踪浮窗内的**按下状态**——内容 `PointerPressed` 置位、`PointerReleased` / `PointerCaptureLost` 复位；`ClosePopup` 的实况判定附加「按下未释放期间绝不关闭」（`hardClose`——点击轨道图合并节点——不受影响）。`PointerCaptureLost` 由 Avalonia 在捕获释放时保证发出（含拖动被外部打断），状态不会卡死。
 
 ## v5.2.2
 

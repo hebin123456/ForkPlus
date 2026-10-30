@@ -60,6 +60,15 @@ namespace ForkPlus.UI.Controls
 		//     上则保持打开）——关闭只有一个出口且以实况为准。
 		private bool _closePending;
 
+		// v5.2.3（Bug 修复"按住浮窗内滚动条拖动时浮窗消失"）：Avalonia 拖动滚动条 thumb 会
+		// 捕获指针——拖出浮窗边界后（Win32 SetCapture 使消息仍进浮窗 HWND，但指针悬停状态
+		// 重算），_popupContent.IsPointerOver 变为 false，200ms 关闭定时器 tick 时实况判定
+		// 不通过 → 浮窗在用户还按着鼠标拖动时被关掉。修复：跟踪浮窗内的按下状态，从内容
+		// PointerPressed 到 PointerReleased / PointerCaptureLost 期间一律视为"正在操作浮窗"，
+		// ClosePopup 的实况判定附加此条件（hardClose 不受影响）。capture 释放由 Avalonia
+		// 保证发出 PointerCaptureLost，状态不会卡死。
+		private bool _pointerPressedOnPopup;
+
 		// 弹窗打开期间订阅顶层 PointerMoved（只有鼠标真实移动才触发；滚动/布局变化导致的
 		// 命中测试重算不会触发）——鼠标移出单元格且不在弹窗上时才启动关闭定时器。
 		private void OnPopupRootPointerMoved(object sender, global::Avalonia.Input.PointerEventArgs e)
@@ -445,7 +454,10 @@ namespace ForkPlus.UI.Controls
 			// false → 原判断 !_popup.IsPointerOver 永远成立 → 弹窗一盖住轨道图单元格就触发
 			// PointerExited → 关窗 → 鼠标又回到单元格 → 再开 → 死循环。改为检查弹窗内容控件
 			//（真正的 Visual）的 IsPointerOver，并在内容 PointerEntered 时停止关闭定时器。
-			bool pointerOverContent = (_popupContent != null && _popupContent.IsPointerOver) || IsPointerOver;
+			bool pointerOverContent = (_popupContent != null && _popupContent.IsPointerOver) || IsPointerOver
+				// v5.2.3：浮窗内按下未释放（拖滚动条 thumb / 点击操作中）——拖出浮窗边界后
+				// IsPointerOver 会变 false，但用户仍握着指针，此刻绝不能关窗。
+				|| _pointerPressedOnPopup;
 			if (_popup != null && _popup.IsOpen && (!pointerOverContent || hardClose))
 			{
 				_popup.IsOpen = false;
@@ -520,6 +532,25 @@ namespace ForkPlus.UI.Controls
 			{
 				_closePending = false;
 				_closePopupTimer.Stop();
+			};
+			// v5.2.3（Bug 修复"按住浮窗内滚动条拖动时浮窗消失"）：按下 → 释放/捕获丢失期间
+			// 视为"正在操作浮窗"，ClosePopup 实况判定附加 _pointerPressedOnPopup（拖滚动条
+			// thumb 时指针被捕获、拖出浮窗边界后 IsPointerOver 变 false，但用户还握着指针，
+			// 定时器 tick 不能关窗）。PointerCaptureLost 由 Avalonia 在 capture 释放时保证
+			// 发出（含拖动被外部打断的情形），状态不会卡死。
+			revisionGraphTooltipUserControl.PointerPressed += delegate
+			{
+				_pointerPressedOnPopup = true;
+				_closePending = false;
+				_closePopupTimer.Stop();
+			};
+			revisionGraphTooltipUserControl.PointerReleased += delegate
+			{
+				_pointerPressedOnPopup = false;
+			};
+			revisionGraphTooltipUserControl.PointerCaptureLost += delegate
+			{
+				_pointerPressedOnPopup = false;
 			};
 			// v5.2.3（Bug 修复"鼠标在浮窗上滚动滚轮，滚的是外面的轨道图"）：分两种呈现模式处理——
 			// ① Windows 默认（未启用 OverlayPopups）：Popup 是独立 HWND 且不激活，Win32 把

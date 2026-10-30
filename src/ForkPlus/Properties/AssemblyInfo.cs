@@ -27,6 +27,10 @@ using Avalonia.Styling;
 //      上的滚轮处理器收不到事件。修复：主窗口顶层 Tunnel 拦截滚轮，鼠标在浮窗上（内容
 //      IsPointerOver）时驱动浮窗内部 ScrollViewer 并 Handled 吞掉；overlay 模式由浮窗内容
 //      上的处理器兜底，两条路径覆盖全部呈现模式。
+//   3) 按住浮窗内滚动条拖动时浮窗消失——Avalonia 拖动 thumb 会捕获指针，拖出浮窗边界后
+//      _popupContent.IsPointerOver 变 false，200ms 定时器 tick 实况判定不通过即关窗。修复：
+//      跟踪浮窗内按下状态（Pressed 置位，Released/CaptureLost 复位），按下未释放期间
+//      ClosePopup 实况判定附加保护，操作浮窗过程中绝不关闭（hardClose 不受影响）。
 // 版本号说明（2026-10-23，v5.2.2）：偏好设置 → 插件页新增搜索框，应用版本号升至 5.2.2。
 //   搜索框按插件名称、插件描述与匹配扩展名（逐项子串匹配，带不带点均可）不区分大小写
 //   过滤插件列表（PluginsUserControl.MatchesPluginFilter，internal static + 8 个回归
