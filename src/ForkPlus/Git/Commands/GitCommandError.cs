@@ -226,6 +226,53 @@ namespace ForkPlus.Git.Commands
 			}
 		}
 
+		// v5.2.4：换行符安全检查拒绝暂存（core.safecrlf）。
+		// `git add` 时 git 检测到文件的行尾会被规范化（如 core.autocrlf=true 下工作区 LF 文件
+		// 入库后将来 checkout 变 CRLF，或混合行尾文件 CRLF→LF 丢失裸 CR），且 core.safecrlf=true
+		// 时直接 fatal 拒绝（safecrlf 默认 false，通常来自用户全局配置）。原实现整段 stderr
+		// 直接进 ErrorWindow，用户不知道该怎么办。识别该错误后由 ErrorWindow 提供"一次性放行
+		// 重试"（-c core.safecrlf=false 重跑本次 git add，不修改用户任何 git 配置）。
+		// 注意触发钥匙是 safecrlf 而非 autocrlf——autocrlf 只影响转换方向，改它解不掉 fatal。
+		public class LineEndingSafetyRejected : GitError
+		{
+			public override string FriendlyDescription => "Git's line-ending safety check (core.safecrlf) refused to stage because the files' line endings would be normalized. Staging only normalizes the committed content — your working files are not modified. You can allow the conversion once, or disable the check for this repository with 'git config core.safecrlf false'.";
+
+			// 原始待暂存文件列表——ErrorWindow 的"允许转换并暂存"按钮用它重跑本次 git add。
+			public readonly ChangedFile[] Files;
+
+			public LineEndingSafetyRejected(string fullOutput, string stderr, ChangedFile[] files)
+				: base(fullOutput, stderr)
+			{
+				Files = files ?? new ChangedFile[0];
+			}
+
+			// git 的 safecrlf 消息无退出码可辨（同 128），只能按文案识别：
+			//   英文：fatal: LF would be replaced by CRLF in <file> / fatal: CRLF would be replaced by LF in <file>
+			//   中文（zh_CN.po 已翻译 convert.c 的消息）：fatal: LF 将被 CRLF 替换 / CRLF 将被 LF 替换
+			// 其它语言的 git 输出不识别，回落到普通 GitError 展示（可接受）。
+			public static bool Test(string stderr)
+			{
+				if (string.IsNullOrEmpty(stderr))
+				{
+					return false;
+				}
+				bool hasTerminator = stderr.Contains("fatal:") || stderr.Contains("致命");
+				if (!hasTerminator)
+				{
+					return false;
+				}
+				if (stderr.Contains("would be replaced by"))
+				{
+					return stderr.Contains("CRLF") || stderr.Contains("LF");
+				}
+				if (stderr.Contains("将被") && stderr.Contains("替换"))
+				{
+					return stderr.Contains("CRLF") || stderr.Contains("LF");
+				}
+				return false;
+			}
+		}
+
 		public class PatchDoesNotApply : GitError
 		{
 			private static readonly string Pattern1 = "error: patch failed";

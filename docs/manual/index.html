@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.3</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.4</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,11 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.2.4 更新</h2>
+  <ul>
+    <li><strong>换行符检查拒绝暂存的友好处理</strong>：全局开启了 git 换行符安全检查（<code>core.safecrlf=true</code>）时，暂存行尾会被规范化转换的文件会直接 fatal 失败。现在弹窗改为<strong>人话解释</strong>（暂存只统一提交内容中的换行符，不会修改工作区文件），并提供<strong>「允许转换并暂存」</strong>按钮——一次性放行重跑本次暂存，不修改任何 git 配置；弹窗同时给出永久关闭检查的命令供参考。</li>
+  </ul>
 
   <h2>v5.2.3 更新</h2>
   <ul>

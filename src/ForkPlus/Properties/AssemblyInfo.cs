@@ -15,6 +15,13 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-10-30，v5.2.4）：暂存遇换行符安全检查 fatal 改为人性化处理，版本号升至 5.2.4。
+//   git add 触发 core.safecrlf 的 "fatal: LF would be replaced by CRLF"（用户全局配置
+//   safecrlf=true 时）原来整段 git error 直接弹窗。现识别该错误（含中文 git 输出）→
+//   ErrorWindow 人话解释（入库只统一行尾、工作区文件不被改）+ "允许转换并暂存"按钮——
+//   一次性 -c core.safecrlf=false 重跑本次 git add，不写任何 git 配置（GitCommandError
+//   .LineEndingSafetyRejected + StageFileGitCommand.bypassSafecrlf + ErrorWindow
+//   .RetryStageAllowingConversion，7 个回归用例 LineEndingSafetyTests）。
 // 版本号说明（2026-10-30，v5.2.3）：修复轨道图合并节点悬浮小窗的两处交互缺陷，应用版本号升至 5.2.3。
 //   1) 浮窗内点击展开/收拢后浮窗立即消失——点击触发浮窗内列表 Reload（容器回收对静止鼠标
 //      重算命中）产生假 PointerExited；Windows 上 Popup 是独立 HWND（未启用 OverlayPopups），
@@ -184,8 +191,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.3")]
-[assembly: AssemblyInformationalVersion("5.2.3")]
+[assembly: AssemblyFileVersion("5.2.4")]
+[assembly: AssemblyInformationalVersion("5.2.4")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.3.0")]
+[assembly: AssemblyVersion("5.2.4.0")]

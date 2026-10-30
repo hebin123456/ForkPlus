@@ -81,6 +81,15 @@ namespace ForkPlus.UI.Dialogs
 					FirstButton.Content = content;
 					FirstButton.Show();
 				}
+				else if (gitCommandError is GitCommandError.LineEndingSafetyRejected)
+				{
+					// v5.2.4：换行符安全检查（core.safecrlf）拒绝暂存——提供"一次性放行重试"
+					//（-c core.safecrlf=false 重跑本次 git add，不修改用户任何 git 配置）。
+					base.DialogTitle = Translate("Line Ending Check Failed");
+					base.DialogDescription = Translate("Git refused to stage because the files' line endings would be normalized. Staging only normalizes the committed content — your working files are not modified");
+					FirstButton.Content = Translate("Allow Conversion and Stage");
+					FirstButton.Show();
+				}
 				else if (gitCommandError is GitCommandError.PatchDoesNotApply)
 				{
 					text += "\n" + Translate("fork: try to disable 'ignore whitespaces'");
@@ -173,6 +182,10 @@ namespace ForkPlus.UI.Dialogs
 				{
 					ForceUnlock(lfsFileIsLocked.Paths);
 				}
+				else if (GitCommandError is GitCommandError.LineEndingSafetyRejected lineEndingRejected)
+				{
+					RetryStageAllowingConversion(lineEndingRejected.Files);
+				}
 				else if (GitCommandError is GitCommandError.UnsafeRepository unsafeRepositoryError)
 				{
 					AddRepositoryToSafeDirectoriesList(unsafeRepositoryError);
@@ -190,6 +203,42 @@ namespace ForkPlus.UI.Dialogs
 			{
 				CommitWithoutHooksAndClose(commitFailed.Amend, commitFailed.CommitAndPush, commitFailed.Message);
 			}
+		}
+
+		// v5.2.4：换行符安全检查被拒后的"允许转换并暂存"——一次性 -c core.safecrlf=false
+		// 重跑本次 git add（进程级参数，不写任何 git 配置文件）。仿 ForceFetch 模式：
+		// 立即关闭错误窗口，job 后台执行，失败时另弹错误窗（避免模态嵌套）。
+		private void RetryStageAllowingConversion(ChangedFile[] files)
+		{
+			RepositoryUserControl repositoryUserControl = _repositoryUserControl;
+			if (repositoryUserControl == null || files == null || files.Length < 1)
+			{
+				Close();
+				return;
+			}
+			GitModule gitModule = repositoryUserControl.GitModule;
+			if (gitModule == null)
+			{
+				Close();
+				return;
+			}
+			int fileCount = files.Length;
+			string stageName = ((fileCount > 1)
+				? string.Format(Translate("Stage {0} Files"), fileCount)
+				: Translate("Stage 1 File"));
+			repositoryUserControl.JobQueue.Add(stageName, delegate(JobMonitor monitor)
+			{
+				GitCommandResult stageResult = new StageFileGitCommand().Execute(gitModule, files, monitor, bypassSafecrlf: true);
+				base.Dispatcher.Post(delegate
+				{
+					if (!stageResult.Succeeded && !(stageResult.Error is GitCommandError.Cancelled))
+					{
+						new ErrorWindow(repositoryUserControl, stageResult.Error).ShowDialog();
+					}
+					repositoryUserControl.InvalidateAndRefresh(SubDomain.Status, null, RepositoryViewMode.CommitViewMode);
+				});
+			}, JobFlags.Default, showMessageWhenDone: false);
+			Close();
 		}
 
 		private void RemoveLockIndexFile()

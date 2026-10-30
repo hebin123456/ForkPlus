@@ -2,6 +2,19 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.2.4
+
+> 暂存文件遇 git **换行符安全检查** fatal（`fatal: LF would be replaced by CRLF` 等）时，不再直接弹原始 git error——改为**人话解释 + 一键"允许转换并暂存"**。应用版本号升至 5.2.4。
+
+### 新增
+
+- **换行符安全检查拒绝暂存的友好处理**（[GitCommandError.cs](src/ForkPlus/Git/Commands/GitCommandError.cs) / [StageFileGitCommand.cs](src/ForkPlus/Git/Commands/StageFileGitCommand.cs) / [ErrorWindow.axaml.cs](src/ForkPlus/UI/Dialogs/ErrorWindow.axaml.cs)）：
+  - **背景**：用户全局配置 `core.safecrlf=true` 时，暂存行尾会被规范化转换的文件，git 直接 fatal 拒绝。原实现整段 git error 弹窗，用户不知道发生了什么、更不知道该怎么办。注意触发钥匙是 `safecrlf` 而非 `autocrlf`（autocrlf 只影响转换方向，改它解不掉 fatal）。
+  - **识别**：暂存失败时按 stderr 文案归类为新错误类型 `LineEndingSafetyRejected`——兼容英文（`LF would be replaced by CRLF` / `CRLF would be replaced by LF`）与中文 git 输出（`LF 将被 CRLF 替换`）；普通错误、`safecrlf=warn` 的 warning 均不误报。
+  - **弹窗**：标题"换行符检查未通过"，正文解释——git 安全检查担心行尾将来变化而拒绝；**暂存只会统一提交内容中的换行符，不会修改工作区文件**；永久关闭可自行执行 `git config core.safecrlf false`。
+  - **一键动作**："允许转换并暂存"——以 `-c core.safecrlf=false` **进程级一次性放行**重跑本次 `git add`（"暂存全部"/stash 相关命令走同一链路自动覆盖），完成用户本来的操作，**不写任何 git 配置文件**（仓库/全局都不动）；失败时另弹错误窗。
+  - **回归**：新增 7 个用例（[LineEndingSafetyTests.cs](src/ForkPlus.Tests/LineEndingSafetyTests.cs)）锁定识别规则与误报边界。
+
 ## v5.2.3
 
 > 修复轨道图**合并节点悬浮小窗**的两处交互缺陷——小窗内点击展开/收拢后小窗立即消失、滚轮在小窗上滚动时穿透到外面的轨道图列表。应用版本号升至 5.2.3。
