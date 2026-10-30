@@ -16,13 +16,17 @@ using Avalonia.Styling;
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
 // 版本号说明（2026-10-30，v5.2.3）：修复轨道图合并节点悬浮小窗的两处交互缺陷，应用版本号升至 5.2.3。
-//   1) 浮窗内点击展开/收拢后浮窗立即消失——点击触发 Reload + RefreshHeight 高度动画，
-//      浮窗尺寸/位置变化对静止鼠标重算命中产生布局性假 PointerExited，原实现 Exited 即
-//      启动 200ms 关闭定时器导致误关（GraphCellView._closePending 状态机：关闭判定改为
-//      「真实鼠标移动」语义，与外层单元格假 PointerExited 修复同一口径）；
-//   2) 鼠标在浮窗上滚动滚轮，滚的是外面的轨道图列表——overlay 模式 Popup 事件在主窗口
-//      视觉树冒泡，浮窗内容无溢出时滚轮穿透。修复：浮窗内容 PointerWheelChanged 阻断
-//      冒泡并驱动内部 ScrollViewer（内容不足一屏时仅吞掉事件不滚动）。
+//   1) 浮窗内点击展开/收拢后浮窗立即消失——点击触发浮窗内列表 Reload（容器回收对静止鼠标
+//      重算命中）产生假 PointerExited；Windows 上 Popup 是独立 HWND（未启用 OverlayPopups），
+//      鼠标在浮窗内的真实移动不会到达主窗口顶层，"等真实移动判定关闭"永远无法复位待关闭
+//      状态，一动鼠标即被误关。修复：关闭语义改「200ms 缓冲定时器 + 实况二次判定」——任何
+//      疑似离开只重启定时器，浮窗内容自行监听 Entered/Moved 移回即取消，tick 时按
+//      IsPointerOver 实况决定是否真关（GraphCellView._closePending 状态机）；
+//   2) 鼠标在浮窗上滚动滚轮，滚的是外面的轨道图列表——Windows 上 Popup 是独立 HWND 且不
+//      激活，Win32 把 WM_MOUSEWHEEL 发给键盘焦点窗口（主窗口），滚轮根本不进浮窗，浮窗内容
+//      上的滚轮处理器收不到事件。修复：主窗口顶层 Tunnel 拦截滚轮，鼠标在浮窗上（内容
+//      IsPointerOver）时驱动浮窗内部 ScrollViewer 并 Handled 吞掉；overlay 模式由浮窗内容
+//      上的处理器兜底，两条路径覆盖全部呈现模式。
 // 版本号说明（2026-10-23，v5.2.2）：偏好设置 → 插件页新增搜索框，应用版本号升至 5.2.2。
 //   搜索框按插件名称、插件描述与匹配扩展名（逐项子串匹配，带不带点均可）不区分大小写
 //   过滤插件列表（PluginsUserControl.MatchesPluginFilter，internal static + 8 个回归

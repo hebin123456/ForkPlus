@@ -48,13 +48,16 @@ namespace ForkPlus.UI.Controls
 		[Null]
 		private global::Avalonia.Controls.TopLevel _popupPointerMoveRoot;
 
-		// v5.2.3（Bug 修复"浮窗内点击展开/收拢后浮窗消失"）：内容/弹窗 PointerExited 不再直接
-		// 启动关闭定时器，改为置 _closePending，等【真实鼠标移动】时统一判定——点击展开/收拢
-		// 会触发 Reload + RefreshHeight 高度动画，浮窗尺寸/位置变化（收拢缩小、展开时 Placement
-		// 翻转跳位）把静止鼠标"甩出"内容区，产生布局性假 PointerExited；原实现 Exited 即启动
-		// 200ms 关闭定时器，tick 时鼠标确实不在内容上 → 弹窗在用户点击后立刻消失。关闭语义
-		// 修正为：鼠标【真实移动】且此刻不在浮窗内容、也不在外层单元格上时才关（与外层单元格
-		// 假 PointerExited 的修复同一口径）。
+		// v5.2.3（Bug 修复"浮窗内点击展开/收拢后浮窗消失"）：点击展开/收拢会触发浮窗内列表
+		// Reload（容器回收对静止鼠标重算命中），产生假 PointerExited；Windows 上 Popup 是
+		// 独立 HWND（未启用 OverlayPopups），鼠标在浮窗内移动时【主窗口收不到 PointerMoved】，
+		// 最初"等真实移动判定"的修复在 Windows 上永远等不到复位——用户鼠标一动到主窗口区域
+		// 就被立即关窗（表现为"点击后浮窗消失"）。最终语义（两种呈现模式通用）：
+		//   · 确认在浮窗/单元格上（内容 Entered/Moved、顶层 moved 命中）→ 停表 + 清 pending；
+		//   · 任何"疑似离开"（内容/popup/顶层 Exited、顶层 moved 未命中）→ 置 pending 并
+		//     重启 200ms 关闭定时器（缓冲期内移回浮窗即取消）；
+		//   · 定时器 tick → ClosePopup 内部按 IsPointerOver 实况二次判定（鼠标仍在浮窗/单元格
+		//     上则保持打开）——关闭只有一个出口且以实况为准。
 		private bool _closePending;
 
 		// 弹窗打开期间订阅顶层 PointerMoved（只有鼠标真实移动才触发；滚动/布局变化导致的
@@ -69,17 +72,18 @@ namespace ForkPlus.UI.Controls
 			if (IsPointerOver || overContent)
 			{
 				_closePopupTimer.Stop();
-				// v5.2.3：鼠标真实移动后又回到浮窗/单元格上，清除待关闭状态。
+				// 鼠标真实移动后又回到浮窗/单元格上，清除待关闭状态。
 				_closePending = false;
-			}
-			else if (_closePending)
-			{
-				// v5.2.3：之前的 PointerExited（可能是布局假事件，见 _closePending 注释）后发生
-				// 了真实移动，且此刻既不在浮窗上也不在单元格上 → 用户主动移开，关闭。
-				ClosePopup();
 			}
 			else
 			{
+				// v5.2.3（Windows 独立 HWND 适配）：不在浮窗/单元格上时重启 200ms 关闭定时器，
+				// 不再立即关——之前 _closePending 时直接 ClosePopup，但 Windows 上鼠标在浮窗
+				// （独立窗口）内的移动不会经过本处理器复位 pending，点击展开/收拢置位 pending
+				// 后用户第一次移到主窗口区域就被误关。缓冲期内移回浮窗由内容 Entered/Moved
+				// 取消；tick 时 ClosePopup 还有 IsPointerOver 实况保护。
+				_closePending = true;
+				_closePopupTimer.Stop();
 				_closePopupTimer.Start();
 			}
 		}
@@ -91,6 +95,8 @@ namespace ForkPlus.UI.Controls
 				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerMovedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved);
 				// v5.2.3：同步解除顶层 PointerExited 兜底（与 AddHandler 成对）。
 				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerExitedEvent, (EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerExited);
+				// v5.2.3：同步解除顶层滚轮拦截（与 AddHandler 成对）。
+				_popupPointerMoveRoot.RemoveHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent, (EventHandler<global::Avalonia.Input.PointerWheelEventArgs>)OnTopLevelPointerWheel);
 				_popupPointerMoveRoot = null;
 			}
 		}
@@ -493,10 +499,9 @@ namespace ForkPlus.UI.Controls
 			VisualTreeAttachmentHelper.TrySetPopupChild(popup, revisionGraphTooltipUserControl, GetType().Name + ".Popup");
 			_popupContent = revisionGraphTooltipUserControl;
 			// 鼠标进入弹窗内容时取消关闭定时器（可在弹窗上自由移动/点击），离开后再启动关闭。
-			// v5.2.3：Exited 不再直接启动关闭定时器——点击浮窗内的展开/收拢会触发 Reload +
-			// RefreshHeight 高度动画，浮窗尺寸/位置变化（收拢缩小、展开时 Placement 翻转跳位）
-			// 把静止鼠标"甩出"内容区，产生布局性假 PointerExited，原实现会在这时把刚被点击的
-			// 浮窗关掉。改为置 _closePending，等顶层真实 PointerMoved 时统一判定（见其注释）。
+			// v5.2.3：Exited 不再直接启动关闭定时器——点击浮窗内的展开/收拢会触发 Reload（容器
+			// 回收对静止鼠标重算命中）产生假 PointerExited。改为置 _closePending 并重启 200ms
+			// 关闭定时器；移回浮窗由 Entered/Moved 取消，tick 时 ClosePopup 按实况判定。
 			revisionGraphTooltipUserControl.PointerEntered += delegate
 			{
 				_closePopupTimer.Stop();
@@ -506,12 +511,24 @@ namespace ForkPlus.UI.Controls
 			{
 				_closePending = true;
 				_closePopupTimer.Stop();
+				_closePopupTimer.Start();
 			};
-			// v5.2.3（Bug 修复"鼠标在浮窗上滚动滚轮，滚的是外面的轨道图"）：Avalonia 11.1+ 的
-			// Popup 可能以 overlay（同窗口合成）呈现——浮窗内容在主窗口视觉树内，滚轮事件沿
-			// 主窗口冒泡；浮窗内列表无溢出（≤10 行全显示）时不消费滚轮 → 冒泡到主列表的
-			// ScrollViewer → 滚的是浮窗下面的轨道图/提交列表。统一处理：滚轮命中浮窗内容时
-			// 优先驱动浮窗内列表滚动，并标记 Handled——任何呈现模式下都不再冒泡到主窗口。
+			// v5.2.3（Windows 独立 HWND 适配）：鼠标在浮窗（独立窗口）内的真实移动不会到达主窗口
+			// 顶层——必须在浮窗内容上自行监听 Moved，把 pending 复位、停掉关闭定时器，否则
+			// "点击收拢被甩出 → pending 挂起 → 移回浮窗也无法解除"导致浮窗随后被误关。
+			revisionGraphTooltipUserControl.PointerMoved += delegate
+			{
+				_closePending = false;
+				_closePopupTimer.Stop();
+			};
+			// v5.2.3（Bug 修复"鼠标在浮窗上滚动滚轮，滚的是外面的轨道图"）：分两种呈现模式处理——
+			// ① Windows 默认（未启用 OverlayPopups）：Popup 是独立 HWND 且不激活，Win32 把
+			//   WM_MOUSEWHEEL 发给【键盘焦点窗口】（主窗口）——滚轮事件根本不进浮窗，浮窗内容上
+			//   的 PointerWheelChanged 永远收不到。修复：在主窗口顶层以 Tunnel 挂滚轮拦截
+			//   （OnTopLevelPointerWheel），鼠标在浮窗上时驱动浮窗内部滚动并吞掉事件。
+			// ② overlay 合成模式（Linux/Headless 等）：浮窗内容在主窗口视觉树内，滚轮沿主窗口
+			//   冒泡——浮窗内容上的 OnPopupContentWheel 兜底处理。
+			// 两条路都保证：滚轮命中浮窗时优先滚浮窗内部列表，并阻断传到外面的轨道图/提交列表。
 			revisionGraphTooltipUserControl.PointerWheelChanged += OnPopupContentWheel;
 			// Bug 修复（合并节点悬浮详情弹窗空白）：孤立 Popup（不在逻辑树中）的子控件
 			// DynamicResource 解析链在自身截止（BorderBrush/ListBox.Static.Background/主题全部
@@ -567,37 +584,77 @@ namespace ForkPlus.UI.Controls
 					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerMoved,
 					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
 					true);
-				// v5.2.3：鼠标离开主窗口（甩出窗口外）的兜底——overlay 模式下浮窗内容在主窗口
-				// 视觉树内，鼠标从浮窗直接甩出窗口会先触发内容 Exited（置 _closePending）再触发
-				// 顶层 Exited，此时无后续 PointerMoved 判定机会，直接按待关闭语义关窗。
-				// 真实弹窗（独立窗口）模式下鼠标从主窗口移入浮窗会触发顶层 Exited，但那时
-				// _closePending == false（鼠标此前不在浮窗内容上），不会误关。
+				// v5.2.3：鼠标疑似离开主窗口的兜底（甩出窗口外 / Windows 独立 HWND 下移入浮窗）。
+				// 不立即关窗而是重启 200ms 定时器——两种模式各有后续：
+				//   · 真甩出窗口外 → tick 时鼠标不在浮窗/单元格上 → ClosePopup 实况判定关闭；
+				//   · 独立 HWND 下移回浮窗 → 浮窗内容 Entered/Moved 在 200ms 内停表取消关闭
+				//    （立即关会把"收拢甩出后移回浮窗"的用户误杀——浮窗 HWND 是主窗口之外
+				//     的独立窗口，移入它必然触发主窗口顶层 Exited）。
 				_popupPointerMoveRoot.AddHandler(global::Avalonia.Input.InputElement.PointerExitedEvent,
 					(EventHandler<global::Avalonia.Input.PointerEventArgs>)OnPopupRootPointerExited,
 					global::Avalonia.Interactivity.RoutingStrategies.Tunnel | global::Avalonia.Interactivity.RoutingStrategies.Bubble,
+					true);
+				// v5.2.3（Windows 滚轮修复）：主窗口顶层 Tunnel 拦截滚轮——Windows 上 Popup 是
+				// 独立 HWND（不激活、不抢焦点），Win32 把 WM_MOUSEWHEEL 发给键盘焦点窗口（主窗口），
+				// 滚轮事件根本不进浮窗；鼠标在浮窗上时在此驱动浮窗内部滚动并吞掉事件，避免穿透到
+				// 主窗口的轨道图/提交列表（见 OnTopLevelPointerWheel 注释）。Tunnel 从顶层出发，
+				// 先于主窗口树内任何元素（包括主列表 ScrollViewer）处理。
+				_popupPointerMoveRoot.AddHandler(global::Avalonia.Input.InputElement.PointerWheelChangedEvent,
+					(EventHandler<global::Avalonia.Input.PointerWheelEventArgs>)OnTopLevelPointerWheel,
+					global::Avalonia.Interactivity.RoutingStrategies.Tunnel,
 					true);
 			}
 			popup.PointerExited += delegate
 			{
 				_closePending = true;
 				_closePopupTimer.Stop();
+				_closePopupTimer.Start();
 			};
 			return popup;
 		}
 
-		// v5.2.3：顶层 PointerExited 兜底（见 CreatePopup 内订阅注释）。
+		// v5.2.3：顶层 PointerExited 兜底（见 CreatePopup 内订阅注释）——重启关闭定时器，
+		// 由 tick 的 ClosePopup 实况判定（鼠标仍在浮窗/单元格上则保持打开）。
 		private void OnPopupRootPointerExited(object sender, global::Avalonia.Input.PointerEventArgs e)
 		{
-			if (_popup == null || !_popup.IsOpen || !_closePending)
+			if (_popup == null || !_popup.IsOpen)
 			{
 				return;
 			}
-			ClosePopup();
+			_closePending = true;
+			_closePopupTimer.Stop();
+			_closePopupTimer.Start();
 		}
 
-		// v5.2.3：浮窗内容上的滚轮——优先滚内部列表（有溢出时），并阻止冒泡到主窗口
-		//（overlay 模式下冒泡会滚到浮窗下面的轨道图/提交列表）。
+		// v5.2.3：浮窗内容上的滚轮（overlay 合成模式路径）——优先滚内部列表（有溢出时），
+		// 并阻止冒泡到主窗口（冒泡会滚到浮窗下面的轨道图/提交列表）。
 		private void OnPopupContentWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
+		{
+			ScrollPopupContent(e.Delta.Y);
+			e.Handled = true;
+		}
+
+		// v5.2.3（Windows 滚轮修复）：主窗口顶层 Tunnel 拦截滚轮（独立 HWND 模式路径）。
+		// Windows 上 Popup 是独立 HWND 且不激活（不抢键盘焦点），Win32 把 WM_MOUSEWHEEL
+		// 发给键盘焦点窗口——即主窗口；滚轮事件根本不会进入浮窗，浮窗内容上的
+		// OnPopupContentWheel 永远收不到（v5.2.3 首版在 Windows 上"完全没修好"的原因）。
+		// 鼠标物理位置在浮窗上时 _popupContent.IsPointerOver 为 true（浮窗 HWND 自行维护
+		// 指针悬停状态）——此时把滚轮转给浮窗内部滚动并吞掉，主窗口树内任何元素（包括主列表
+		// ScrollViewer）都不会再收到该事件。overlay 模式下本处理器同样成立（浮窗内容
+		// IsPointerOver 判定与 Tunnel 拦截跨模式一致），与 OnPopupContentWheel 双保险。
+		private void OnTopLevelPointerWheel(object sender, global::Avalonia.Input.PointerWheelEventArgs e)
+		{
+			if (_popup == null || !_popup.IsOpen || _popupContent == null || !_popupContent.IsPointerOver)
+			{
+				return;
+			}
+			ScrollPopupContent(e.Delta.Y);
+			e.Handled = true;
+		}
+
+		// 驱动浮窗内部列表滚动：有溢出时按滚轮增量滚动（步长近似两行 23px * 2），带边界钳制；
+		// 内容不足一屏时不滚动。无论哪种情况调用方都会把事件标记 Handled（防止穿透到外面）。
+		private void ScrollPopupContent(double wheelDeltaY)
 		{
 			global::Avalonia.Controls.ScrollViewer scrollViewer = null;
 			if (_popupContent is global::Avalonia.Visual contentVisual)
@@ -614,12 +671,11 @@ namespace ForkPlus.UI.Controls
 			if (scrollViewer != null && scrollViewer.Extent.Height > scrollViewer.Viewport.Height + 0.5)
 			{
 				// 步长近似两行（折叠行高 23px）；向上滚（Delta.Y > 0）→ Offset.Y 减小。
-				double delta = e.Delta.Y * 46.0;
+				double delta = wheelDeltaY * 46.0;
 				double maxY = Math.Max(0.0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
 				double newY = Math.Max(0.0, Math.Min(maxY, scrollViewer.Offset.Y - delta));
 				scrollViewer.Offset = scrollViewer.Offset.WithY(newY);
 			}
-			e.Handled = true;
 		}
 	}
 }

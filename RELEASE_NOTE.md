@@ -9,11 +9,11 @@
 ### 修复
 
 - **浮窗内点击展开/收拢后浮窗消失**（[GraphCellView.cs](src/ForkPlus/UI/Controls/GraphCellView.cs)）：
-  - **根因**：点击浮窗内的节点行触发 `Reload` + `RefreshHeight` 高度动画，浮窗尺寸/位置变化（收拢缩小、展开时 Placement 翻转跳位）会把**静止的鼠标"甩出"内容区**，对静止鼠标重算命中测试产生**布局性假 `PointerExited`**；原实现 Exited 即启动 200ms 关闭定时器，tick 时鼠标确实不在内容上 → 浮窗在用户点击后立刻消失。
-  - **修复**：关闭判定改为**「真实鼠标移动」语义**（与外层单元格假 `PointerExited` 的既有修复同一口径）——内容/弹窗的 `PointerExited` 不再直接启动关闭定时器，而是置 `_closePending` 待定状态；顶层 `PointerMoved`（只有鼠标真实移动才触发，滚动/布局变化不触发）统一判定：此刻在浮窗内容或外层单元格上 → 取消待定；发生真实移动且两者都不在 → 关闭。另加顶层 `PointerExited` 兜底（鼠标真实移出窗口时立即关闭）。
+  - **根因**：点击展开/收拢会触发浮窗内列表 `Reload`（虚拟化容器回收对静止鼠标重算命中），产生假 `PointerExited` 置起待关闭状态。而 Windows 上 Popup 默认是**独立 HWND 窗口**（未启用 OverlayPopups）——鼠标在浮窗内的真实移动只会进入浮窗自己的输入流，**主窗口的顶层 `PointerMoved` 永远收不到**，"等真实移动再判定关闭"的判定逻辑在 Windows 上无法复位待关闭状态；用户鼠标一动到主窗口区域（浮窗盖住的不是轨道图单元格）就被立即关窗。
+  - **修复**：关闭语义改为「**200ms 缓冲定时器 + 实况二次判定**」——任何疑似离开（内容/弹窗/顶层 Exited、顶层 moved 未命中浮窗与单元格）只重启 200ms 关闭定时器，不再立即关；浮窗内容上自行监听 `PointerEntered`/`PointerMoved`（不依赖主窗口转发），移回浮窗立即停表复位；定时器 tick 时 `ClosePopup` 内部按 `IsPointerOver` 实况判定，鼠标仍在浮窗/单元格上则保持打开。关闭只有一个出口且以实况为准，Windows（独立 HWND）与 Linux（overlay 合成）两种呈现模式行为一致。
 - **浮窗上滚动滚轮穿透到轨道图**（[GraphCellView.cs](src/ForkPlus/UI/Controls/GraphCellView.cs)）：
-  - **根因**：overlay 模式 Popup（Avalonia 11.1+ 同窗口合成）的内容在主窗口视觉树内冒泡事件，浮窗内容不足一屏（无溢出）时滚轮事件未被消费，**穿透到主窗口的修订列表**，导致外面的轨道图滚动。
-  - **修复**：浮窗内容挂 `PointerWheelChanged`，找到内部 `ScrollViewer` 后按滚轮增量驱动其 `Offset`（步长约两行 46px，带边界钳制）并 **`e.Handled = true` 阻断冒泡**；内容不足一屏时仅吞掉事件不滚动——无论哪种情况，外面的轨道图都不再跟着滚。
+  - **根因**：Windows 上浮窗是**独立 HWND 且不激活**（不抢键盘焦点），Win32 把 `WM_MOUSEWHEEL` 发给**键盘焦点窗口**——即主窗口；滚轮事件根本不进入浮窗，挂在浮窗内容上的滚轮处理器永远收不到事件（首版只在 overlay 合成模式下有效，Windows 上"完全没修好"的原因），滚轮继续沿主窗口树驱动轨道图/提交列表滚动。
+  - **修复**：浮窗打开期间在**主窗口顶层以 Tunnel 挂滚轮拦截**——隧道阶段先于主窗口树内任何元素（包括主列表 `ScrollViewer`）；鼠标物理位置在浮窗上（`_popupContent.IsPointerOver`，浮窗 HWND 自行维护悬停状态）时，把滚轮增量转给浮窗内部 `ScrollViewer`（步长约两行 46px，带边界钳制）并 **`e.Handled = true` 吞掉事件**；内容不足一屏时仅吞掉不滚动。overlay 合成模式下浮窗内容上的滚轮处理器继续兜底——两条路径覆盖全部呈现模式。
 
 ## v5.2.2
 
