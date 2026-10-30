@@ -402,6 +402,7 @@ namespace ForkPlus.Tests
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "GitError", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "enum", "Kind", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "LfsFileIsLocked", "UNIT-SOURCE-COVERAGE-001"),
+				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "LineEndingSafetyRejected", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "MergeLocalChangesWouldBeOverwritten", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "MergeUnrelatedHistory", "UNIT-SOURCE-COVERAGE-001"),
 				new ClassCoverageEntry("src/ForkPlus/Git/Commands/GitCommandError.cs", "class", "NotFound", "UNIT-SOURCE-COVERAGE-001"),
