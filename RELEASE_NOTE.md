@@ -2,6 +2,16 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.2.5
+
+> 修复 **Blame/Timeline 弹窗**（右键文件 → Blame/Timeline...）**左侧版本列表的滚动条无法拖动**的问题。应用版本号升至 5.2.5。
+
+### 修复
+
+- **左侧版本列表（时间轴）滚动条拖不动**（[BlameWindow.axaml.cs](src/ForkPlus/UI/Dialogs/BlameWindow.axaml.cs)）：
+  - **根因**：左列表与右侧 diff 的双向滚动同步存在**回环**——拖动列表 thumb 触发列表 `ScrollChanged` → 同步 diff 滚动 → diff 的 `ScrollOffsetChanged` → `ScrollTo` 回写列表 `Offset` → 又触发列表 `ScrollChanged`……更糟的是原实现把 `e.OffsetDelta.Y`（**本次变化增量**）当绝对位置传给 diff，回写值在 0 附近震荡，用户拖 thumb 被立即拉回，表现为"鼠标按住也没法往下拉"。
+  - **修复**：①列表 → diff 同步改传**绝对 `Offset.Y`**（增量语义错误）；②`ScrollTo` 程序回写列表时记录目标值 `_lastListOffsetWrittenByProgram`，列表 `ScrollChanged` 命中回写值（±0.5 容差）即视为程序回显，不再外传——打断循环。用户手动滚动时 Offset 不会恰好等于上次回写值，双向同步（拖列表跟 diff / 滚 diff 跟列表）均正常工作。
+
 ## v5.2.4
 
 > 暂存文件遇 git **换行符安全检查** fatal（`fatal: LF would be replaced by CRLF` 等）时，不再直接弹原始 git error——改为**人话解释 + 一键"允许转换并暂存"**。应用版本号升至 5.2.4。

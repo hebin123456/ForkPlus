@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.4</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.2.5</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,11 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.2.5 更新</h2>
+  <ul>
+    <li><strong>Blame/Timeline 弹窗滚动条修复</strong>：右键文件 → <strong>Blame/Timeline...</strong> 打开的弹窗中，左侧版本列表（时间轴）的滚动条此前<strong>无法用鼠标按住拖动</strong>——列表与右侧 diff 的双向滚动同步存在回环（拖列表 → 同步 diff → diff 回写列表 → 再触发列表滚动事件，且回写用的是滚动增量而非绝对位置，位置被拉回顶端）。现改为绝对位置同步 + 回写回显守卫，拖动滚动条、拖列表跟 diff、滚 diff 跟列表均正常。详见<a href="ch-06-text-diff.html">第 6 章 · 文本对比</a>。</li>
+  </ul>
 
   <h2>v5.2.4 更新</h2>
   <ul>

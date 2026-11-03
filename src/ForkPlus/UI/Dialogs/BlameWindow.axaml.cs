@@ -115,6 +115,15 @@ namespace ForkPlus.UI.Dialogs
 
 		private bool _startUpFinished;
 
+		// v5.2.5（Bug 修复"Blame/Timeline 弹窗左侧版本列表滚动条拖不动"）：列表 ↔ diff 双向
+		// 滚动同步存在回环——左列表 ScrollChanged → 同步 diff → diff 滚动 → ScrollOffsetChanged
+		// → ScrollTo 回写列表 Offset → 又触发列表 ScrollChanged。原实现还把 e.OffsetDelta.Y
+		//（增量）当绝对位置传给 diff，回写值在 0 附近震荡，用户拖 thumb 被立即拉回——表现为
+		// "鼠标按住也没法往下拉"。修复：①同步 diff 改用绝对 Offset；②程序回写列表时记录目标
+		// 值，ScrollChanged 若命中回写值（±0.5 容差）则视为程序回显，不再外传——打断循环。
+		// 用户手动滚动时 Offset 不会恰好等于上次回写值，正常同步不受影响。
+		private double _lastListOffsetWrittenByProgram = double.NaN;
+
 		private ScrollViewer RevisionListScrollViewer
 		{
 			get
@@ -585,11 +594,23 @@ namespace ForkPlus.UI.Dialogs
 
 		private void RevisionListScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
 		{
-			double verticalOffset = e.OffsetDelta.Y;
+			if (sender is not ScrollViewer scrollViewer)
+			{
+				return;
+			}
+			// v5.2.5：回显守卫——本次 Offset 与最近一次程序回写值一致时，说明是"diff → 列表"
+			// 同步回写引起的回显，不再外传给 diff，打断 左→右→左 的同步循环（否则拖 thumb
+			// 会被回写链路拉回，表现为滚动条拖不动）。
+			if (!double.IsNaN(_lastListOffsetWrittenByProgram)
+				&& Math.Abs(scrollViewer.Offset.Y - _lastListOffsetWrittenByProgram) < 0.5)
+			{
+				return;
+			}
+			// v5.2.5：改传绝对 Offset（原 e.OffsetDelta.Y 是本次变化增量，语义错误）。
 			// Migration note：SplitTextDiffControl.VerticalOffset 在 Avalonia 版为只读，
 			// 改调其 ScrollToVerticalOffset（行为与原赋值一致）。
 			// Migration note：SplitTextDiffControl 自带 ScrollToVerticalOffset，无需 ScrollViewer 扩展。
-                        TextDiffControl.ScrollToVerticalOffset(verticalOffset);
+			TextDiffControl.ScrollToVerticalOffset(scrollViewer.Offset.Y);
 		}
 
 		private void SplitTextDiffControl_ScrollOffsetChanged(object sender, EventArgs e)
@@ -685,6 +706,8 @@ namespace ForkPlus.UI.Dialogs
 
 		private void ScrollTo(double verticalOffset)
 		{
+			// v5.2.5：记录程序写入目标值，供列表 ScrollChanged 的回显守卫识别（见字段注释）。
+			_lastListOffsetWrittenByProgram = verticalOffset;
 			// Migration note：Avalonia ScrollViewer 无 ScrollToVerticalOffset 方法，
 			// 用 WpfCompat 的 ScrollToVerticalOffsetCompat（内部设置 Offset）。
 			RevisionListScrollViewer?.ScrollToVerticalOffsetCompat(verticalOffset);

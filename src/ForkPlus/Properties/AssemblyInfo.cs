@@ -15,6 +15,11 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-03，v5.2.5）：修复 Blame/Timeline 弹窗左侧版本列表滚动条拖不动，版本号升至 5.2.5。
+//   左列表与右侧 diff 的双向滚动同步存在回环：列表 ScrollChanged → 同步 diff → diff 滚动 →
+//   ScrollOffsetChanged → ScrollTo 回写列表 → 又触发 ScrollChanged。原实现还把
+//   e.OffsetDelta.Y（增量）当绝对位置传给 diff，回写值在 0 附近震荡，拖 thumb 被立即拉回。
+//   修复：同步改用绝对 Offset + 程序回写回显守卫（BlameWindow._lastListOffsetWrittenByProgram）。
 // 版本号说明（2026-10-30，v5.2.4）：暂存遇换行符安全检查 fatal 改为人性化处理，版本号升至 5.2.4。
 //   git add 触发 core.safecrlf 的 "fatal: LF would be replaced by CRLF"（用户全局配置
 //   safecrlf=true 时）原来整段 git error 直接弹窗。现识别该错误（含中文 git 输出）→
@@ -191,8 +196,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.4")]
-[assembly: AssemblyInformationalVersion("5.2.4")]
+[assembly: AssemblyFileVersion("5.2.5")]
+[assembly: AssemblyInformationalVersion("5.2.5")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.4.0")]
+[assembly: AssemblyVersion("5.2.5.0")]
