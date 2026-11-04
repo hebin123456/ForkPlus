@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 26 章 · 对比视图插件机制</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.3.0</p>
+  <p>ForkPlus 用户手册 · 版本 v5.3.1</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -138,7 +138,7 @@
   <ul>
     <li><strong>查看插件信息</strong>：每个插件展示<strong>名称、插件版本、最低支持主软件版本</strong>与描述，以及它认领的<strong>匹配扩展名</strong>与<strong>优先级</strong>；加载失败或不兼容的插件会单独列出并标明原因（如「需要主程序 ≥ 5.1.0」），不影响其他插件。</li>
     <li><strong>搜索过滤（v5.2.2）</strong>：页面顶部的<strong>搜索框</strong>可按<strong>插件名称、插件描述</strong>或<strong>匹配扩展名</strong>过滤插件列表（不区分大小写的子串匹配，扩展名带不带点均可，如 <code>.png</code> / <code>png</code>）。搜索词会保留——启用/禁用、卸载、重新加载后列表仍按当前搜索词过滤；过滤后无匹配时显示空态提示。</li>
-    <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。</li>
+    <li><strong>启用 / 禁用</strong>：用每行的开关即时启用或禁用插件。禁用只把插件<strong>排除出对比路由</strong>，插件条目与元数据仍保留，可随时重新启用；禁用状态会<strong>持久化</strong>，下次启动沿用。<strong>v5.3.1 起</strong>列表右上角（与「全选」同一行）新增<strong>「全部启用/禁用」总开关</strong>——开 = 一键启用全部可切换插件，关 = 一键禁用；全部启用时勾选、全部禁用时不勾、<strong>部分启用时显示「部分启用」</strong>，点击一键全部启用；单个插件的启禁用变化会实时回同步总开关状态（作用范围为全部可切换插件，不受搜索过滤影响）。</li>
     <li><strong>重新加载插件</strong>：点击「重新加载插件」按钮，ForkPlus 会重建插件注册表并<strong>重新扫描 <code>plugins/</code> 下各插件子目录</strong>——放入或删除插件后立即生效，<strong>无需重启</strong>；用户绑定与禁用状态跨重载保持。</li>
     <li><strong>安装插件</strong>：点击<strong>「安装插件...」</strong>选择从发布页下载的插件压缩包（<strong>合集包或单插件包</strong>均可），ForkPlus 会自动识别包内各插件目录、逐个校验 <code>plugin.json</code> 兼容性后安装到 <code>plugins/&lt;程序集名&gt;/</code> 并重新加载——无需手工解压；<strong>不兼容或缺少清单的插件会被跳过并提示</strong>。</li>
     <li><strong>卸载插件</strong>：勾选要移除的插件后点击<strong>「卸载选中」</strong>可一次卸载多个（也可用「全选」快速勾选）。卸载会<strong>删除插件整个目录</strong>（含清单、私有依赖与原生库），不留残留；<strong>自 v5.1.0 起内置的图片对比与 Hex 对比插件同样可卸载</strong>，卸载后可从插件仓下载对应单插件包重装。若文件被占用，会在下次启动 ForkPlus 时自动完成删除。</li>

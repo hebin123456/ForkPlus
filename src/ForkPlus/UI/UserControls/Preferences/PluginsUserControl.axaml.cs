@@ -26,7 +26,10 @@ namespace ForkPlus.UI.UserControls.Preferences
 	/// - 「卸载选中」：勾选若干插件批量卸载（<see cref="PluginUninstaller"/> 递归删除其插件目录），
 	///   内置插件自 v5.1.0 起同样可卸载（卸载后可从插件仓重装）；
 	/// - 「重新加载插件」：重建注册表并重扫描 plugins/ 目录，无需重启 ForkPlus；
-	/// - 「打开插件目录」「下载最新插件」：定位插件目录 / 直达插件发布页。
+	/// - 「打开插件目录」「下载最新插件」：定位插件目录 / 直达插件发布页；
+	/// - 「全部启用/禁用」总开关（v5.3.1）：位于列表右上角（与「全选」同一行），
+	///   开 = 一键启用全部可切换插件，关 = 一键禁用；部分启用时显示「部分启用」，
+	///   点击一键全部启用。
 	///
 	/// 本页文案固定中文，元数据国际化留待后续版本（插件名称/描述已按宿主语言本地化）。
 	/// </summary>
@@ -47,6 +50,9 @@ namespace ForkPlus.UI.UserControls.Preferences
 
 		/// <summary>v5.2.2：当前搜索词（原样保存，匹配时 Trim；空 = 不过滤）。</summary>
 		private string _searchFilter = string.Empty;
+
+		/// <summary>v5.3.1：批量同步「全部启用/禁用」总开关状态时抑制事件回环。</summary>
+		private bool _syncingMasterToggle;
 
 		public PluginsUserControl()
 		{
@@ -115,6 +121,74 @@ namespace ForkPlus.UI.UserControls.Preferences
 			}
 			SelectAllCheckBox.IsEnabled = _checkableCount > 0;
 			UpdateUninstallButton();
+			// v5.3.1：列表重建后按各插件当前状态同步总开关（全启用勾选 / 全禁用不勾 / 部分启用显示「部分启用」）。
+			SyncMasterToggleState();
+		}
+
+		/// <summary>
+		/// v5.3.1：根据当前全部插件的状态同步「全部启用/禁用」总开关——
+		/// 可切换插件全部启用时勾选、全部禁用（或没有可切换插件）时不勾、部分启用时半选（null）；
+		/// 没有可切换插件时总开关整体禁用。Avalonia ToggleSwitch 没有 null 的独立视觉
+		/// （Fluent 主题只样式化 :checked / :unchecked），半选会按未勾选外观渲染，故此时把
+		/// OffContent 动态换成「部分启用」，避免被误读成「已全部禁用」。批量同步期间抑制事件回环。
+		/// </summary>
+		private void SyncMasterToggleState()
+		{
+			int toggleable = 0;
+			int enabledCount = 0;
+			foreach (DiffViewPluginInfo info in DiffViewPluginLoader.GetPluginInfos())
+			{
+				if (!info.CanToggle)
+				{
+					continue;
+				}
+				toggleable++;
+				if (info.Status == DiffViewPluginStatus.Enabled)
+				{
+					enabledCount++;
+				}
+			}
+			bool? masterState;
+			if (toggleable == 0 || enabledCount == 0)
+			{
+				masterState = false;
+			}
+			else if (enabledCount == toggleable)
+			{
+				masterState = true;
+			}
+			else
+			{
+				masterState = null;
+			}
+			_syncingMasterToggle = true;
+			MasterToggleSwitch.IsChecked = masterState;
+			MasterToggleSwitch.OffContent = masterState == null ? "部分启用" : "全部禁用";
+			_syncingMasterToggle = false;
+			MasterToggleSwitch.IsEnabled = toggleable > 0;
+		}
+
+		/// <summary>
+		/// v5.3.1：「全部启用/禁用」总开关——开 = 一键启用全部可切换插件，关 = 一键禁用；
+		/// 部分启用（半选）时点击视为开。逐个写入注册表并持久化（跳过已处于目标状态的插件），
+		/// 随后重建列表刷新各行开关与总开关状态。作用范围为全部可切换插件（不受搜索过滤影响）。
+		/// </summary>
+		private void MasterToggleSwitch_Changed(object sender, RoutedEventArgs e)
+		{
+			if (_syncingMasterToggle)
+			{
+				return;
+			}
+			bool enableAll = MasterToggleSwitch.IsChecked.GetValueOrDefault();
+			foreach (DiffViewPluginInfo info in DiffViewPluginLoader.GetPluginInfos())
+			{
+				if (info.CanToggle && (info.Status == DiffViewPluginStatus.Enabled) != enableAll)
+				{
+					DiffViewPluginLoader.SetPluginEnabled(info.Id, enableAll);
+				}
+			}
+			LoadPlugins();
+			SetStatus(enableAll ? "已启用全部插件。" : "已禁用全部插件。");
 		}
 
 		/// <summary>

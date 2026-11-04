@@ -15,6 +15,13 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-04，v5.3.1）：偏好设置 → 插件页新增「全部启用/禁用」总开关，版本号升至 5.3.1。
+//   插件列表右上角（与「全选」同一行）放 ToggleSwitch：开 = 一键启用全部可切换插件，
+//   关 = 一键禁用；部分启用（半选）时因 Avalonia ToggleSwitch 无 null 独立视觉，动态把
+//   OffContent 换成「部分启用」，点击一键全部启用；没有可切换插件时整体禁用。作用范围为
+//   全部可切换插件（不受搜索过滤影响），逐个经 DiffViewPluginLoader.SetPluginEnabled
+//   写入注册表并持久化（跳过已处于目标状态的插件），列表重建后自动回同步总开关状态
+//   （PluginsUserControl.SyncMasterToggleState + MasterToggleSwitch_Changed）。
 // 版本号说明（2026-11-04，v5.3.0）：轨道图搜索本地化 + 匹配进度、文件树顶部过滤框，版本号升至 5.3.0。
 //   1) 轨道图 Ctrl+F 搜索框"{n} matches"文案本地化（8 语言），并显示"匹配 当前/总数"导航进度
 //     （F3/Shift+F3/Enter/初始定位跳转时更新；RevisionsDataSource.GetContextSearchMatchOrdinal）。
@@ -202,8 +209,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.3.0")]
-[assembly: AssemblyInformationalVersion("5.3.0")]
+[assembly: AssemblyFileVersion("5.3.1")]
+[assembly: AssemblyInformationalVersion("5.3.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.3.0.0")]
+[assembly: AssemblyVersion("5.3.1.0")]
