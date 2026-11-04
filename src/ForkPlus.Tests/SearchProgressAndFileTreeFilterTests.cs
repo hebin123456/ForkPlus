@@ -201,6 +201,31 @@ namespace ForkPlus.Tests
 			Assert.True(Find(root, "README.md").IsHidden);
 		}
 
+		[Fact]
+		public void FlatListMode_FlattensToFilesOnly_AndFilterStillWorks()
+		{
+			// v5.3.0：View as List 模式——全部文件平铺单层（目录行不显示），过滤照常生效。
+			var root = new RevisionFileTreeViewItem(null, null);
+			RevisionFileTreeUserControl.RebuildTreeAsFlatList(root, new[]
+			{
+				Dir("src"),
+				File("main.cs", "src/main.cs"),
+				Dir("src/util"),
+				File("helper.cs", "src/util/helper.cs"),
+				File("README.md", "README.md")
+			}, null);
+
+			Assert.Equal(3, root.Children.Count); // main.cs、helper.cs、README.md（无目录）
+			foreach (MultiselectionTreeViewItem child in root.Children)
+			{
+				Assert.False(child.IsHidden);
+			}
+
+			RevisionFileTreeUserControl.ApplyTreeFilter(root, "helper");
+			Assert.False(Find(root, "src/util/helper.cs").IsHidden);
+			Assert.True(Find(root, "README.md").IsHidden);
+		}
+
 		private static FileTreeItem File(string filename, string filePath)
 		{
 			return new FileTreeItem(filename, filePath, default(Sha), FileTreeItem.FileTreeItemType.File);

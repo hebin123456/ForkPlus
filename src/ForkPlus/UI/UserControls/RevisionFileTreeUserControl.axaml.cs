@@ -19,6 +19,7 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -66,7 +67,18 @@ namespace ForkPlus.UI.UserControls
 					FilterTextBox.HideWithAnimation();
 					e.Handled = true;
 				}
+				else if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
+				{
+					// v5.3.0：与变更页一致，空格键弹出所选文件的并排 diff。
+					ShowDiffPopup();
+					e.Handled = true;
+				}
 			};
+			// v5.3.0：视图模式（FileListMode）变更页/提交窗口共享同一设置——文件树 tab 同步响应。
+			WeakEventManager<NotificationCenter, EventArgs<FileListMode>>.AddHandler(NotificationCenter.Current, "FileListModeChanged", delegate
+(object sender, System.EventArgs e)			{
+				ApplyFileListMode();
+			});
 			RestoreFilesTreeViewColumnWidth();
 			GridSplitter.DragCompleted += delegate
 			{
@@ -213,7 +225,12 @@ namespace ForkPlus.UI.UserControls
 					}
 					RevisionFileTreeViewItem obj = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
 					FilesTreeView.RootItem = revisionFileTreeViewItem;
-					// v5.3.0：切换 revision 重建树后，重应用当前过滤条件。
+					// v5.3.0：切换 revision 重建树后，重应用当前过滤条件；列表模式下按当前
+					// 模式重建（树未补全则触发后台补全，回调里重建列表）。
+					if (ForkPlusSettings.Default.FileListMode != FileListMode.Tree)
+					{
+						ApplyFileListMode();
+					}
 					ApplyFileTreeFilter();
 					string text = _pendingFilePath ?? obj?.FileTreeItem?.FilePath;
 					_pendingFilePath = null;
@@ -243,28 +260,219 @@ namespace ForkPlus.UI.UserControls
 
 		private void FilterButton_Click(object sender, RoutedEventArgs e)
 		{
-			FilterTextBox.ShowWithAnimation();
-			FilterTextBox.FocusAndSelectAllText();
+			// v5.3.0 修复：点击切换开/关（与变更页一致），原实现只开不关。
+			if (FilterTextBox.IsAnimationPlaceholderVisible)
+			{
+				FilterTextBox.HideWithAnimation();
+			}
+			else
+			{
+				FilterTextBox.ShowWithAnimation();
+				FilterTextBox.FocusAndSelectAllText();
+			}
 		}
 
-		private void UpdateTreeFilter(string filterString)
+		// ── v5.3.0：并排 diff 弹窗（与变更页同款交互，作用于文件树选中文件） ──
+
+		[Null]
+		private DiffPopupWindow _diffPopupWindow;
+
+		// v5.3.0：整树补全后的全量文件项缓存——Tree/List 模式重建复用。
+		[Null]
+		private FileTreeItem[] _allTreeItems;
+
+		private void ShowDiffPopupButton_Click(object sender, RoutedEventArgs e)
 		{
-			_fileTreeFilter = filterString;
-			bool filtering = !string.IsNullOrWhiteSpace(filterString);
-			if (!filtering || _treeFullyLoaded || !(_sha.HasValue))
+			ShowDiffPopup();
+		}
+
+		private void ShowDiffPopup()
+		{
+			RevisionFileTreeViewItem selected = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
+			if (selected?.FileTreeItem == null || selected.FileTreeItem.ItemType != FileTreeItem.FileTreeItemType.File || !_sha.HasValue)
 			{
+				return;
+			}
+			GitModule gitModule = RevisionDetailsUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return;
+			}
+			if (_diffPopupWindow == null)
+			{
+				_diffPopupWindow = DiffPopupWindow.CreateRevisionDiff(RevisionDetailsUserControl.RepositoryUserControl);
+				_diffPopupWindow.Closed += delegate
+				{
+					_diffPopupWindow = null;
+				};
+				_diffPopupWindow.SelectPrevious = (EventHandler)Delegate.Combine(_diffPopupWindow.SelectPrevious, (EventHandler)delegate
+				{
+					SelectTreeFile(-1);
+				});
+				_diffPopupWindow.SelectNext = (EventHandler)Delegate.Combine(_diffPopupWindow.SelectNext, (EventHandler)delegate
+				{
+					SelectTreeFile(1);
+				});
+				_diffPopupWindow.ShowAtCenter((global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow);
+			}
+			else
+			{
+				_diffPopupWindow.Focus();
+			}
+			// 文件树任意文件均可查看其在该提交 vs 父提交的 diff（未变更文件 diff 为空，与 Fork 行为一致）。
+			// ChangedFile 仅用于 diff 输出的标签与路径处理（ChangeType 语义上未知，取 Modified 兜底）。
+			string filePath = selected.FileTreeItem.FilePath;
+			var changedFile = new ChangedFile(filePath, StatusType.None, StatusType.None, ChangeType.Modified, staged: true);
+			Sha sha = _sha.GetValueOrDefault();
+			int requestId = _treeRequestId;
+			Task.Run(() => new GetRevisionFileChangesGitCommand().Execute(gitModule, new RevisionDiffTarget.Revision(sha), changedFile, ForkPlusSettings.Default.DiffContextSize, gitModule.Settings.TabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, showEntireFile: false)).ContinueWith(delegate(Task<GitCommandResult<DiffContent>> diffTask)
+			{
+				Dispatcher.UIThread.Post(delegate
+				{
+					if (diffTask.IsFaulted || diffTask.IsCanceled || _diffPopupWindow == null || requestId != _treeRequestId)
+					{
+						return;
+					}
+					_diffPopupWindow.UpdateDiff(diffTask.Result);
+				});
+			});
+		}
+
+		private void SelectTreeFile(int direction)
+		{
+			List<RevisionFileTreeViewItem> fileNodes = CollectFileNodes(FilesTreeView.RootItem);
+			if (fileNodes.Count == 0)
+			{
+				return;
+			}
+			RevisionFileTreeViewItem selected = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
+			int index = selected == null ? -1 : fileNodes.IndexOf(selected);
+			int next = Math.Min(Math.Max(index + direction, 0), fileNodes.Count - 1);
+			if (next != index)
+			{
+				FilesTreeView.SelectedItem = fileNodes[next];
+			}
+		}
+
+		private static List<RevisionFileTreeViewItem> CollectFileNodes(MultiselectionTreeViewItem node)
+		{
+			List<RevisionFileTreeViewItem> list = new List<RevisionFileTreeViewItem>();
+			CollectFileNodes(node, list);
+			return list;
+		}
+
+		private static void CollectFileNodes(MultiselectionTreeViewItem node, List<RevisionFileTreeViewItem> list)
+		{
+			for (int i = 0; i < node.Children.Count; i++)
+			{
+				MultiselectionTreeViewItem child = node.Children[i];
+				if (child is RevisionFileTreeViewItem fileNode)
+				{
+					if (fileNode.FileTreeItem?.ItemType == FileTreeItem.FileTreeItemType.File)
+					{
+						list.Add(fileNode);
+					}
+					CollectFileNodes(fileNode, list);
+				}
+			}
+		}
+
+		// ── v5.3.0：视图模式下拉（FileListMode：Tree/List/CombinedList，与变更页共享设置）──
+
+		private void FileTreeSettingsDropdownButton_ContextMenuOpened(object sender, RoutedEventArgs e)
+		{
+			UpdateFileTreeSettingsMenuItems(FileTreeSettingsDropdownButton.ContextMenu);
+		}
+
+		private void UpdateFileTreeSettingsMenuItems(ContextMenu menu)
+		{
+			menu.Items.Clear();
+			FileListMode fileListMode = ForkPlusSettings.Default.FileListMode;
+			menu.Items.Add(CreateFileTreeModeMenuItem("View as Tree", FileListMode.Tree, fileListMode));
+			menu.Items.Add(CreateFileTreeModeMenuItem("View as List", FileListMode.List, fileListMode));
+			menu.Items.Add(CreateFileTreeModeMenuItem("View as Combined List", FileListMode.CombinedList, fileListMode));
+		}
+
+		private MenuItem CreateFileTreeModeMenuItem(string text, FileListMode mode, FileListMode currentMode)
+		{
+			MenuItem menuItem = new MenuItem();
+			menuItem.Header = Preferences.PreferencesLocalization.MenuHeader(text);
+			menuItem.IsChecked = currentMode == mode;
+			menuItem.ToggleType = global::Avalonia.Controls.MenuItemToggleType.CheckBox;
+			menuItem.Click += delegate
+			{
+				ForkPlusSettings.Default.FileListMode = mode;
+				ForkPlusSettings.Default.Save();
+				NotificationCenter.Current.RaiseFileListModeChanged(this, mode);
+			};
+			return menuItem;
+		}
+
+		// List/CombinedList 模式 = 全部文件平铺为单层列表（目录行不显示）；Tree = 目录层级树。
+		// 与过滤叠加：重建后统一走 ApplyTreeFilter。Tree 重建需要全量数据缓存（整树补全后才有）。
+		private void ApplyFileListMode()
+		{
+			if (FilesTreeView.RootItem == null)
+			{
+				return;
+			}
+			if (ForkPlusSettings.Default.FileListMode == FileListMode.Tree)
+			{
+				if (_treeFullyLoaded && _allTreeItems != null)
+				{
+					RebuildTreeFromItems(_allTreeItems);
+				}
+				return;
+			}
+			if (_treeFullyLoaded && _allTreeItems != null)
+			{
+				RebuildTreeAsFlatList((RevisionFileTreeViewItem)FilesTreeView.RootItem, _allTreeItems, RevisionDetailsUserControl?.GitModule);
 				ApplyFileTreeFilter();
 				return;
 			}
-			// 首次过滤：懒加载树未补全——先按已加载部分过滤出即时结果，同时后台递归拉取
-			// 整树（git ls-tree -r -t 单进程），完成后重应用，结果自动变完整。
-			ApplyFileTreeFilter();
-			Sha sha = _sha.GetValueOrDefault();
+			// 树未补全（懒加载只含已展开目录）——先补全，回调里重建列表。
+			EnsureTreeFullyLoaded();
+		}
+
+		private void RebuildTreeFromItems(FileTreeItem[] allItems)
+		{
 			GitModule gitModule = RevisionDetailsUserControl?.GitModule;
-			if (gitModule == null || FilesTreeView.RootItem == null)
+			BuildFullTreeChildren((RevisionFileTreeViewItem)FilesTreeView.RootItem, allItems, gitModule);
+			ApplyFileTreeFilter();
+		}
+
+		// internal 供回归测试直测（InternalsVisibleTo）：列表模式 = 全部文件平铺单层。
+		internal static void RebuildTreeAsFlatList(RevisionFileTreeViewItem root, FileTreeItem[] allItems, GitModule gitModule)
+		{
+			root.Children.Clear();
+			foreach (FileTreeItem item in allItems)
 			{
-				return;
+				if (item.ItemType == FileTreeItem.FileTreeItemType.File)
+				{
+					root.Children.Add(new RevisionFileTreeViewItem(gitModule, item));
+				}
 			}
+		}
+
+		// 整树补全（懒加载树首次过滤/切列表模式时触发）：后台 git ls-tree -r -t 一次性拉全，
+		// 回调里按当前视图模式重建（Tree 层级树 / List 平铺列表）并重应用过滤。
+		// 已补全直接返回 true；发起后台补全返回 false。
+		private bool EnsureTreeFullyLoaded()
+		{
+			if (_treeFullyLoaded)
+			{
+				return true;
+			}
+			if (!_sha.HasValue || FilesTreeView.RootItem == null)
+			{
+				return false;
+			}
+			GitModule gitModule = RevisionDetailsUserControl?.GitModule;
+			if (gitModule == null)
+			{
+				return false;
+			}
+			Sha sha = _sha.GetValueOrDefault();
 			int requestId = ++_fullTreeLoadRequestId;
 			Task.Run(() => new GetRevisionFileTreeGitCommand().ExecuteRecursive(gitModule, sha)).ContinueWith(delegate(Task<GitCommandResult<FileTreeItem[]>> treeTask)
 			{
@@ -283,11 +491,32 @@ namespace ForkPlus.UI.UserControls
 					{
 						return;
 					}
-					BuildFullTreeChildren((RevisionFileTreeViewItem)FilesTreeView.RootItem, result.Result, gitModule);
+					_allTreeItems = result.Result;
+					if (ForkPlusSettings.Default.FileListMode != FileListMode.Tree)
+					{
+						RebuildTreeAsFlatList((RevisionFileTreeViewItem)FilesTreeView.RootItem, _allTreeItems, gitModule);
+					}
+					else
+					{
+						BuildFullTreeChildren((RevisionFileTreeViewItem)FilesTreeView.RootItem, _allTreeItems, gitModule);
+					}
 					_treeFullyLoaded = true;
 					ApplyFileTreeFilter();
 				});
 			});
+			return false;
+		}
+
+		private void UpdateTreeFilter(string filterString)
+		{
+			_fileTreeFilter = filterString;
+			// v5.3.0：懒加载树未补全时先按已加载部分过滤出即时结果，同时后台整树补全
+			//（EnsureTreeFullyLoaded 回调里统一重建 + 重应用过滤），结果自动变完整。
+			ApplyFileTreeFilter();
+			if (!string.IsNullOrWhiteSpace(filterString))
+			{
+				EnsureTreeFullyLoaded();
+			}
 		}
 
 		// v5.3.0：把递归 ls-tree 的全量路径挂载为完整 UI 树。输入按 git 树序（父先于子、

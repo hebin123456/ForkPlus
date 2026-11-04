@@ -10,10 +10,10 @@
 
 - **轨道图搜索框显示匹配进度**（[RevisionSearchPanelUserControl](src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.axaml.cs)、[RevisionsDataSource](src/ForkPlus/UI/RevisionsDataSource.cs)）：
   - Ctrl+F 搜索后，跳转到下一个/上一个匹配（F3 / Shift+F3 / Enter / 初始定位）时，搜索框实时显示 **"匹配 当前/总数"**（如 `匹配 7/45`），一眼掌握导航进度。用户手动点击非匹配行时回退显示总数。
-- **提交详情 → 文件树 tab 顶部过滤框**（[RevisionFileTreeUserControl](src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.axaml.cs)）：
-  - 与变更（Changes）页同款的过滤框：树状视图顶部 Filter 按钮或 **Ctrl+F** 呼出、**Esc** 收起，输入防抖即时过滤。
-  - 按**文件/目录路径子串**过滤树节点：命中文件保留、父目录连带可见并自动展开（不藏于折叠目录下）、不相关子树隐藏；大小写不敏感；清空恢复全树。
-  - 懒加载树只含已展开目录，**首次过滤时后台一次性递归拉取整树**（`git ls-tree -r -t` 单进程）后重应用，无需手动展开全部目录；`OnExpanding` 加已加载守卫，展开不再重复拉取（同时修正原实现每次展开都重拉的开销）。
+- **提交详情 → 文件树 tab 顶部工具条**（[RevisionFileTreeUserControl](src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.axaml.cs)）：
+  - **过滤框**：与变更（Changes）页同款的 FilterTextBox——Filter 按钮或 **Ctrl+F** 呼出、**Esc** 收起、输入防抖即时过滤。按**文件/目录路径子串**过滤树节点：命中文件保留、父目录连带可见并自动展开（不藏于折叠目录下）、不相关子树隐藏；大小写不敏感；清空恢复全树。懒加载树只含已展开目录，**首次过滤时后台一次性递归拉取整树**（`git ls-tree -r -t` 单进程）后重应用，无需手动展开全部目录；`OnExpanding` 加已加载守卫，展开不再重复拉取（同时修正原实现每次展开都重拉的开销）。
+  - **视图模式下拉（View Mode）**：与变更页共享 `FileListMode` 设置与通知——View as Tree（层级树）/ View as List / View as Combined List（后两者将全部文件平铺为单层列表）；列表模式同样需要整树数据，首次切换自动后台补全。
+  - **并排 diff 按钮（Show diff side-by-side）**：弹出所选文件在该提交 vs 父提交的并排 diff（任意文件可用，未变更文件显示空 diff，与 Fork 行为一致）；弹窗内的上一个/下一个按钮在文件树上循环选中文件，支持**空格键**快捷呼出（与变更页一致）。
 
 ### 修复
 

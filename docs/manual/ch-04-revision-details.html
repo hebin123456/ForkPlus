@@ -61,8 +61,9 @@
 
   <div class="note"><strong>说明：</strong>文件树反映的是提交时刻的仓库全貌（非仅改动文件），遇到含子目录的提交可点击文件夹节点逐层展开。通过「导出完整文件树」可将该版本的目录结构导出。</div>
 
-  <h3>顶部过滤框</h3>
-  <p>文件较多时，点击树状视图顶部的 <strong>Filter</strong> 按钮或按 <strong>Ctrl+F</strong> 呼出过滤框（与「变更」标签页同款交互，Esc 收起）。输入会按<strong>文件/目录路径子串</strong>即时过滤树节点：命中文件保留、其父目录连带可见并自动展开，不相关子树隐藏；匹配不区分大小写，清空输入恢复全树。大仓库首次过滤时会在后台一次性拉取全树（约一次 <code>git ls-tree -r -t</code> 的开销），之后每层过滤都是即时响应。</p>
+  <h3>顶部工具条</h3>
+  <p>树状视图顶部工具条与「变更」标签页同款：<strong>Filter</strong> 按钮或 <strong>Ctrl+F</strong> 呼出过滤框（再次点击 Filter 或 Esc 收起）；右侧的<strong>视图模式下拉</strong>（View as Tree / View as List / View as Combined List，与变更页共享设置，后两者将全部文件平铺为单层列表）与<strong>并排 diff 按钮</strong>（弹出所选文件在该提交 vs 父提交的并排 diff，也可用空格键呼出）。</p>
+  <p>过滤框按<strong>文件/目录路径子串</strong>即时过滤树节点：命中文件保留、其父目录连带可见并自动展开，不相关子树隐藏；匹配不区分大小写，清空输入恢复全树。大仓库首次过滤或切换列表模式时会在后台一次性拉取全树（约一次 <code>git ls-tree -r -t</code> 的开销），之后每层过滤都是即时响应。</p>
 
   <h3 id="filetree">导出文件树与跨版本比对</h3>
   <p>文件树还支持<strong>导出</strong>与<strong>跨版本比对</strong>：</p>
