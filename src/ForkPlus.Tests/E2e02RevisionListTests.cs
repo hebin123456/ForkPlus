@@ -73,7 +73,8 @@ namespace ForkPlus.Tests
 					// "feature" 匹配：c4/c5 两条提交消息 + feature/one、feature/two 两个分支 ref
 					Assert.True(matchCount >= 2, "匹配数应 >= 2，实际 " + matchCount);
 					Assert.Equal(initialCount, revList.RevisionsDataSource.Count); // 行集不缩小
-					Assert.True(searchPanel.MatchesTextBlock.Text.Contains("match"), "匹配计数文本应更新: " + searchPanel.MatchesTextBlock.Text);
+					// v5.3.0 文案本地化（en "2 matches" / zh "匹配 2"），语言无关断言：文本含数字即计数已更新。
+					Assert.True(searchPanel.MatchesTextBlock.Text.Any(char.IsDigit), "匹配计数文本应更新: " + searchPanel.MatchesTextBlock.Text);
 					ScreenshotHelper.Snap(window, "03-revision-search-matches", "02-revisionlist");
 					// 搜索跳转后选中行应为匹配行
 					Assert.NotNull(revList.SelectedRevision);
