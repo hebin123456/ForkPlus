@@ -19,7 +19,6 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using ForkPlus.UI.Dialogs;
 
 namespace ForkPlus.UI.UserControls
 {
@@ -65,12 +64,6 @@ namespace ForkPlus.UI.UserControls
 				else if (e.Key == Key.Escape)
 				{
 					FilterTextBox.HideWithAnimation();
-					e.Handled = true;
-				}
-				else if (e.Key == Key.Space && !Keyboard.IsKeyDown(Key.LeftCtrl))
-				{
-					// v5.3.0：与变更页一致，空格键弹出所选文件的并排 diff。
-					ShowDiffPopup();
 					e.Handled = true;
 				}
 			};
@@ -272,112 +265,14 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
-		// ── v5.3.0：并排 diff 弹窗（与变更页同款交互，作用于文件树选中文件） ──
+		// ── v5.3.0：整树补全后的全量文件项缓存——Tree/List 模式重建复用。 ──
 
-		[Null]
-		private DiffPopupWindow _diffPopupWindow;
-
-		// v5.3.0：整树补全后的全量文件项缓存——Tree/List 模式重建复用。
 		[Null]
 		private FileTreeItem[] _allTreeItems;
 
-		private void ShowDiffPopupButton_Click(object sender, RoutedEventArgs e)
-		{
-			ShowDiffPopup();
-		}
-
-		private void ShowDiffPopup()
-		{
-			RevisionFileTreeViewItem selected = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
-			if (selected?.FileTreeItem == null || selected.FileTreeItem.ItemType != FileTreeItem.FileTreeItemType.File || !_sha.HasValue)
-			{
-				return;
-			}
-			GitModule gitModule = RevisionDetailsUserControl?.GitModule;
-			if (gitModule == null)
-			{
-				return;
-			}
-			if (_diffPopupWindow == null)
-			{
-				_diffPopupWindow = DiffPopupWindow.CreateRevisionDiff(RevisionDetailsUserControl.RepositoryUserControl);
-				_diffPopupWindow.Closed += delegate
-				{
-					_diffPopupWindow = null;
-				};
-				_diffPopupWindow.SelectPrevious = (EventHandler)Delegate.Combine(_diffPopupWindow.SelectPrevious, (EventHandler)delegate
-				{
-					SelectTreeFile(-1);
-				});
-				_diffPopupWindow.SelectNext = (EventHandler)Delegate.Combine(_diffPopupWindow.SelectNext, (EventHandler)delegate
-				{
-					SelectTreeFile(1);
-				});
-				_diffPopupWindow.ShowAtCenter((global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow);
-			}
-			else
-			{
-				_diffPopupWindow.Focus();
-			}
-			// 文件树任意文件均可查看其在该提交 vs 父提交的 diff（未变更文件 diff 为空，与 Fork 行为一致）。
-			// ChangedFile 仅用于 diff 输出的标签与路径处理（ChangeType 语义上未知，取 Modified 兜底）。
-			string filePath = selected.FileTreeItem.FilePath;
-			var changedFile = new ChangedFile(filePath, StatusType.None, StatusType.None, ChangeType.Modified, staged: true);
-			Sha sha = _sha.GetValueOrDefault();
-			int requestId = _treeRequestId;
-			Task.Run(() => new GetRevisionFileChangesGitCommand().Execute(gitModule, new RevisionDiffTarget.Revision(sha), changedFile, ForkPlusSettings.Default.DiffContextSize, gitModule.Settings.TabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, showEntireFile: false)).ContinueWith(delegate(Task<GitCommandResult<DiffContent>> diffTask)
-			{
-				Dispatcher.UIThread.Post(delegate
-				{
-					if (diffTask.IsFaulted || diffTask.IsCanceled || _diffPopupWindow == null || requestId != _treeRequestId)
-					{
-						return;
-					}
-					_diffPopupWindow.UpdateDiff(diffTask.Result);
-				});
-			});
-		}
-
-		private void SelectTreeFile(int direction)
-		{
-			List<RevisionFileTreeViewItem> fileNodes = CollectFileNodes(FilesTreeView.RootItem);
-			if (fileNodes.Count == 0)
-			{
-				return;
-			}
-			RevisionFileTreeViewItem selected = FilesTreeView.SelectedItem as RevisionFileTreeViewItem;
-			int index = selected == null ? -1 : fileNodes.IndexOf(selected);
-			int next = Math.Min(Math.Max(index + direction, 0), fileNodes.Count - 1);
-			if (next != index)
-			{
-				FilesTreeView.SelectedItem = fileNodes[next];
-			}
-		}
-
-		private static List<RevisionFileTreeViewItem> CollectFileNodes(MultiselectionTreeViewItem node)
-		{
-			List<RevisionFileTreeViewItem> list = new List<RevisionFileTreeViewItem>();
-			CollectFileNodes(node, list);
-			return list;
-		}
-
-		private static void CollectFileNodes(MultiselectionTreeViewItem node, List<RevisionFileTreeViewItem> list)
-		{
-			for (int i = 0; i < node.Children.Count; i++)
-			{
-				MultiselectionTreeViewItem child = node.Children[i];
-				if (child is RevisionFileTreeViewItem fileNode)
-				{
-					if (fileNode.FileTreeItem?.ItemType == FileTreeItem.FileTreeItemType.File)
-					{
-						list.Add(fileNode);
-					}
-					CollectFileNodes(fileNode, list);
-				}
-			}
-		}
-
-		// ── v5.3.0：视图模式下拉（FileListMode：Tree/List/CombinedList，与变更页共享设置）──
+		// ── v5.3.0：视图模式下拉（FileListMode：Tree/List，与变更页共享设置）──
+		// 注：变更页的 CombinedList（合并列表）选项对文件树无意义，菜单中不提供；
+		// 若用户在变更页选了 CombinedList，文件树按 List（平铺）渲染。
 
 		private void FileTreeSettingsDropdownButton_ContextMenuOpened(object sender, RoutedEventArgs e)
 		{
@@ -390,7 +285,6 @@ namespace ForkPlus.UI.UserControls
 			FileListMode fileListMode = ForkPlusSettings.Default.FileListMode;
 			menu.Items.Add(CreateFileTreeModeMenuItem("View as Tree", FileListMode.Tree, fileListMode));
 			menu.Items.Add(CreateFileTreeModeMenuItem("View as List", FileListMode.List, fileListMode));
-			menu.Items.Add(CreateFileTreeModeMenuItem("View as Combined List", FileListMode.CombinedList, fileListMode));
 		}
 
 		private MenuItem CreateFileTreeModeMenuItem(string text, FileListMode mode, FileListMode currentMode)

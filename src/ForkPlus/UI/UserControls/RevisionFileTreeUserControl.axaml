@@ -33,8 +33,7 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <!-- v5.3.0：文件树顶部工具条 + 过滤框（与变更页 RevisionChangesUserControl 同款
-         FilterTextBox / 视图模式下拉 / 并排 diff 按钮，Ctrl+F 呼出 / Esc 收起），
-         按文件/目录路径子串过滤树节点 -->
+         FilterTextBox / 视图模式下拉，Ctrl+F 呼出 / Esc 收起），按文件/目录路径子串过滤树节点 -->
     <DockPanel Grid.Row="0" Grid.Column="0" Height="17" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}" LastChildFill="False">
       <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip.Tip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
         <Image Source="{DynamicResource SearchIcon}" />
@@ -45,9 +44,6 @@
           <ContextMenu Opened="FileTreeSettingsDropdownButton_ContextMenuOpened" />
         </controls:DropDownButton.ContextMenu>
       </controls:DropDownButton>
-      <Button DockPanel.Dock="Right" ToolTip.Tip="Show diff side-by-side (space bar)" Click="ShowDiffPopupButton_Click" x:Name="ShowDiffPopupButton" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
-        <Image Source="{DynamicResource PreviewIcon}" />
-      </Button>
     </DockPanel>
     <Grid Grid.Row="1" Grid.Column="0" x:Name="FilterTextBoxAnimationPlaceholder" />
     <controls:FilterTextBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Margin="4" x:Name="FilterTextBox">
