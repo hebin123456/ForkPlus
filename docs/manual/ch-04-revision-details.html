@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 4 章 · 修订详情</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.2.5</p>
+  <p>ForkPlus 用户手册 · 版本 v5.3.0</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -60,6 +60,9 @@
   </figure>
 
   <div class="note"><strong>说明：</strong>文件树反映的是提交时刻的仓库全貌（非仅改动文件），遇到含子目录的提交可点击文件夹节点逐层展开。通过「导出完整文件树」可将该版本的目录结构导出。</div>
+
+  <h3>顶部过滤框</h3>
+  <p>文件较多时，点击树状视图顶部的 <strong>Filter</strong> 按钮或按 <strong>Ctrl+F</strong> 呼出过滤框（与「变更」标签页同款交互，Esc 收起）。输入会按<strong>文件/目录路径子串</strong>即时过滤树节点：命中文件保留、其父目录连带可见并自动展开，不相关子树隐藏；匹配不区分大小写，清空输入恢复全树。大仓库首次过滤时会在后台一次性拉取全树（约一次 <code>git ls-tree -r -t</code> 的开销），之后每层过滤都是即时响应。</p>
 
   <h3 id="filetree">导出文件树与跨版本比对</h3>
   <p>文件树还支持<strong>导出</strong>与<strong>跨版本比对</strong>：</p>

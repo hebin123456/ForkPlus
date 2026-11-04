@@ -27,7 +27,25 @@
       <ColumnDefinition MinWidth="220" MaxWidth="850" />
       <ColumnDefinition />
     </Grid.ColumnDefinitions>
-    <controls:MultiselectionTreeView SelectionChanged="FilesTreeView_SelectedItemChanged" ContextRequested="FilesTreeView_ContextMenuOpening" Grid.Column="0" SelectionMode="Single" x:Name="FilesTreeView" DoubleTapped="FilesTreeView_MouseDoubleClick">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <!-- v5.3.0：文件树顶部工具条 + 过滤框（与变更页 RevisionChangesUserControl 同款
+         FilterTextBox，Ctrl+F 呼出 / Esc 收起），按文件/目录路径子串过滤树节点 -->
+    <DockPanel Grid.Row="0" Grid.Column="0" Height="17" HorizontalAlignment="Stretch" Background="{DynamicResource BackgroundBrush}" LastChildFill="False">
+      <Button DockPanel.Dock="Left" Margin="6,0,0,0" ToolTip.Tip="Filter" Click="FilterButton_Click" Theme="{DynamicResource CodeEditorHeaderButtonStyle}">
+        <Image Source="{DynamicResource SearchIcon}" />
+      </Button>
+    </DockPanel>
+    <Grid Grid.Row="1" Grid.Column="0" x:Name="FilterTextBoxAnimationPlaceholder" />
+    <controls:FilterTextBox Grid.Row="1" Grid.RowSpan="2" Grid.Column="0" Margin="4" x:Name="FilterTextBox">
+      <controls:FilterTextBox.AnimationPlaceholder>
+        <Binding ElementName="FilterTextBoxAnimationPlaceholder" />
+      </controls:FilterTextBox.AnimationPlaceholder>
+    </controls:FilterTextBox>
+    <controls:MultiselectionTreeView Grid.Row="2" Grid.Column="0" SelectionMode="Single" SelectionChanged="FilesTreeView_SelectedItemChanged" ContextRequested="FilesTreeView_ContextMenuOpening" x:Name="FilesTreeView" DoubleTapped="FilesTreeView_MouseDoubleClick">
       <controls:MultiselectionTreeView.ItemTemplate>
         <DataTemplate>
           <ContentControl>
@@ -41,7 +59,7 @@
         <ContextMenu />
       </controls:MultiselectionTreeView.ContextMenu>
     </controls:MultiselectionTreeView>
-    <controls:FileContentControl Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileContentControl" />
-    <GridSplitter Grid.Column="0" HorizontalAlignment="Right" x:Name="GridSplitter" Theme="{DynamicResource VerticalGridSplitter}" />
+    <controls:FileContentControl Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Background="{DynamicResource BackgroundBrush}" x:Name="FileContentControl" />
+    <GridSplitter Grid.Row="0" Grid.RowSpan="3" Grid.Column="0" HorizontalAlignment="Right" x:Name="GridSplitter" Theme="{DynamicResource VerticalGridSplitter}" />
   </Grid>
 </UserControl>

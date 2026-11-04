@@ -2,6 +2,23 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.3.0
+
+> 轨道图搜索体验升级（本地化 + 匹配进度），文件树 tab 新增顶部过滤框。应用版本号升至 5.3.0。
+
+### 新功能
+
+- **轨道图搜索框显示匹配进度**（[RevisionSearchPanelUserControl](src/ForkPlus/UI/UserControls/RevisionSearchPanelUserControl.axaml.cs)、[RevisionsDataSource](src/ForkPlus/UI/RevisionsDataSource.cs)）：
+  - Ctrl+F 搜索后，跳转到下一个/上一个匹配（F3 / Shift+F3 / Enter / 初始定位）时，搜索框实时显示 **"匹配 当前/总数"**（如 `匹配 7/45`），一眼掌握导航进度。用户手动点击非匹配行时回退显示总数。
+- **提交详情 → 文件树 tab 顶部过滤框**（[RevisionFileTreeUserControl](src/ForkPlus/UI/UserControls/RevisionFileTreeUserControl.axaml.cs)）：
+  - 与变更（Changes）页同款的过滤框：树状视图顶部 Filter 按钮或 **Ctrl+F** 呼出、**Esc** 收起，输入防抖即时过滤。
+  - 按**文件/目录路径子串**过滤树节点：命中文件保留、父目录连带可见并自动展开（不藏于折叠目录下）、不相关子树隐藏；大小写不敏感；清空恢复全树。
+  - 懒加载树只含已展开目录，**首次过滤时后台一次性递归拉取整树**（`git ls-tree -r -t` 单进程）后重应用，无需手动展开全部目录；`OnExpanding` 加已加载守卫，展开不再重复拉取（同时修正原实现每次展开都重拉的开销）。
+
+### 修复
+
+- **轨道图搜索框 "N matches" 文案本地化**：此前硬编码英文，现走本地化词条（en/zh-Hans/zh-Hant/ja/ko/de/fr/es 八语言，如 "3 matches" → "3 个匹配"）。
+
 ## v5.2.5
 
 > 修复 **Blame/Timeline 弹窗**（右键文件 → Blame/Timeline...）**左侧版本列表的滚动条无法拖动**的问题。应用版本号升至 5.2.5。

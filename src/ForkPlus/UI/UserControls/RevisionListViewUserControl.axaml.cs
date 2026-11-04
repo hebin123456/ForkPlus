@@ -2111,6 +2111,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				int valueOrDefault = num.GetValueOrDefault();
 				RevisionListView.SelectAndScrollIntoView(valueOrDefault, focus: false);
+				// v5.3.0：更新"匹配 n/总数"进度（跳转后行号 → 匹配序号）。
+				RevisionSearchPanelUserControl.UpdateCurrentMatchIndex(RevisionsDataSource.GetContextSearchMatchOrdinal(valueOrDefault));
 			}
 		}
 
@@ -2122,6 +2124,8 @@ namespace ForkPlus.UI.UserControls
 			{
 				int valueOrDefault = num2.GetValueOrDefault();
 				RevisionListView.SelectAndScrollIntoView(valueOrDefault, focus: false);
+				// v5.3.0：更新"匹配 n/总数"进度（含搜索完成后的初始定位）。
+				RevisionSearchPanelUserControl.UpdateCurrentMatchIndex(RevisionsDataSource.GetContextSearchMatchOrdinal(valueOrDefault));
 			}
 			else
 			{

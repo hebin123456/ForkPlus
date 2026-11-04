@@ -15,6 +15,12 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-04，v5.3.0）：轨道图搜索本地化 + 匹配进度、文件树顶部过滤框，版本号升至 5.3.0。
+//   1) 轨道图 Ctrl+F 搜索框"{n} matches"文案本地化（8 语言），并显示"匹配 当前/总数"导航进度
+//     （F3/Shift+F3/Enter/初始定位跳转时更新；RevisionsDataSource.GetContextSearchMatchOrdinal）。
+//   2) 提交详情 → 文件树 tab 顶部新增与变更页同款的 FilterTextBox 过滤框（Ctrl+F 呼出/Esc 收起），
+//     按文件/目录路径子串过滤树节点；懒加载树首次过滤时后台一次性 ls-tree -r -t 补全
+//     （GetRevisionFileTreeGitCommand.ExecuteRecursive），OnExpanding 加已加载守卫防重复拉取。
 // 版本号说明（2026-11-03，v5.2.5）：修复 Blame/Timeline 弹窗左侧版本列表滚动条拖不动，版本号升至 5.2.5。
 //   左列表与右侧 diff 的双向滚动同步存在回环：列表 ScrollChanged → 同步 diff → diff 滚动 →
 //   ScrollOffsetChanged → ScrollTo 回写列表 → 又触发 ScrollChanged。原实现还把
@@ -196,8 +202,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.2.5")]
-[assembly: AssemblyInformationalVersion("5.2.5")]
+[assembly: AssemblyFileVersion("5.3.0")]
+[assembly: AssemblyInformationalVersion("5.3.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.2.5.0")]
+[assembly: AssemblyVersion("5.3.0.0")]

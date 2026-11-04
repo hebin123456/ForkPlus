@@ -121,23 +121,44 @@ namespace ForkPlus.UI.UserControls
 			}
 		}
 
+		// v5.3.0（搜索进度显示）：当前匹配总数缓存——UpdateCurrentMatchIndex 需要它拼
+		// "当前索引/总数"进度文案；MatchesTextBlock 由两者共用刷新。
+		private int? _matchCount;
+
 		public void UpdateMatchesCount(int? matches)
 		{
-			if (matches.HasValue)
+			_matchCount = matches;
+			UpdateMatchesText(null);
+		}
+
+		// v5.3.0：跳转到第 currentIndex 个匹配（1-based）后更新"匹配 {current}/{total}"
+		// 进度；传 null 时回退为只显示总数（用户手动选择非匹配行等场景）。
+		public void UpdateCurrentMatchIndex(int? currentIndex)
+		{
+			UpdateMatchesText(currentIndex);
+		}
+
+		private void UpdateMatchesText(int? currentIndex)
+		{
+			if (!_matchCount.HasValue)
 			{
-				int valueOrDefault = matches.GetValueOrDefault();
-				if (valueOrDefault == 1)
-				{
-					MatchesTextBlock.Text = $"{valueOrDefault} match";
-				}
-				else
-				{
-					MatchesTextBlock.Text = $"{valueOrDefault} matches";
-				}
+				MatchesTextBlock.Text = "";
+				return;
+			}
+			int total = _matchCount.GetValueOrDefault();
+			// Migration note：原文案硬编码英文（"{n} match(es)"），v5.3.0 起走本地化
+			//（key 即英文文案，en 无需词条；各语言 json 见 Languages/*.json）。
+			if (currentIndex.HasValue && currentIndex.Value >= 1 && currentIndex.Value <= total)
+			{
+				MatchesTextBlock.Text = PreferencesLocalization.FormatCurrent("{0}/{1} matches", currentIndex.Value, total);
+			}
+			else if (total == 1)
+			{
+				MatchesTextBlock.Text = PreferencesLocalization.FormatCurrent("1 match");
 			}
 			else
 			{
-				MatchesTextBlock.Text = "";
+				MatchesTextBlock.Text = PreferencesLocalization.FormatCurrent("{0} matches", total);
 			}
 		}
 

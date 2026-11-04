@@ -715,6 +715,9 @@ namespace ForkPlus.UI.UserControls
 								{
 									int valueOrDefault = num.GetValueOrDefault();
 									Content.RevisionListViewUserControl.Select(new int[1] { valueOrDefault });
+									// v5.3.0：fetch 后找到匹配的跳转同步更新搜索进度。
+									Content.RevisionListViewUserControl.RevisionSearchPanelUserControl.UpdateCurrentMatchIndex(
+										Content.RevisionListViewUserControl.RevisionsDataSource.GetContextSearchMatchOrdinal(valueOrDefault));
 								}
 								_activeFetchRevisionsNextPageJob = null;
 							}

@@ -49,6 +49,13 @@ namespace ForkPlus.UI.UserControls
 			{
 				return;
 			}
+			// v5.3.0（文件树过滤"整树补全"）：子项已加载时不再重复拉取——过滤激活时整树
+			// 已一次性补全（含未展开目录），IsExpanded 展开不应再触发 git 调用；同时修正
+			// 原实现"每次展开都重拉"的重复开销（树内容随 revision 切换重建，无过期问题）。
+			if (base.Children.Count > 0)
+			{
+				return;
+			}
 			GitCommandResult<FileTreeItem[]> gitCommandResult = new GetRevisionFileTreeGitCommand().Execute(_gitModule, FileTreeItem.FilePath, FileTreeItem.TreeSha);
 			if (gitCommandResult.Succeeded)
 			{

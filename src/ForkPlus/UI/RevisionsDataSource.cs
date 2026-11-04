@@ -461,6 +461,41 @@ namespace ForkPlus.UI
 			return null;
 		}
 
+		// v5.3.0（轨道图搜索进度显示"第 n/总数 个匹配"）：返回行 rowIndex 在当前上下文搜索
+		// 匹配序列中的序号（1-based）；行不是匹配行或无搜索时返回 null。纯内存 HashSet 查询，
+		// O(rowIndex)——仅跳转导航时调用（F3/Shift+F3/Enter/初始定位），无性能压力。
+		public int? GetContextSearchMatchOrdinal(int rowIndex)
+		{
+			RevisionContextSearch? contextSearch = _contextSearch;
+			if (contextSearch.HasValue && rowIndex >= 0 && rowIndex < _visualGraph.Count)
+			{
+				RevisionContextSearch valueOrDefault = contextSearch.GetValueOrDefault();
+				if (!valueOrDefault.IsMatch(_visualGraph.GetShaAtRow(rowIndex)))
+				{
+					return null;
+				}
+				int ordinal = 0;
+				for (int i = 0; i <= rowIndex; i++)
+				{
+					if (valueOrDefault.IsMatch(_visualGraph.GetShaAtRow(i)))
+					{
+						ordinal++;
+					}
+				}
+				return ordinal;
+			}
+			return null;
+		}
+
+		// v5.3.0：当前上下文搜索的匹配总数（无搜索时 0）。
+		public int ContextSearchMatchCount
+		{
+			get
+			{
+				return _contextSearch?.MatchCount ?? 0;
+			}
+		}
+
 		public void AddSidebarSearchMatch(string searchQuery, Sha sha)
 		{
 			if (_sidebarSearch == null)
