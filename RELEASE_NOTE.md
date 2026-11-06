@@ -2,6 +2,18 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.3.2
+
+> 修复滚动条箭头与滑块的 1 像素错位：竖直滚动条上下箭头、水平滚动条左右箭头现在与 Thumb 严格居中对齐。应用版本号升至 5.3.2。
+
+### 修复
+
+- **滚动条箭头与滑块错位**（[Scrollviewer.axaml](src/ForkPlus/Theme/Styles/Scrollviewer.axaml)）：
+  - **竖直滚动条**：上下箭头整体比滑块左偏约 1px（视觉上像滑块右偏）。
+  - **水平滚动条**：左右箭头整体比滑块上偏约 1px（视觉上像滑块下偏）。
+  - 根因：`ScrollBarButton` 模板的 `ContentPresenter` 只绑定了 Presenter 自身对齐（Stretch），未设置内容的 `Horizontal/VerticalContentAlignment`；Avalonia 默认内容对齐 Stretch，箭头 Path 被排列到整个 11px 内容区、自身 Center 对齐不生效，约 9px 的几何按原点绘制落在左上角而非居中。改为内容对齐 `Center`，并把四个箭头几何的原点归一化（竖直箭头 y 减 0.5 / 水平箭头 x 减 0.5），去掉 `Shape` 在 `Stretch=None` 时按几何 Right/Bottom 计算 DesiredSize 造成的 0.5px 偏移后，箭头视觉中心与 Thumb 交叉轴中心严格重合。
+  - 回归防线：`ScrollBarArrows_AlignWithThumbCrossAxis`（headless 实测几何中心，偏差 ≥0.51px 即红）。
+
 ## v5.3.1
 
 > 偏好设置 → 插件页新增 **「全部启用/禁用」总开关**——一键打开所有插件 / 一键关闭。应用版本号升至 5.3.1。

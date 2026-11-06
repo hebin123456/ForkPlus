@@ -15,6 +15,14 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-07，v5.3.2）：修复滚动条箭头与滑块 1px 错位——ScrollBarButton 模板的
+//   ContentPresenter 未设置内容的 Horizontal/VerticalContentAlignment（Avalonia 默认 Stretch，
+//   Path 被排列到整个 11px 内容区、自身 Center 对齐不生效，几何按原点绘制落在左上角），
+//   ~9px 的箭头几何被摆在 11px 内容区的左上角而不是居中：竖直滚动条上下箭头整体左偏 1px
+//   （滑块居中，看起来像滑块右偏），水平滚动条左右箭头整体上偏 1px（看起来像滑块下偏）。
+//   改为内容对齐 Center，并把四个箭头几何沿纵向/横向原点归一化（y/x 减 0.5，去掉 Shape
+//   Stretch=None 时 DesiredSize 取 bounds Right/Bottom 带来的 0.5px 偏移）后，箭头视觉中心
+//   与 Thumb 交叉轴中心严格重合。新增回归测试 ScrollBarArrows_AlignWithThumbCrossAxis。
 // 版本号说明（2026-11-04，v5.3.1）：偏好设置 → 插件页新增「全部启用/禁用」总开关，版本号升至 5.3.1。
 //   插件列表右上角（与「全选」同一行）放 ToggleSwitch：开 = 一键启用全部可切换插件，
 //   关 = 一键禁用；部分启用（半选）时因 Avalonia ToggleSwitch 无 null 独立视觉，动态把
@@ -209,8 +217,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.3.1")]
-[assembly: AssemblyInformationalVersion("5.3.1")]
+[assembly: AssemblyFileVersion("5.3.2")]
+[assembly: AssemblyInformationalVersion("5.3.2")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.3.1.0")]
+[assembly: AssemblyVersion("5.3.2.0")]

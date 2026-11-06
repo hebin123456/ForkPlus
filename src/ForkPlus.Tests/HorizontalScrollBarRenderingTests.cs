@@ -112,5 +112,64 @@ namespace ForkPlus.Tests
 			}).GetAwaiter().GetResult();
 			System.IO.File.WriteAllText("/tmp/hbar_thumb.txt", report);
 		}
+
+		// 回归测试（2026-11-07，v5.3.2 修复"滚动条与上下/左右箭头没完全对齐"）：
+		// 根因：ScrollBarButton 模板的 ContentPresenter 只绑定了 Presenter 自身 Alignment，
+		// 未设内容对齐 → Avalonia 默认 Stretch：Path 被排列到整个 11px 内容区、自身 Center
+		// 对齐不生效，~9px 几何按原点绘制落在左上角：竖直箭头左偏 1px（Thumb 居中 → 看起来
+		// 滑块右偏）、水平箭头上偏 1px（滑块下偏）。
+		// 修复：内容对齐 Center + 箭头几何原点归一化（y/x 减 0.5，去掉 Shape DesiredSize
+		// 取 Right/Bottom 造成的 0.5px 偏移）。本用例用几何视觉中心（Path 原点 + Data.Bounds
+		// 中心）对比 Thumb 模板 Border 中心，错 1px 即红。
+		[Fact]
+		public void ScrollBarArrows_AlignWithThumbCrossAxis()
+		{
+			HeadlessAppBootstrap.EnsureStarted();
+			string report = Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var sv = MakeScrollViewerWithWideContent();
+				var window = new Window { Width = 500, Height = 400, Content = sv };
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+
+				ScrollBar vBar = sv.GetVisualDescendants().OfType<ScrollBar>()
+					.First((ScrollBar b) => b.Orientation == Orientation.Vertical);
+				ScrollBar hBar = sv.GetVisualDescendants().OfType<ScrollBar>()
+					.First((ScrollBar b) => b.Orientation == Orientation.Horizontal);
+
+				// 竖直滚动条：上下箭头的 X 中心必须与 Thumb 的 X 中心一致。
+				RepeatButton vUp = vBar.GetVisualDescendants().OfType<RepeatButton>()
+					.First((RepeatButton b) => b.Name == "PART_LineUpButton");
+				global::Avalonia.Controls.Shapes.Path vArrow = vUp.GetVisualDescendants()
+					.OfType<global::Avalonia.Controls.Shapes.Path>().First();
+				Thumb vThumb = vBar.GetVisualDescendants().OfType<Thumb>().First();
+				Border vThumbRect = vThumb.GetVisualDescendants().OfType<Border>()
+					.First((Border b) => b.Name == "rectangle");
+				Point vArrowCenter = vArrow.TranslatePoint(vArrow.Data!.Bounds.Center, vBar) ?? default(Point);
+				Point vThumbCenter = vThumbRect.TranslatePoint(vThumbRect.Bounds.Center, vBar) ?? default(Point);
+
+				// 水平滚动条：左右箭头的 Y 中心必须与 Thumb 的 Y 中心一致。
+				RepeatButton hLeft = hBar.GetVisualDescendants().OfType<RepeatButton>()
+					.First((RepeatButton b) => b.Name == "PART_LineUpButton");
+				global::Avalonia.Controls.Shapes.Path hArrow = hLeft.GetVisualDescendants()
+					.OfType<global::Avalonia.Controls.Shapes.Path>().First();
+				Thumb hThumb = hBar.GetVisualDescendants().OfType<Thumb>().First();
+				Border hThumbRect = hThumb.GetVisualDescendants().OfType<Border>()
+					.First((Border b) => b.Name == "rectangle");
+				Point hArrowCenter = hArrow.TranslatePoint(hArrow.Data!.Bounds.Center, hBar) ?? default(Point);
+				Point hThumbCenter = hThumbRect.TranslatePoint(hThumbRect.Bounds.Center, hBar) ?? default(Point);
+
+				string result = "vArrowX=" + vArrowCenter.X.ToString("F2") + ", vThumbX=" + vThumbCenter.X.ToString("F2")
+					+ ", hArrowY=" + hArrowCenter.Y.ToString("F2") + ", hThumbY=" + hThumbCenter.Y.ToString("F2");
+
+				window.Close();
+				Assert.True(Math.Abs(vArrowCenter.X - vThumbCenter.X) < 0.51,
+					"竖直滚动条箭头与滑块横向错位：" + result);
+				Assert.True(Math.Abs(hArrowCenter.Y - hThumbCenter.Y) < 0.51,
+					"水平滚动条箭头与滑块纵向错位：" + result);
+				return result;
+			}).GetAwaiter().GetResult();
+			System.IO.File.WriteAllText("/tmp/scrollbar_arrow_align.txt", report);
+		}
 	}
 }
