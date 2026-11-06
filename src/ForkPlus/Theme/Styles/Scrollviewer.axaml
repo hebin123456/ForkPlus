@@ -1,9 +1,12 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib">
-  <!-- 修复（2026-11-07，v5.3.2）：竖直箭头几何的 y 原点归一化（全部 y 减 0.5）。
+  <!-- 修复（2026-11-07，v5.3.2/v5.3.3）：竖直箭头几何的 y 原点归一化（全部 y 减 0.5）。
        Avalonia Shape 在 Stretch=None 时 DesiredSize 取几何 bounds 的 Right/Bottom（不是
        Size），原路径 y 紧边界 0.5..8.5 → 期望高度 8.5，超出箭头按钮 8px 内容区，排版后
        箭头在 10px 行里下偏 0.5px。把 y 平移到 0..8 后高度恰为 8px，配合下面的内容居中
-       可与上下箭头按钮内边距严格对称。水平箭头同理做 x 归一化（见 ArrowLeft/Right）。 -->
+       可与上下箭头按钮内边距严格对称。水平箭头同理做 x 归一化（见 ArrowLeft/Right）。
+       另：四个箭头 Path 显式给 Width/Height（竖 9x8 / 横 8x9）——紧几何 bounds 宽度
+       9.0001 在 UseLayoutRounding 下会被向上取整成 10px，ContentPresenter 居中计算的
+       0.5px 又被像素取整吞掉，箭头仍会左/上偏 1px；显式整数尺寸锁定布局宽度为 9px。 -->
   <StreamGeometry x:Key="ArrowTop">M5.551,0.729L8.818,6.291C9.234,7.331 8.956,7.94 7.788,8L4.5,8L1.212,8C0.044,7.94 -0.234,7.331 0.182,6.291L3.449,0.729C3.8,0.259 4.15,0.012 4.5,0L4.5,0C4.85,0.012 5.2,0.258 5.551,0.729Z</StreamGeometry>
   <StreamGeometry x:Key="ArrowBottom">M0.182,1.709L3.449,7.271C3.8,7.742 4.15,7.988 4.5,8L4.5,8C4.85,7.988 5.2,7.742 5.551,7.271L8.818,1.709C9.234,0.669 8.956,0.06 7.788,0L1.212,0C0.044,0.06 -0.234,0.669 0.182,1.709Z</StreamGeometry>
   <StreamGeometry x:Key="ArrowRight">M7.271,3.449L1.709,0.182C0.669,-0.234 0.06,0.044 0,1.212L0,7.788C0.06,8.956 0.669,9.234 1.709,8.818L7.271,5.551C7.742,5.201 7.988,4.85 8,4.5L8,4.5C7.988,4.15 7.742,3.8 7.271,3.449Z</StreamGeometry>
@@ -131,7 +134,7 @@
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
             <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
-              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="9" Height="8" x:Name="ArrowTop" />
             </RepeatButton>
             <Track IsDirectionReversed="true"
                    Grid.Row="1"
@@ -153,7 +156,7 @@
               </Track.Thumb>
             </Track>
             <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
-              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="9" Height="8" x:Name="ArrowBottom" />
             </RepeatButton>
           </Grid>
           
@@ -184,7 +187,7 @@
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
                 <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
                 <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
-                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="8" Height="9" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1"
                        Margin="0,0,0,0"
@@ -205,7 +208,7 @@
                   </Track.Thumb>
                 </Track>
                 <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
-                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="8" Height="9" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
             </ControlTemplate>
@@ -266,7 +269,7 @@
             </Grid.RowDefinitions>
             <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Row="1" />
             <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
-              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowTop" />
+              <Path Data="{DynamicResource ArrowTop}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="9" Height="8" x:Name="ArrowTop" />
             </RepeatButton>
             <Track IsDirectionReversed="true"
                    Grid.Row="1"
@@ -288,7 +291,7 @@
               </Track.Thumb>
             </Track>
             <RepeatButton Grid.Row="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
-              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowBottom" />
+              <Path Data="{DynamicResource ArrowBottom}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="9" Height="8" x:Name="ArrowBottom" />
             </RepeatButton>
           </Grid>
           
@@ -317,7 +320,7 @@
                 <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Grid.Column="1" />
                 <!-- Avalonia uses PART_LineUpButton/PART_LineDownButton for horizontal arrows too. -->
                 <RepeatButton x:Name="PART_LineUpButton" Theme="{DynamicResource ScrollBarButton}">
-                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowLeft" />
+                  <Path Data="{DynamicResource ArrowLeft}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="8" Height="9" x:Name="ArrowLeft" />
                 </RepeatButton>
                 <Track Grid.Column="1"
                        Margin="0,0,0,0"
@@ -338,7 +341,7 @@
                   </Track.Thumb>
                 </Track>
                 <RepeatButton Grid.Column="2" x:Name="PART_LineDownButton" Theme="{DynamicResource ScrollBarButton}">
-                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" x:Name="ArrowRight" />
+                  <Path Data="{DynamicResource ArrowRight}" Fill="{DynamicResource ScrollBar.Static.Glyph}" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="None" Width="8" Height="9" x:Name="ArrowRight" />
                 </RepeatButton>
               </Grid>
             </ControlTemplate>

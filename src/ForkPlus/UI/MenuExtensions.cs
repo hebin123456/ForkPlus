@@ -127,6 +127,20 @@ namespace ForkPlus.UI
 			return menuItem;
 		}
 
+		/// <summary>
+		/// 仅在菜单已有内容、且末尾不是 Separator 时插入分隔符。
+		/// 用于"上一组菜单项可能一个都没加"的构建场景（如未配置外部编辑器时
+		/// OpenFileInExternalEditor 不产生任何项）：直接 Items.Add(new Separator())
+		/// 会在菜单最顶部留下一条多余分隔符。
+		/// </summary>
+		public static void AddSeparatorIfNeeded(this MenuBase menu)
+		{
+			if (menu.Items.Count > 0 && menu.Items[menu.Items.Count - 1] is not Separator)
+			{
+				menu.Items.Add(new Separator());
+			}
+		}
+
 		public static MenuItem AddMenuItemFormat(this MenuBase menu, string header, object[] args, [Null] EventHandler<RoutedEventArgs> clickHandler = null, [Null] Image icon = null, [Null] KeyGesture keyGesture = null, bool isEnabled = true)
 		{
 			MenuItem menuItem = AddMenuItem(menu, header, clickHandler, icon, keyGesture, isEnabled);

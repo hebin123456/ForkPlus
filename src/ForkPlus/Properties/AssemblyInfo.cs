@@ -15,6 +15,16 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-07，v5.3.3）：修复 FileDiff/文本内容右键菜单在「选中行的历史」上方
+//   多出一条分隔符——OpenFileInExternalEditor.AddMenuItems 在未配置外部编辑器（或取不到
+//   鼠标下行号）时不产生任何项，而菜单构建随后无条件 Items.Add(new Separator())，分隔符
+//   因此成为菜单首项。新增 MenuExtensions.AddSeparatorIfNeeded（仅当菜单已有内容且末尾
+//   不是 Separator 时插入），替换 FileDiffControl / CommitFileDiffControl /
+//   FileContentControl 四处同模式构建。
+//   同版 CI 修复：滚动条箭头 Path 显式 Width/Height（竖 9x8 / 横 8x9）——紧几何宽
+//   9.0001px 在 UseLayoutRounding 下被向上取整到 10px，ContentPresenter 居中偏移被
+//   像素取整吞掉、箭头仍偏 1px；箭头对齐回归测试改用 Thumb Border 局部中心；图像播放
+//   条单测在手动逐帧前暂停并归零，消除 40ms 定时器在点击序列间推进帧导致的偶发红灯。
 // 版本号说明（2026-11-07，v5.3.2）：修复滚动条箭头与滑块 1px 错位——ScrollBarButton 模板的
 //   ContentPresenter 未设置内容的 Horizontal/VerticalContentAlignment（Avalonia 默认 Stretch，
 //   Path 被排列到整个 11px 内容区、自身 Center 对齐不生效，几何按原点绘制落在左上角），
@@ -217,8 +227,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.3.2")]
-[assembly: AssemblyInformationalVersion("5.3.2")]
+[assembly: AssemblyFileVersion("5.3.3")]
+[assembly: AssemblyInformationalVersion("5.3.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.3.2.0")]
+[assembly: AssemblyVersion("5.3.3.0")]

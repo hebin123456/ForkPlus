@@ -2,6 +2,21 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.3.3
+
+> 修复 FileDiff / 文件内容右键菜单中「选中行的历史」上方多出的分隔符。应用版本号升至 5.3.3。
+
+### 修复
+
+- **右键菜单多余分隔符**（[MenuExtensions.cs](src/ForkPlus/UI/MenuExtensions.cs)）：
+  - 场景：FileDiff 区域选中几行 → 右键 →「History for Selected Lines」上方在没有其他菜单项时仍显示一条分隔符。
+  - 根因：菜单构建先调用 `OpenFileInExternalEditor.AddMenuItems`，再无条件 `Items.Add(new Separator())`；未配置外部编辑器（或鼠标位置取不到行号）时前者一项都不加，分隔符成了菜单首项。
+  - 修复：新增 `AddSeparatorIfNeeded()`（仅当菜单已有内容且末尾不是分隔符时才插入），替换 FileDiffControl、CommitFileDiffControl、FileContentControl 四处同模式构建。
+- **CI 回归修复**：
+  - 滚动条箭头 Path 增加显式整数尺寸（竖直 9×8 / 水平 8×9）：紧几何宽度 9.0001px 在 `UseLayoutRounding` 下被向上取整到 10px，ContentPresenter 居中偏移被像素取整吞掉，箭头仍偏 1px；整数尺寸锁定布局宽度后箭头与 Thumb 严格对齐。
+  - `ScrollBarArrows_AlignWithThumbCrossAxis` 改为用 Thumb Border 的局部中心采样（`Bounds.Center` 是相对父容器坐标，会把 Border 自身的 2px Margin 重复计入）。
+  - `ImageAnimationTests.PlaybackBar_ButtonsDrivePlayer` 在手动逐帧断言前暂停并归零，消除 40ms 帧定时器在点击序列间真实推进帧、导致 Next 回绕到 0 的偶发红灯。
+
 ## v5.3.2
 
 > 修复滚动条箭头与滑块的 1 像素错位：竖直滚动条上下箭头、水平滚动条左右箭头现在与 Thumb 严格居中对齐。应用版本号升至 5.3.2。

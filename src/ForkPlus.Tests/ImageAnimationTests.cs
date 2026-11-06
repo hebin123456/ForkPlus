@@ -184,6 +184,16 @@ namespace ForkPlus.Tests
 							UiClick.Click(bar.PlayPauseButton);
 							Assert.False(player.IsPlaying);
 
+							// CI 稳定性：Play 段落的 40ms 帧定时器可能在两次点击之间真实推进一帧，
+							// 此时再点 Next 会回绕到 0（断言 Expected 1 / Actual 0 的偶发红灯）。
+							// 暂停已在上一步完成，这里把帧号归零后再验证手动逐帧按钮。
+							player.Pause();
+							for (int guard = player.FrameCount + 1; guard > 0 && player.CurrentFrame != 0; guard--)
+							{
+								player.StepBackward();
+							}
+							Assert.Equal(0, player.CurrentFrame);
+
 							UiClick.Click(bar.NextFrameButton);
 							Assert.Equal(1, player.CurrentFrame);
 							UiClick.Click(bar.PrevFrameButton);

@@ -188,7 +188,7 @@ namespace ForkPlus.UI.Controls
 					{
 						contextMenu.Items.Clear();
 						Commands.OpenFileInExternalEditor.AddMenuItems(RepositoryUserControl, textContentControl, contextMenu, textContent.Path);
-						contextMenu.Items.Add(new Separator());
+						contextMenu.AddSeparatorIfNeeded();
 						Commands.HunkHistory.AddMenuItems(RepositoryUserControl, c, textContent.Path, contextMenu);
 						contextMenu.Items.Add(new Separator());
 						Commands.Copy.AddMenuItems(textContentControl, contextMenu);

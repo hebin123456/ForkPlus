@@ -302,7 +302,7 @@ namespace ForkPlus.UI.Controls
 							ContextMenu contextMenu = diffCodeEditor.ContextMenu;
 							contextMenu.Items.Clear();
 							Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor, contextMenu, changedFile.Path);
-							contextMenu.Items.Add(new Separator());
+							contextMenu.AddSeparatorIfNeeded();
 							Commands.HunkHistory.AddMenuItems(repositoryUserControl, diffCodeEditor, changedFile.Path, contextMenu);
 							contextMenu.Items.Add(new Separator());
 							Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
@@ -657,7 +657,7 @@ namespace ForkPlus.UI.Controls
 						{
 							contextMenu.Items.Clear();
 							FileContentControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, textContentControl, contextMenu, textContent.Path);
-							contextMenu.Items.Add(new Separator());
+							contextMenu.AddSeparatorIfNeeded();
 							FileContentControl.Commands.Copy.AddMenuItems(textContentControl, contextMenu);
 						}
 					});

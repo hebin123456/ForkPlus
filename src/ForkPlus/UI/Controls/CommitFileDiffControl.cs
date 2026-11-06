@@ -197,7 +197,7 @@ namespace ForkPlus.UI.Controls
 						ContextMenu contextMenu2 = diffCodeEditor2.ContextMenu;
 					contextMenu2.Items.Clear();
 					FileDiffControl.Commands.OpenFileInExternalEditor.AddMenuItems(repositoryUserControl, diffCodeEditor2, contextMenu2, changedFile.Path);
-						contextMenu2.Items.Add(new Separator());
+						contextMenu2.AddSeparatorIfNeeded();
 						FileDiffControl.Commands.HunkHistory.AddMenuItems(repositoryUserControl, diffCodeEditor2, changedFile.Path, contextMenu2);
 						contextMenu2.Items.Add(new Separator());
 						FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor2, contextMenu2);

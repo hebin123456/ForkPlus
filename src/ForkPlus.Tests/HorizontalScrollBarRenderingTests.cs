@@ -146,7 +146,9 @@ namespace ForkPlus.Tests
 				Border vThumbRect = vThumb.GetVisualDescendants().OfType<Border>()
 					.First((Border b) => b.Name == "rectangle");
 				Point vArrowCenter = vArrow.TranslatePoint(vArrow.Data!.Bounds.Center, vBar) ?? default(Point);
-				Point vThumbCenter = vThumbRect.TranslatePoint(vThumbRect.Bounds.Center, vBar) ?? default(Point);
+				// Bounds.Center 是相对父容器的坐标；取 Border 自身局部中心再翻译，否则会把
+				// Border 自身的 Margin 偏移（竖向 2px）重复计入。
+				Point vThumbCenter = vThumbRect.TranslatePoint(new Point(vThumbRect.Bounds.Width / 2, vThumbRect.Bounds.Height / 2), vBar) ?? default(Point);
 
 				// 水平滚动条：左右箭头的 Y 中心必须与 Thumb 的 Y 中心一致。
 				RepeatButton hLeft = hBar.GetVisualDescendants().OfType<RepeatButton>()
@@ -157,7 +159,7 @@ namespace ForkPlus.Tests
 				Border hThumbRect = hThumb.GetVisualDescendants().OfType<Border>()
 					.First((Border b) => b.Name == "rectangle");
 				Point hArrowCenter = hArrow.TranslatePoint(hArrow.Data!.Bounds.Center, hBar) ?? default(Point);
-				Point hThumbCenter = hThumbRect.TranslatePoint(hThumbRect.Bounds.Center, hBar) ?? default(Point);
+				Point hThumbCenter = hThumbRect.TranslatePoint(new Point(hThumbRect.Bounds.Width / 2, hThumbRect.Bounds.Height / 2), hBar) ?? default(Point);
 
 				string result = "vArrowX=" + vArrowCenter.X.ToString("F2") + ", vThumbX=" + vThumbCenter.X.ToString("F2")
 					+ ", hArrowY=" + hArrowCenter.Y.ToString("F2") + ", hThumbY=" + hThumbCenter.Y.ToString("F2");
