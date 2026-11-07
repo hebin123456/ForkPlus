@@ -16,6 +16,8 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using AvaloniaEdit.Rendering;
@@ -56,6 +58,60 @@ namespace ForkPlus.Tests
 				NoNewLineAtEndOfFile.None);
 			var chunk = new Chunk(1, lines.Count, 1, lines.Count, null, new[] { subChunk });
 			return new ForkPlus.Git.Diff.Diff("a.txt", "a.txt", null, null, "111", "222", lines.ToArray(), new[] { chunk }, null, ForkPlus.Git.Diff.Diff.FileType.Text, false);
+		}
+
+		[Fact]
+		public void SideBySide_RepeatedHorizontalOffsetChanges_DoNotGrowExtent()
+		{
+			// 回归（v5.4.1，"横向滚动条按住拖动可以无限往右拉、thumb 越来越小"）：
+			// 两侧视口宽差（左竖滚动条 Hidden / 右侧可见）时，宽侧 extent 会被补上视口差。
+			// 旧实现下一次 Handle 把"已补宽的 extent"当作自然宽度继续累加，拖动每产生一次
+			// offset 变化就把共享宽度再抬 13px，范围无限增大、thumb 持续缩小。
+			HeadlessAppBootstrap.EnsureStarted();
+			Dispatcher.UIThread.InvokeAsync(delegate
+			{
+				var control = new SideBySideTextDiffControl();
+				var window = new Window { Width = 900, Height = 400, Content = control };
+				window.Show();
+				Dispatcher.UIThread.RunJobs();
+				control.SetDiff(MakeAsymmetricWidthDiff(), 4, entireFile: true, DiffLocation.Unstaged);
+				Dispatcher.UIThread.RunJobs();
+				try
+				{
+					DiffCodeEditor left = control.GetVisualDescendants().OfType<DiffCodeEditor>()
+						.First((DiffCodeEditor e) => e.DiffViewMode == DiffViewMode.SideBySideOld);
+					DiffCodeEditor right = control.GetVisualDescendants().OfType<DiffCodeEditor>()
+						.First((DiffCodeEditor e) => e.DiffViewMode == DiffViewMode.SideBySideNew);
+					ScrollViewer leftSv = GetEditorScrollViewer(left);
+					ScrollViewer rightSv = GetEditorScrollViewer(right);
+					double initialExtent = ((IScrollable)right.TextArea.TextView).Extent.Width;
+					double initialLeftExtent = ((IScrollable)left.TextArea.TextView).Extent.Width;
+
+					// 模拟拖动横向滚动条/视口变化引发的 offset-only ScrollInvalidated：
+					// 此时 TextView._scrollExtent 仍是同步器上次写入的"补宽值"（未经过 measure
+					// 重置）。旧实现把补宽值当自然宽度，每次 raise 共享宽 +13px，extent 无限增长。
+					for (int i = 0; i < 30; i++)
+					{
+						((ILogicalScrollable)left.TextArea.TextView).RaiseScrollInvalidated(EventArgs.Empty);
+						Dispatcher.UIThread.RunJobs();
+					}
+					double finalExtent = ((IScrollable)right.TextArea.TextView).Extent.Width;
+					double finalLeftExtent = ((IScrollable)left.TextArea.TextView).Extent.Width;
+					Assert.True(Math.Abs(finalExtent - initialExtent) <= 1.0,
+						"反复触发水平滚动失效事件不应扩大滚动范围：initial=" + initialExtent.ToString("F1")
+						+ " final=" + finalExtent.ToString("F1"));
+					Assert.True(Math.Abs(finalLeftExtent - initialLeftExtent) <= 1.0,
+						"左侧补宽 extent 同样不应增长：initial=" + initialLeftExtent.ToString("F1")
+						+ " final=" + finalLeftExtent.ToString("F1"));
+					Assert.True(Math.Abs(leftSv.Viewport.Width - rightSv.Viewport.Width) > 1.0,
+						"前置：两侧视口宽应不同（竖滚动条占位差），实际 left=" + leftSv.Viewport.Width.ToString("F1")
+						+ " right=" + rightSv.Viewport.Width.ToString("F1"));
+				}
+				finally
+				{
+					window.Close();
+				}
+			}).GetAwaiter().GetResult();
 		}
 
 		private static ScrollViewer GetEditorScrollViewer(DiffCodeEditor editor)

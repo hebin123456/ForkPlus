@@ -79,6 +79,15 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			// 2026-09-15：该侧内容区宽（presenter.Viewport.Width），用于宽视口侧 extent
 			// 补偿（两侧 ScrollBarMaximum 恒等，见 RefreshViewportWidths 注释）。
 			public double ViewportWidth;
+
+			// 2026-11-07（v5.4.1）：上一次 PatchAndForward 写入的"补宽后 extent"。
+			// Handle 若读到的仍是这个值（offset/viewport-only raise，未经 measure 重置），
+			// 必须还原为 NaturalWidth，不能把补偿量当成内容自然宽度继续累加——否则每拖一次
+			// 横向滚动条 extent 就 +13px，范围无限增大、thumb 越来越小。
+			public double LastPatchedWidth = double.NaN;
+
+			// 最近一次由 measure 得到的真实内容宽度（不含视口差补偿）。
+			public double NaturalWidth;
 		}
 
 		private readonly List<Side> _sides = new List<Side>();
@@ -158,6 +167,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		public void Reset()
 		{
 			_sharedWidth = 0.0;
+			foreach (Side side in _sides)
+			{
+				side.LastPatchedWidth = double.NaN;
+				side.NaturalWidth = 0.0;
+			}
 		}
 
 		private void EnsureIntercepted(Side side)
@@ -234,9 +248,20 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			try
 			{
 				double width = GetExtentWidth(side.TextView);
+				// 若读到的正是我们上次写入的补宽值（offset/viewport-only raise，measure 未重置
+				// _scrollExtent），还原成真实内容宽度；只有 measure 刚写入的新自然宽度才参与
+				// 共享宽增长。否则视口差补偿会被当成内容宽度反复累加 → 横向范围无限增长。
+				if (!double.IsNaN(side.LastPatchedWidth) && Math.Abs(width - side.LastPatchedWidth) <= 0.5)
+				{
+					width = side.NaturalWidth;
+				}
+				else
+				{
+					side.NaturalWidth = width;
+				}
 				// 单调扩张：measure 引发的 raise 时字段刚被 SetScrollData 重置为真实值，
 				// 此处读到的即自然宽度；offset/viewport-only raise 时字段仍为补宽值，
-				// max 不变。不随塌缩回缩，滚动条范围稳定（垂直滚动不引发水平跳动）。
+				// 上面已还原为 NaturalWidth。不随塌缩回缩，滚动条范围稳定（垂直滚动不引发水平跳动）。
 				if (width > _sharedWidth)
 				{
 					_sharedWidth = width;
@@ -323,6 +348,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			// ScrollBarMaximum 两侧恒等）；窄视口侧（含两侧等宽时）补偿为 0，行为同前。
 			double targetWidth = _sharedWidth + Math.Max(0.0, side.ViewportWidth - _minViewportWidth);
 			double width = GetExtentWidth(side.TextView);
+			side.LastPatchedWidth = targetWidth;
 			if (Math.Abs(width - targetWidth) > 0.5)
 			{
 				ScrollExtentField.SetValue(side.TextView, ((Size)ScrollExtentField.GetValue(side.TextView)).WithWidth(targetWidth));

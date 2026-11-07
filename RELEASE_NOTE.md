@@ -2,6 +2,18 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.4.1
+
+> 修复 SideBySide 左右 diff 的横向滚动条“按住可无限往右拉、thumb 越来越小”。应用版本号升至 5.4.1。
+
+### 修复
+
+- **横向滚动条范围无限增长**（[SideBySideExtentSynchronizer.cs](src/ForkPlus/UI/Controls/Editor/Diff/SideBySideExtentSynchronizer.cs)）：
+  - 场景：SideBySide 两侧视口宽不同（左侧竖滚动条 Hidden、右侧可见，差约 13px）时，按住横向滚动条 thumb 一直往右拖，滚动范围持续变大、滑块越来越小，可以无限拖动。
+  - 根因：宽视口侧的 extent 会额外补上视口差（13px，用于让两侧 `ScrollBarMaximum` 恒等）。旧实现下一次 `Handle` 把“已补宽的 extent”当作内容自然宽度再次参与共享宽增长；拖动滚动条/视口变化产生的 offset-only `ScrollInvalidated` 不经过 measure 重置，每触发一次共享宽就 +13px，范围无限增大、thumb 随之缩小。
+  - 修复：每侧记录上次写入的补宽值 `LastPatchedWidth` 与真实内容宽 `NaturalWidth`；`Handle` 读到的仍是补宽值时还原为 `NaturalWidth`，只有 measure 写入的新自然宽度才参与共享宽增长。换文件 `Reset()` 一并清零两侧状态。
+  - 回归防线：`SideBySide_RepeatedHorizontalOffsetChanges_DoNotGrowExtent` 连续触发 offset-only `ScrollInvalidated` 30 次，断言两侧 extent 不增长（修复前实测 initial=2066.1 → final=2456.1）。
+
 ## v5.4.0
 
 > FileDiff 行号新增**悬停 blame 浮窗**：悬停行号即可查看本行作者、提交时间与 sha，点击 sha 直达提交轨道图；未提交行、同一行的更早版本与变更历史也一并可视。应用版本号升至 5.4.0。

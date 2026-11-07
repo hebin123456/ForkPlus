@@ -15,6 +15,11 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-07，v5.4.1）：修复 SideBySide 左右 diff 横向滚动条“按住可无限往右拉、
+//   thumb 越来越小”。根因：宽视口侧 extent 会补上视口差（13px），旧实现下次 Handle 把补宽后
+//   的值当成内容自然宽度再次累加，offset/viewport-only ScrollInvalidated（拖滚动条/视口变化）
+//   每触发一次共享宽就 +13px，范围无限增大。修复：记录每侧上次补宽值，Handle 读到该值且未经
+//   measure 重置时还原为 NaturalWidth，只有真实 measure 宽度才参与共享宽增长。
 // 版本号说明（2026-11-07，v5.4.0）：FileDiff 行号新增 blame 悬停浮窗。鼠标悬停行号区
 //   约 400ms 后显示本行作者/相对时间/提交 sha/提交说明，点击 sha 跳转到提交轨道图并选中
 //   该提交；未提交行（工作区未暂存/已暂存新增/未跟踪新文件）显示对应占位卡片；同一行
@@ -234,8 +239,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.4.0")]
-[assembly: AssemblyInformationalVersion("5.4.0")]
+[assembly: AssemblyFileVersion("5.4.1")]
+[assembly: AssemblyInformationalVersion("5.4.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.4.0.0")]
+[assembly: AssemblyVersion("5.4.1.0")]
