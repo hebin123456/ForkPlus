@@ -71,7 +71,10 @@ namespace ForkPlus.Tests
 					Assert.True(popup.HistoryBorder.IsVisible);
 					Assert.False(popup.OtherBorder.IsVisible);
 					Assert.Equal("Test", popup.PrimaryAuthorTextBlock.Text);
-					Assert.Equal(revision.Sha.ToAbbreviatedString(), popup.PrimaryShaButton.Content?.ToString());
+					TextBlock shaText = popup.PrimaryShaButton.Content as TextBlock;
+					Assert.NotNull(shaText);
+					Assert.Equal(revision.Sha.ToAbbreviatedString(), shaText.Text);
+					Assert.NotNull(shaText.TextDecorations);
 					Assert.Equal("subject line", popup.PrimarySubjectTextBlock.Text);
 
 					popup.ShowHistory(new RevisionWithFiles[0]);
@@ -225,6 +228,17 @@ namespace ForkPlus.Tests
 							.GetField("_content", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
 							.GetValue(controller);
 						Assert.NotNull(content);
+						// 模拟鼠标离开行号区：不能立即启动关闭（否则用户来不及把鼠标移到浮窗上）。
+						System.Reflection.MethodInfo onPointerExited = controller.GetType().GetMethod(
+							"OnPointerExited", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+						onPointerExited.Invoke(controller, null);
+						DispatcherTimer closeTimer = (DispatcherTimer)controller.GetType()
+							.GetField("_closeTimer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+							.GetValue(controller);
+						Assert.False(closeTimer.IsEnabled, "离开行号区不应立即启动关闭定时器");
+						Thread.Sleep(600);
+						Dispatcher.UIThread.RunJobs(DispatcherPriority.Background);
+						Assert.True(popup.IsOpen, "鼠标离开行号区后浮窗不应立即消失");
 
 						for (int i = 0; i < 20 && content.BusyPanel.IsVisible; i++)
 						{

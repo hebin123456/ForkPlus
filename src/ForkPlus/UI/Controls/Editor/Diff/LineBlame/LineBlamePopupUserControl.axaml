@@ -29,7 +29,7 @@
               <TextBlock FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" x:Name="PrimaryAuthorTextBlock" />
               <TextBlock FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="PrimaryDateTextBlock" />
             </StackPanel>
-            <Button Grid.Column="2" FontSize="12" Height="20" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="PrimaryShaButton_Click" x:Name="PrimaryShaButton" />
+            <HyperlinkButton Grid.Column="2" FontSize="12" Height="20" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Cursor="Hand" Foreground="{DynamicResource CodeEditorLinkForeground}" Theme="{DynamicResource BlueHyperlinkStyle}" Click="PrimaryShaButton_Click" x:Name="PrimaryShaButton" />
             <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="PrimarySubjectTextBlock" />
           </Grid>
           <Border IsVisible="False" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Padding="0,6,0,0" x:Name="OtherBorder">
@@ -41,7 +41,7 @@
                   <TextBlock FontSize="12" TextTrimming="CharacterEllipsis" x:Name="OtherAuthorTextBlock" />
                   <TextBlock FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="OtherDateTextBlock" />
                 </StackPanel>
-                <Button Grid.Column="2" FontSize="12" Height="18" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="OtherShaButton_Click" x:Name="OtherShaButton" />
+                <HyperlinkButton Grid.Column="2" FontSize="12" Height="18" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Cursor="Hand" Foreground="{DynamicResource CodeEditorLinkForeground}" Theme="{DynamicResource BlueHyperlinkStyle}" Click="OtherShaButton_Click" x:Name="OtherShaButton" />
                 <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="OtherSubjectTextBlock" />
               </Grid>
             </StackPanel>

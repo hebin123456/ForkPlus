@@ -152,7 +152,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			}
 		}
 
-		private void BindRevisionCard(Revision revision, AvatarImage avatar, TextBlock authorTextBlock, TextBlock dateTextBlock, Button shaButton, TextBlock subjectTextBlock)
+		private void BindRevisionCard(Revision revision, AvatarImage avatar, TextBlock authorTextBlock, TextBlock dateTextBlock, HyperlinkButton shaButton, TextBlock subjectTextBlock)
 		{
 			if (revision == null)
 			{
@@ -166,7 +166,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			authorTextBlock.Text = revision.Author?.Name ?? string.Empty;
 			dateTextBlock.Text = DateTimeHelper.ToRelativeString(revision.AuthorDate);
 			ToolTip.SetTip(dateTextBlock, revision.AuthorDate.ToString("yyyy-MM-dd HH:mm:ss"));
-			shaButton.Content = revision.Sha.ToAbbreviatedString();
+			shaButton.Content = new TextBlock
+			{
+				Text = revision.Sha.ToAbbreviatedString(),
+				TextDecorations = TextDecorations.Underline
+			};
 			ToolTip.SetTip(shaButton, Current("Navigate to") + " '" + revision.Sha.ToAbbreviatedString() + "'");
 			subjectTextBlock.Text = revision.Message ?? string.Empty;
 			ToolTip.SetTip(subjectTextBlock, revision.Message);
@@ -193,7 +197,8 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 				Text = revision.Sha.ToAbbreviatedString(),
 				FontSize = 11,
 				FontFamily = new FontFamily("Consolas, Courier New, monospace"),
-				Foreground = GrayBrush,
+				Foreground = LinkBrush,
+				TextDecorations = TextDecorations.Underline,
 				VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center
 			};
 			TextBlock subjectText = new TextBlock
@@ -269,6 +274,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			get
 			{
 				return Application.Current?.TryFindResource("ForegroundBrush.Gray") as IBrush ?? Brushes.Gray;
+			}
+		}
+
+		private static IBrush LinkBrush
+		{
+			get
+			{
+				return Application.Current?.TryFindResource("CodeEditorLinkForeground") as IBrush ?? Brushes.DodgerBlue;
 			}
 		}
 
