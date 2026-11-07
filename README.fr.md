@@ -13,7 +13,7 @@ Un client Git multiplateforme : la couche UI est construite en .NET 10 + Avaloni
 
 ## Fonctionnalités principales
 
-- **Multiplateforme** : couche UI multiplateforme basée sur Avalonia 12 ; la CI produit en parallèle des builds Windows x64 / Linux x64 / Linux ARM64 / macOS arm64, publiés en mode autonome (self-contained, aucune installation du runtime .NET nécessaire)
+- **Multiplateforme** : couche UI multiplateforme basée sur Avalonia 12 ; la CI produit en parallèle des builds Windows x64 / Windows ARM64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64, publiés en mode autonome (self-contained, aucune installation du runtime .NET nécessaire)
 - **Prise en charge multilingue** : 8 langues intégrées (anglais, chinois simplifié, chinois traditionnel, japonais, coréen, français, allemand, espagnol), extensibles via des fichiers JSON
 - **Thèmes multiples** : 22 habillages intégrés (Light/Dark, Solarized, GitHub, Dracula, Monokai, ainsi que rouge/orange/jaune/vert/cyan/bleu/violet — chacun en version claire et sombre) plus surcharges de couleurs personnalisées appliquées instantanément
 - **Flux de travail git mm** : sous-commande `git mm` intégrée fournissant des flux de travail Lean Branching pour gérer et synchroniser les changements de plusieurs sous-dépôts
@@ -121,14 +121,16 @@ La bibliothèque de graphiques [OxyPlot.Avalonia](https://github.com/oxyplot/oxy
 
 ### Intégration continue
 
-Le projet est configuré avec GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)) : au push d'un tag `v*` ou déclenchement manuel, il compile en parallèle sur quatre plateformes, téléverse les artefacts et exécute la suite complète de tests unitaires + E2E sur un runner Linux ; une fois tout passé, il publie automatiquement une Release (zip des quatre plateformes en pièces jointes) :
+Le projet est configuré avec GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)) : au push d'un tag `v*` ou déclenchement manuel, il compile en parallèle sur six plateformes, téléverse les artefacts et exécute la suite complète de tests unitaires + E2E sur un runner Linux ; une fois tout passé, il publie automatiquement une Release (zip des six plateformes en pièces jointes) :
 
 | Matrice | Runner | RID |
 |--------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
+| windows-arm64 | windows-11-arm (runner ARM64 natif, gratuit pour les dépôts publics) | win-arm64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
 | linux-arm64 | ubuntu-22.04-arm (runner ARM64 natif, gratuit pour les dépôts publics) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
+| macos-x64 | macos-latest (cross-publish sur Apple Silicon) | osx-x64 |
 
 Les artefacts sont des publications **autonomes (self-contained)** (le runtime .NET 10 est intégré ; rien à installer sur le poste cible) et contiennent l'application principale, les assistants AskPass/RI (eux aussi autonomes, afin que les flux de credentials git et de rebase interactif fonctionnent sans runtime), la bibliothèque native biturbo de la plateforme, tokei et les fichiers de langue (~125 Mo pour linux-x64). Les zip des versions publiées sont sur la [page Releases](https://github.com/hebin123456/ForkPlus/releases) ; les artefacts des builds manuels (sans tag) se téléchargent depuis l'exécution correspondante sur la page [Actions](https://github.com/hebin123456/ForkPlus/actions) (Artifacts, conservés 14 jours).
 
@@ -182,7 +184,7 @@ La base de code utilise les API suivantes pour l'internationalisation :
 ## Téléchargement
 
 - Artefacts de build CI (exécutions manuelles sans tag) : page [Actions](https://github.com/hebin123456/ForkPlus/actions) → l'exécution build correspondante → Artifacts (autonomes, runtime .NET 10 intégré, rien à installer)
-- Versions officielles : [page Releases](https://github.com/hebin123456/ForkPlus/releases) (autonomes, runtime .NET 10 intégré, rien à installer, zip des quatre plateformes)
+- Versions officielles : [page Releases](https://github.com/hebin123456/ForkPlus/releases) (autonomes, runtime .NET 10 intégré, rien à installer, zip des six plateformes)
 - Pour les modifications de chaque version, consultez les [Release Notes](RELEASE_NOTE.md) (y compris l'historique de l'édition WPF)
 
 ## Clients Git / Git-AI

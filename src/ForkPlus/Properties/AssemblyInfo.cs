@@ -15,6 +15,11 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-07，v5.4.2）：无功能变更，新增 Windows ARM64（win-arm64）发布平台。
+//   CI 增加 windows-11-arm 原生 ARM64 runner 腿（self-contained publish，PlatformTarget=arm64），
+//   发布资产 ForkPlus-<版本>-windows-arm64.zip；biturbo 拉取 Biturbo v1.1.5 起的
+//   biturbo-arm64.dll（落地为 biturbo.dll），tokei 拉取 v14.0.2 起的
+//   tokei-aarch64-pc-windows-msvc.exe；更新检查按 windows-arm64 自动匹配资产，零代码改动。
 // 版本号说明（2026-11-07，v5.4.1）：修复 SideBySide 左右 diff 横向滚动条“按住可无限往右拉、
 //   thumb 越来越小”。根因：宽视口侧 extent 会补上视口差（13px），旧实现下次 Handle 把补宽后
 //   的值当成内容自然宽度再次累加，offset/viewport-only ScrollInvalidated（拖滚动条/视口变化）
@@ -239,8 +244,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.4.1")]
-[assembly: AssemblyInformationalVersion("5.4.1")]
+[assembly: AssemblyFileVersion("5.4.2")]
+[assembly: AssemblyInformationalVersion("5.4.2")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.4.1.0")]
+[assembly: AssemblyVersion("5.4.2.0")]

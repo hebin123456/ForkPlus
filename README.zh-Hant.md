@@ -13,7 +13,7 @@
 
 ## 主要特性
 
-- **跨平台**：基於 Avalonia 12 的跨平台 UI 層，CI 同時產出 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64 五平台建置，產物為自包含（self-contained）發布，無需安裝 .NET 執行時
+- **跨平台**：基於 Avalonia 12 的跨平台 UI 層，CI 同時產出 Windows x64 / Windows ARM64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64 六平台建置，產物為自包含（self-contained）發布，無需安裝 .NET 執行時
 - **多語言支援**：內建英語、簡體中文、繁體中文、日本語、한국어、Français、Deutsch、Español 8 種語言，並支援透過 JSON 檔案擴充更多語言
 - **多主題皮膚**：內建 22 套預設皮膚（Light/Dark、Solarized、GitHub、Dracula、Monokai，以及紅/橙/黃/綠/青/藍/紫各含淺色與深色兩套），並支援使用者自訂顏色覆蓋，即時生效
 - **git mm 工作流**：內建 `git mm` 子命令，提供精益分支（Lean Branching）工作流，統一管理多子倉的變更與同步
@@ -119,11 +119,12 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 
 ### 持續整合
 
-專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 標籤或手動觸發時，在五平台並行建置並上傳產物，同時在 Linux runner 上執行全量單元與 E2E 測試，全部通過後自動發布 Release（五平台 zip 附件）：
+專案配置了 GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）：推送 `v*` 標籤或手動觸發時，在六平台並行建置並上傳產物，同時在 Linux runner 上執行全量單元與 E2E 測試，全部通過後自動發布 Release（六平台 zip 附件）：
 
 | 矩陣 | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
+| windows-arm64 | windows-11-arm（原生 ARM64 runner，公開倉庫免費，v5.4.2 起） | win-arm64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
 | linux-arm64 | ubuntu-22.04-arm（原生 ARM64 runner，公開倉庫免費） | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
@@ -181,7 +182,7 @@ biturbo native 三方件（Rust）提供倉庫樹圖佈局、提交圖快取、r
 ## 下載
 
 - CI 建置產物（未打標籤的手動執行）：[Actions](https://github.com/hebin123456/ForkPlus/actions) 頁面 → 對應 build 執行 → Artifacts（自包含式，自帶 .NET 10 執行時，無需安裝任何框架）
-- 正式發布版本：[Releases 頁面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自帶 .NET 10 執行時，無需安裝任何框架，五平台 zip）
+- 正式發布版本：[Releases 頁面](https://github.com/hebin123456/ForkPlus/releases)（自包含式，自帶 .NET 10 執行時，無需安裝任何框架，六平台 zip）
 - 各版本變更詳情請查閱 [Release Notes](RELEASE_NOTE.md)（含原 WPF 版歷史）
 
 ## Git / Git-AI 用戶端

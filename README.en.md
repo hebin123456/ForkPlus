@@ -13,7 +13,7 @@ A cross-platform Git client: the UI layer is built on .NET 10 + Avalonia 12, and
 
 ## Key Features
 
-- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 builds in parallel, published self-contained (no .NET runtime installation needed)
+- **Cross-platform**: Avalonia 12 based cross-platform UI layer; CI produces Windows x64 / Windows ARM64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64 builds in parallel, published self-contained (no .NET runtime installation needed)
 - **Multi-language support**: Built-in English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, extensible with more languages via JSON files
 - **Multiple themes**: 22 built-in preset skins (Light/Dark, Solarized, GitHub, Dracula, Monokai, and red/orange/yellow/green/cyan/blue/purple each with both a light and a dark variant) plus user-customizable color overrides applied instantly
 - **git mm workflow**: Bundled `git mm` subcommand providing Lean Branching workflows that manage changes and sync across multiple sub-repositories
@@ -120,14 +120,16 @@ The charting library [OxyPlot.Avalonia](https://github.com/oxyplot/oxyplot-avalo
 
 ### Continuous Integration
 
-The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on pushing a `v*` tag or manual dispatch, it builds in parallel on four platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner; once everything passes, it automatically publishes a Release (four-platform zip attachments):
+The project is configured with GitHub Actions ([`.github/workflows/build.yml`](.github/workflows/build.yml)): on pushing a `v*` tag or manual dispatch, it builds in parallel on six platforms, uploads the artifacts, and runs the full unit + E2E test suite on a Linux runner; once everything passes, it automatically publishes a Release (six-platform zip attachments):
 
 | Matrix | Runner | RID |
 |--------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
+| windows-arm64 | windows-11-arm (native ARM64 runner, free for public repos) | win-arm64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
 | linux-arm64 | ubuntu-22.04-arm (native ARM64 runner, free for public repos) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
+| macos-x64 | macos-latest (cross-publish on Apple Silicon) | osx-x64 |
 
 The artifacts are **self-contained publishes** (bundling the .NET 10 runtime; nothing needs to be installed on the target machine), containing the main app, the AskPass/RI helpers (also self-contained, so the git credential and interactive-rebase flows work without a runtime), the platform's biturbo native library, tokei, and language files (~125MB for linux-x64). The zip attachments of released versions are on the [Releases page](https://github.com/hebin123456/ForkPlus/releases); artifacts of manual (untagged) builds can be downloaded from the corresponding run on the [Actions](https://github.com/hebin123456/ForkPlus/actions) page (Artifacts, retained for 14 days).
 

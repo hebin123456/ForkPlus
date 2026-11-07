@@ -1,4 +1,4 @@
-# ForkPlus 四平台自动构建与发布
+# ForkPlus 六平台自动构建与发布
 #
 # 触发：push v* 标签 / 手动（workflow_dispatch，仅构建+测试不发 Release）
 # 产物：self-contained publish 目录（自带 .NET 10 运行时，目标机无需安装任何框架）。
@@ -7,21 +7,24 @@
 #       交互式变基直接挂；AutoUpdater 是 v4.1.0 起的自动更新子进程，漏掉则更新回退
 #       浏览器打开）。含各平台 biturbo native 库（构建期由 workflow 显式 curl +
 #       ForkPlus.csproj 的 RestoreBiturbo Target 兜底，从 hebin123456/Biturbo latest release 拉取：
-#       win→biturbo.dll / linux→libbiturbo.so（arm64 资产名为 libbiturbo-arm64.so）
-#       / macos→libbiturbo.dylib）+ tokei 代码统计工具
-#       （hebin123456/tokei latest release：win→tokei.exe / unix→tokei，Linux/macOS 为 tar.gz 需解压，
+#       win→biturbo.dll（arm64 资产名为 biturbo-arm64.dll）/ linux→libbiturbo.so
+#       （arm64 资产名为 libbiturbo-arm64.so）/ macos→libbiturbo.dylib）+ tokei 代码统计工具
+#       （hebin123456/tokei latest release：win→tokei.exe（arm64 用 aarch64-pc-windows-msvc 资产）
+#       / unix→tokei，Linux/macOS 为 tar.gz 需解压，
 #       linux-arm64 用 tokei-aarch64-unknown-linux-gnu.tar.gz）+
 #       OxyPlot.Avalonia 图表库 nupkg（hebin123456/oxyplot-avalonia fork latest release，
 #       下载到 third_party/nuget/ 本地 NuGet 源，经 nuget.config + PackageReference 恢复）。
 #       linux-x64 自包含实测约 125M。
 #
-# 发布链：build（四平台矩阵）+ test（ubuntu 五分片并行矩阵）全绿 → release job 下载
-#       四平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
+# 发布链：build（六平台矩阵）+ test（ubuntu 五分片并行矩阵）全绿 → release job 下载
+#       六平台 artifact、各自打 zip（ForkPlus-<version>-<platform>.zip）、从 RELEASE_NOTE.md
 #       提取当前版本章节作为正文，softprops/action-gh-release 发布（generate_release_notes
 #       追加自动变更清单与 Full Changelog 对比链接）。未打 tag 的手动运行只出 Artifacts。
 #
 # 平台对应关系（与 Biturbo release 资产架构一致）：
 #   windows-latest   → x64（biturbo.dll = x86_64）
+#   windows-11-arm   → arm64（biturbo-arm64.dll = aarch64，原生 Windows ARM64 runner，
+#                      公开仓库免费；v5.4.2 起）
 #   ubuntu-latest    → x64（libbiturbo.so = x86_64）
 #   ubuntu-22.04-arm → arm64（libbiturbo-arm64.so = aarch64，GitHub 原生 ARM64 runner，
 #                      公开仓库免费；glibc 2.35 与 linux-x64 基线一致）
@@ -74,6 +77,14 @@ jobs:
             name: windows-x64
             rid: win-x64
             platformtarget: x64
+          # Windows ARM64（v5.4.2 起）：GitHub 原生 Windows ARM64 runner（公开仓库免费），
+          # 原生 dotnet publish。Biturbo v1.1.5 起的裸资产名 biturbo-arm64.dll（落地为
+          # 运行时库名 biturbo.dll），tokei v14.0.2 起有 tokei-aarch64-pc-windows-msvc.exe；
+          # SkiaSharp / HarfBuzzSharp / Avalonia ANGLE 的 NuGet 包均自带 win-arm64 native。
+          - os: windows-11-arm
+            name: windows-arm64
+            rid: win-arm64
+            platformtarget: arm64
           - os: ubuntu-latest
             name: linux-x64
             rid: linux-x64
@@ -152,12 +163,14 @@ jobs:
           mkdir -p third_party
           base="https://github.com/hebin123456/Biturbo/releases/latest/download"
           case "${{ matrix.name }}" in
-            windows-x64) asset=biturbo.dll;         out=biturbo.dll ;;
-            linux-x64)   asset=libbiturbo.so;       out=libbiturbo.so ;;
-            linux-arm64) asset=libbiturbo-arm64.so; out=libbiturbo.so ;;
-            macos-arm64) asset=libbiturbo.dylib;    out=libbiturbo.dylib ;;
+            windows-x64)   asset=biturbo.dll;          out=biturbo.dll ;;
+            # Windows ARM64：Biturbo v1.1.5 起的裸资产名，落地为运行时库名 biturbo.dll
+            windows-arm64) asset=biturbo-arm64.dll;    out=biturbo.dll ;;
+            linux-x64)     asset=libbiturbo.so;        out=libbiturbo.so ;;
+            linux-arm64)   asset=libbiturbo-arm64.so;  out=libbiturbo.so ;;
+            macos-arm64)   asset=libbiturbo.dylib;     out=libbiturbo.dylib ;;
             # macOS x64：Biturbo v1.1.4 起的裸资产名，落地为运行时库名 libbiturbo.dylib
-            macos-x64)   asset=libbiturbo-x64.dylib; out=libbiturbo.dylib ;;
+            macos-x64)     asset=libbiturbo-x64.dylib; out=libbiturbo.dylib ;;
           esac
           echo "Downloading $asset -> third_party/$out ..."
           ok=0
@@ -173,8 +186,10 @@ jobs:
           [ "$size" -gt 1000000 ] || { echo "downloaded file too small: $size bytes"; exit 1; }
 
       # tokei 与 biturbo 同模式显式下载（不走 csproj 的 RestoreTokei Exec，
-      # 规避 macOS runner 上 MSBuild Exec 行为差异）。五平台资产：
-      #   windows → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
+      # 规避 macOS runner 上 MSBuild Exec 行为差异）。六平台资产：
+      #   windows-x64 → tokei-x86_64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe）
+      #   windows-arm64 → tokei-aarch64-pc-windows-msvc.exe（裸 exe，存为 tokei.exe；
+      #             tokei v14.0.2 起提供）
       #   linux-x64 → tokei-x86_64-unknown-linux-gnu.tar.gz（tar 内是裸 tokei，解压存为 tokei）
       #   linux-arm64 → tokei-aarch64-unknown-linux-gnu.tar.gz（同上，aarch64 资产）
       #   macos-arm64 / macos-x64 → tokei-x86_64-apple-darwin.tar.gz（同上；release 暂无
@@ -187,6 +202,7 @@ jobs:
           base="https://github.com/hebin123456/tokei/releases/latest/download"
           case "${{ matrix.name }}" in
             windows-x64) asset="tokei-x86_64-pc-windows-msvc.exe"; out="third_party/tokei.exe"; bare=1 ;;
+            windows-arm64) asset="tokei-aarch64-pc-windows-msvc.exe"; out="third_party/tokei.exe"; bare=1 ;;
             linux-x64)   asset="tokei-x86_64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
             linux-arm64) asset="tokei-aarch64-unknown-linux-gnu.tar.gz"; out="third_party/tokei"; bare=0 ;;
             macos-arm64) asset="tokei-x86_64-apple-darwin.tar.gz"; out="third_party/tokei"; bare=0 ;;
@@ -255,7 +271,7 @@ jobs:
         run: |
           cd "publish/${{ matrix.rid }}"
           # Windows 的 apphost 带 .exe 扩展名，Unix 是无扩展名可执行文件
-          if [ "${{ matrix.name }}" = "windows-x64" ]; then ext=".exe"; else ext=""; fi
+          if [ "${{ matrix.name }}" = "windows-x64" ] || [ "${{ matrix.name }}" = "windows-arm64" ]; then ext=".exe"; else ext=""; fi
           missing=0
           # 内置对比视图插件必须随包分发（宿主启动期从可执行文件旁 plugins/<程序集名>/ 加载）：
           # v5.0.3 曾因 ForkPlus.csproj 的插件拷贝目标只按 RID 子目录找源文件（类库产物
@@ -273,11 +289,12 @@ jobs:
             [ -f "$f" ] || { echo "MISSING: $f"; missing=1; }
           done
           case "${{ matrix.name }}" in
-            windows-x64) native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
-            linux-x64)   native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
-            linux-arm64) native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
-            macos-arm64) native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
-            macos-x64)   native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
+            windows-x64)   native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
+            windows-arm64) native=biturbo.dll; tokei_file=tokei.exe; clr=coreclr.dll; policy=hostpolicy.dll ;;
+            linux-x64)     native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
+            linux-arm64)   native=libbiturbo.so; tokei_file=tokei; clr=libcoreclr.so; policy=libhostpolicy.so ;;
+            macos-arm64)   native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
+            macos-x64)     native=libbiturbo.dylib; tokei_file=tokei; clr=libcoreclr.dylib; policy=libhostpolicy.dylib ;;
           esac
           [ -f "$native" ] || { echo "MISSING native: $native"; missing=1; }
           [ -f "$tokei_file" ] || { echo "MISSING tokei: $tokei_file"; missing=1; }
@@ -644,7 +661,7 @@ jobs:
           if-no-files-found: error
 
   # ── 发布（仅 tag 触发；手动 workflow_dispatch 只跑 build+test 不发 Release）──
-  # build + test 全绿后：下载四平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
+  # build + test 全绿后：下载六平台 artifact → 各自打 zip（ForkPlus-<tag>-<platform>.zip，
   # 内层无嵌套）→ 从 RELEASE_NOTE.md 提取当前版本章节作为正文 → 发布 Release。
   # generate_release_notes 会自动追加 PR 变更清单与 "Full Changelog" 对比链接。
   release:
@@ -670,7 +687,7 @@ jobs:
           set -e
           tag="${GITHUB_REF_NAME#v}"
           cd artifacts
-          for name in ForkPlus-windows-x64 ForkPlus-linux-x64 ForkPlus-linux-arm64 ForkPlus-macos-arm64 ForkPlus-macos-x64; do
+          for name in ForkPlus-windows-x64 ForkPlus-windows-arm64 ForkPlus-linux-x64 ForkPlus-linux-arm64 ForkPlus-macos-arm64 ForkPlus-macos-x64; do
             [ -d "$name" ] || { echo "MISSING artifact: $name"; exit 1; }
             zip -qr "ForkPlus-${tag}-${name#ForkPlus-}.zip" "$name"
             ls -la "ForkPlus-${tag}-${name#ForkPlus-}.zip"

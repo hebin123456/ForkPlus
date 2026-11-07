@@ -13,7 +13,7 @@
 
 ## 主な特徴
 
-- **クロスプラットフォーム**: Avalonia 12 ベースのクロスプラットフォーム UI 層。CI では Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 の 4 プラットフォーム分を並行ビルドし、自己完結型（self-contained、.NET ランタイムのインストール不要）で公開
+- **クロスプラットフォーム**: Avalonia 12 ベースのクロスプラットフォーム UI 層。CI では Windows x64 / Windows ARM64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64 の 6 プラットフォーム分を並行ビルドし、自己完結型（self-contained、.NET ランタイムのインストール不要）で公開
 - **多言語サポート**: 英語、簡体字中国語、繁体字中国語、日本語、한국어、Français、Deutsch、Español の 8 言語を内蔵し、JSON ファイルによる追加言語の拡張も可能
 - **マルチテーマスキン**: 22 種類の内蔵プリセットスキン（Light/Dark、Solarized、GitHub、Dracula、Monokai、および赤/橙/黄/緑/青/藍/紫の各色にライトとダークの 2 種）に加え、ユーザーカスタムカラーの上書きが即時反映
 - **git mm ワークフロー**: `git mm` サブコマンドを内蔵し、リーンブランチング（Lean Branching）ワークフローで複数サブリポジトリの変更と同期を一元管理
@@ -120,14 +120,16 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 
 ### 継続的インテグレーション
 
-プロジェクトには GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）が設定されています。`v*` タグの push、または手動トリガー時に、4 プラットフォームで並列ビルドして成果物をアップロードし、Linux ランナー上で単体 + E2E テストスイート全量を実行します。すべて合格すると Release（4 プラットフォームの zip 添付）を自動公開します：
+プロジェクトには GitHub Actions（[`.github/workflows/build.yml`](.github/workflows/build.yml)）が設定されています。`v*` タグの push、または手動トリガー時に、6 プラットフォームで並列ビルドして成果物をアップロードし、Linux ランナー上で単体 + E2E テストスイート全量を実行します。すべて合格すると Release（6 プラットフォームの zip 添付）を自動公開します：
 
 | マトリクス | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
+| windows-arm64 | windows-11-arm（ネイティブ ARM64 ランナー、公開リポジトリは無料） | win-arm64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
 | linux-arm64 | ubuntu-22.04-arm（ネイティブ ARM64 ランナー、公開リポジトリは無料） | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
+| macos-x64 | macos-latest（Apple Silicon 上でクロス publish） | osx-x64 |
 
 成果物は**自己完結型（self-contained）パブリッシュ**（.NET 10 ランタイムを同梱、ターゲットマシンへのインストールは一切不要）で、メインアプリ、AskPass/RI ヘルパー（これらも自己完結型のため、ランタイムのない環境でも git 認証情報入力とインタラクティブ rebase のフローが動作します）、各プラットフォームの biturbo native ライブラリ、tokei、言語ファイルを含みます（linux-x64 で約 125MB）。リリース版の zip 添付は [Releases ページ](https://github.com/hebin123456/ForkPlus/releases)から、タグなしの手動ビルド成果物はリポジトリの [Actions](https://github.com/hebin123456/ForkPlus/actions) ページの該当実行からダウンロードできます（Artifacts、14 日間保持）。
 
@@ -181,7 +183,7 @@ biturbo native（Rust 製）はリポジトリツリーマップのレイアウ�
 ## ダウンロード
 
 - CI ビルド成果物（タグなしの手動実行）: [Actions](https://github.com/hebin123456/ForkPlus/actions) ページ → 該当する build 実行 → Artifacts（自己完結型、.NET 10 ランタイム同梱、インストール不要）
-- 正式リリース: [Releases ページ](https://github.com/hebin123456/ForkPlus/releases)（自己完結型、.NET 10 ランタイム同梱、インストール不要、4 プラットフォームの zip）
+- 正式リリース: [Releases ページ](https://github.com/hebin123456/ForkPlus/releases)（自己完結型、.NET 10 ランタイム同梱、インストール不要、6 プラットフォームの zip）
 - 各バージョンの変更内容は [Release Notes](RELEASE_NOTE.md) を参照してください（元 WPF 版の履歴を含む）
 
 ## Git / Git-AI クライアント

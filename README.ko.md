@@ -13,7 +13,7 @@
 
 ## 주요 기능
 
-- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Linux x64 / Linux ARM64 / macOS arm64 4개 플랫폼 빌드를 병렬 생성하고, 자체 포함(self-contained) 방식으로 게시(.NET 런타임 설치 불필요)
+- **크로스 플랫폼**: Avalonia 12 기반 크로스 플랫폼 UI 레이어. CI에서 Windows x64 / Windows ARM64 / Linux x64 / Linux ARM64 / macOS arm64 / macOS x64 6개 플랫폼 빌드를 병렬 생성하고, 자체 포함(self-contained) 방식으로 게시(.NET 런타임 설치 불필요)
 - **다국어 지원**: 영어, 간체 중국어, 번체 중국어, 일본어, 한국어, 프랑스어, 독일어, 스페인어 8개 언어 내장, JSON 파일로 추가 언어 확장 지원
 - **다중 테마 스킨**: 22개 내장 스킨(Light/Dark, Solarized, GitHub, Dracula, Monokai, 빨강/주황/노랑/초록/청록/파랑/보라 7색 각각 라이트·다크 두 가지)과 사용자 정의 색상 덮어쓰기를 즉시 적용
 - **git mm 워크플로우**: `git mm` 하위 명령을 내장하여 린 브랜칭(Lean Branching) 워크플로우로 여러 서브 저장소의 변경과 동기를 통합 관리
@@ -120,14 +120,16 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 
 ### 지속적 통합
 
-프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `v*` 태그를 push하거나 수동 트리거하면 4개 플랫폼에서 병렬 빌드 후 산출물을 업로드하고, Linux 러너에서 단위 + E2E 테스트 스위트 전체를 실행하며, 모두 통과하면 Release(4개 플랫폼 zip 첨부)를 자동 게시합니다:
+프로젝트는 GitHub Actions([`.github/workflows/build.yml`](.github/workflows/build.yml))로 구성되어 있습니다. `v*` 태그를 push하거나 수동 트리거하면 6개 플랫폼에서 병렬 빌드 후 산출물을 업로드하고, Linux 러너에서 단위 + E2E 테스트 스위트 전체를 실행하며, 모두 통과하면 Release(6개 플랫폼 zip 첨부)를 자동 게시합니다:
 
 | 매트릭스 | Runner | RID |
 |------|--------|-----|
 | windows-x64 | windows-latest | win-x64 |
+| windows-arm64 | windows-11-arm(네이티브 ARM64 러너, 공개 저장소 무료) | win-arm64 |
 | linux-x64 | ubuntu-latest | linux-x64 |
 | linux-arm64 | ubuntu-22.04-arm(네이티브 ARM64 러너, 공개 저장소 무료) | linux-arm64 |
 | macos-arm64 | macos-latest | osx-arm64 |
+| macos-x64 | macos-latest(Apple Silicon에서 크로스 publish) | osx-x64 |
 
 산출물은 **자체 포함(self-contained) 게시**(.NET 10 런타임 동봉, 대상 머신에는 아무것도 설치할 필요 없음)로, 메인 앱, AskPass/RI 도우미(역시 자체 포함이라 런타임 없는 환경에서도 git 자격 증명 입력과 인터랙티브 rebase 흐름이 동작합니다), 해당 플랫폼의 biturbo native 라이브러리, tokei, 언어 파일을 포함합니다(linux-x64 기준 약 125MB). 릴리스 버전의 zip 첨부는 [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)에서, 태그 없는 수동 빌드 산출물은 저장소의 [Actions](https://github.com/hebin123456/ForkPlus/actions) 페이지에서 해당 실행의 Artifacts(14일 보관)로 다운로드할 수 있습니다.
 
@@ -181,7 +183,7 @@ biturbo native(Rust)는 저장소 트리맵 레이아웃, 커밋 그래프 캐�
 ## 다운로드
 
 - CI 빌드 산출물(태그 없는 수동 실행): [Actions](https://github.com/hebin123456/ForkPlus/actions) 페이지 → 해당 build 실행 → Artifacts(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요)
-- 정식 릴리스: [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요, 4개 플랫폼 zip)
+- 정식 릴리스: [Releases 페이지](https://github.com/hebin123456/ForkPlus/releases)(자체 포함 방식, .NET 10 런타임 동봉, 설치 불필요, 6개 플랫폼 zip)
 - 각 버전의 변경 사항은 [Release Notes](RELEASE_NOTE.md)를 참조하세요(원본 WPF 버전의 역사 포함)
 
 ## Git / Git-AI 클라이언트

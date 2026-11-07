@@ -2,6 +2,20 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.4.2
+
+> 无功能变更，新增 **Windows ARM64（windows-arm64）发布平台**。应用版本号升至 5.4.2。
+
+### 平台
+
+- **Windows ARM64**：CI 新增 `windows-11-arm` 原生 ARM64 runner 腿，`dotnet publish -r win-arm64`
+  自包含发布（自带 .NET 10 运行时），产物 `ForkPlus-5.4.2-windows-arm64.zip`。
+  - 原生库按 RID 取件：Biturbo `biturbo-arm64.dll`、tokei `tokei-aarch64-pc-windows-msvc.exe`；
+    SkiaSharp / HarfBuzzSharp / Avalonia ANGLE 的 NuGet 包自带 win-arm64 native。
+  - 更新检查按运行时平台标识 `windows-arm64` 精确匹配 Release 资产，无需额外配置。
+  - `ForkPlus.csproj` 的 `RestoreBiturbo` / `RestoreTokei` 兜底也按 RID / 宿主架构选择 ARM64 资产，
+    本地无 `-r` 构建在 ARM64 机器上同样正确。
+
 ## v5.4.1
 
 > 修复 SideBySide 左右 diff 的横向滚动条“按住可无限往右拉、thumb 越来越小”。应用版本号升至 5.4.1。
