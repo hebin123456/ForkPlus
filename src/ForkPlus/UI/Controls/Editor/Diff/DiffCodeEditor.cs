@@ -10,6 +10,7 @@ using ForkPlus.Settings;
 using AvaloniaEdit.Document;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -92,6 +93,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 		{
 			base.OnSizeChanged(sizeInfo);
 			RefreshScrollbarMap();
+		}
+
+		/// <summary>给左侧行号 margin 注入 blame 上下文（供 FileDiffControl 按当前 diff 来源设置）。</summary>
+		public void SetLineBlameContext([Null] LineBlameContext context)
+		{
+			_diffLineNumberMargin.SetLineBlameContext(context);
 		}
 
 		private void RefreshScrollbarMap()

@@ -8,6 +8,7 @@ using ForkPlus.Git;
 using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
 using Avalonia.Layout;
@@ -89,8 +90,9 @@ namespace ForkPlus.UI.Dialogs
 			};
 		}
 
-		public void UpdateDiff(GitCommandResult<DiffContent> fileContent)
+		public void UpdateDiff(GitCommandResult<DiffContent> fileContent, [Null] LineBlameInfo lineBlame = null)
 		{
+			FileDiffControl.LineBlame = lineBlame;
 			FileDiffControl.Content = fileContent;
 			base.Title = fileContent?.Result?.ChangedFile.Path ?? "File Preview";
 		}

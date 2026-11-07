@@ -15,6 +15,11 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-07，v5.4.0）：FileDiff 行号新增 blame 悬停浮窗。鼠标悬停行号区
+//   约 400ms 后显示本行作者/相对时间/提交 sha/提交说明，点击 sha 跳转到提交轨道图并选中
+//   该提交；未提交行（工作区未暂存/已暂存新增/未跟踪新文件）显示对应占位卡片；同一行
+//   存在更早版本时额外展示“旧版本”卡片；浮窗内可展开最近 5 条变更历史并跳转完整历史窗口。
+//   悬停仅作用于行号 margin（Split 按中线区分旧/新侧），滚动/Esc/离开时关闭。
 // 版本号说明（2026-11-07，v5.3.3）：修复 FileDiff/文本内容右键菜单在「选中行的历史」上方
 //   多出一条分隔符——OpenFileInExternalEditor.AddMenuItems 在未配置外部编辑器（或取不到
 //   鼠标下行号）时不产生任何项，而菜单构建随后无条件 Items.Add(new Separator())，分隔符
@@ -227,8 +232,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.3.3")]
-[assembly: AssemblyInformationalVersion("5.3.3")]
+[assembly: AssemblyFileVersion("5.4.0")]
+[assembly: AssemblyInformationalVersion("5.4.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.3.3.0")]
+[assembly: AssemblyVersion("5.4.0.0")]

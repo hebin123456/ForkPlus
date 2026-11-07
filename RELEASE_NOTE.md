@@ -2,6 +2,28 @@
 
 本文件记录 ForkPlus 各版本的变更。从 v1.3.0 开始，每次发布都会在此更新。
 
+## v5.4.0
+
+> FileDiff 行号新增**悬停 blame 浮窗**：悬停行号即可查看本行作者、提交时间与 sha，点击 sha 直达提交轨道图；未提交行、同一行的更早版本与变更历史也一并可视。应用版本号升至 5.4.0。
+
+### 新功能
+
+- **行号 blame 悬停浮窗**（[LineBlame](src/ForkPlus/UI/Controls/Editor/Diff/LineBlame/LineBlameHoverController.cs)）：
+  - 悬停行号 margin 约 400ms 后弹出浮窗，展示该行最后一次提交的**作者头像/姓名、相对时间、提交 sha（7 位缩写）与提交说明**；Split 视图按行号区水平中线区分旧/新一侧，新增/删除行自动回退到有行号的一侧。
+  - **点击 sha** 自动激活该仓库标签页、切换到提交轨道图并选中对应提交（`RepositoryUserControl.SelectRevision`），同时定位到当前文件。
+  - **未提交行**显示占位卡片并按来源区分文案：工作区未暂存（Uncommitted line）、已暂存但未提交（Staged, not committed yet）、未跟踪新文件（Untracked new file）。
+  - **旧版本卡片**：当悬停行在另一侧（HEAD/父提交）存在且提交 sha 不同时，额外展示“Older version”卡片，同样支持点击 sha 跳转。
+  - **变更历史**：浮窗底部的“Change history”可展开，按需执行 `git log -L` 列出最近 5 条该行历史（sha/说明/时间，均可点击跳转）；“View full history...”直接打开完整的历史窗口（Hunk 模式）。
+  - 覆盖全部 FileDiff 场景：工作区未暂存/已暂存、提交详情、历史版本对比（Revision/Range/WorkingDirectory）、文件历史窗口（含 Hunk 历史）、独立 diff 弹窗与合并冲突已解决视图；多重提交合并对比无单一行号映射时不提供浮窗。
+  - 浮窗不抢焦点（不中断编辑器选区/光标），鼠标离开行号区或浮窗、滚动、按 Esc、切换文件/布局时自动关闭。
+- **本地化**：新增 14 个浮窗文案键，覆盖全部 8 个语言包（zh-Hans / zh-Hant / en / ja-JP / ko-KR / fr-FR / de-DE / es-ES）。
+- **修复**（顺带）：[GetFileHistoryGitCommand.cs](src/ForkPlus/Git/Commands/GetFileHistoryGitCommand.cs) 的 `-L` 参数此前把文件路径包在引号里；`GitRequest` 以参数数组传给子进程（不经 shell），引号会被 git 当作路径的一部分，导致 Linux 下“选中行的历史”报 `There is no path "a.txt" in the commit`。改为直接传原始路径。
+
+### 测试
+
+- 新增 `LineBlameTests`：版本信息映射、blame 块二分查找、工作区/HEAD blame（未提交行 sha 为零）、`git log -L` 行历史。
+- 新增 `LineBlamePopupTests`（headless）：加载/未提交/已提交/历史空态渲染。
+
 ## v5.3.3
 
 > 修复 FileDiff / 文件内容右键菜单中「选中行的历史」上方多出的分隔符。应用版本号升至 5.3.3。

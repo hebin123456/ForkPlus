@@ -75,6 +75,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
+		public void SetLineBlameContext([Null] LineBlame.LineBlameContext context)
+		{
+			_leftDiffCodeEditor.SetLineBlameContext(context);
+			_rightDiffCodeEditor.SetLineBlameContext(context);
+		}
+
 		public bool IsNewOrUntracked
 		{
 			get

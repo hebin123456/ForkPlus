@@ -1251,7 +1251,6 @@
     "No command history": "명령 기록 없음",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "하위 저장소가 없습니다. 먼저 동기화 버튼을 클릭한 다음 시작 버튼을 클릭하여 git mm 개발을 시작하세요.",
     "No sub repository is selected. Please select one from the top right.": "하위 저장소가 선택되지 않았습니다. 오른쪽 상단에서 선택하세요",
-    "No conflict markers found in the file.": "파일에서 충돌 마커를 찾을 수 없습니다.",
     "No controls": "컨트롤 없음",
     "No fast-forward": "패스트포워드 안 함",
     "No fast-forward on merge": "병합 시 패스트포워드 안 함",
@@ -1889,7 +1888,6 @@
     "GreenLight": "초록 라이트",
     "GreenDark": "초록 다크",
     "Presets": "프리셋",
-    "Reset": "재설정",
     "Color.BackgroundColor": "배경색",
     "Color.SecondaryBackgroundColor": "보조 배경색",
     "Color.PanelBackgroundColor": "패널 배경색",
@@ -2472,6 +2470,20 @@
     "Pause": "일시정지",
     "Play": "재생",
     "Playback Speed": "재생 속도",
-    "Previous Frame": "이전 프레임"
+    "Previous Frame": "이전 프레임",
+    "Loading commit info...": "커밋 정보를 불러오는 중...",
+    "Unable to read commit info": "커밋 정보를 읽을 수 없습니다",
+    "Older version": "이전 버전",
+    "Change history": "변경 기록",
+    "View full history...": "전체 기록 보기...",
+    "No history found for this line": "이 줄의 기록이 없습니다",
+    "Loading commit history...": "커밋 기록을 불러오는 중...",
+    "Uncommitted line": "커밋되지 않은 줄",
+    "This line has not been committed yet": "이 줄은 아직 커밋되지 않았습니다",
+    "Staged, not committed yet": "스테이지됨, 아직 커밋되지 않음",
+    "This line will be included in the next commit": "이 줄은 다음 커밋에 포함됩니다",
+    "Untracked new file": "추적되지 않은 새 파일",
+    "This file has not been added to the repository yet": "이 파일은 아직 저장소에 추가되지 않았습니다",
+    "Navigate to": "이동"
   }
 }

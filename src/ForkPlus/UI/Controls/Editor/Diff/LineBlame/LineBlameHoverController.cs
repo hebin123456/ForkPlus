@@ -1,0 +1,727 @@
+using System;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Primitives.PopupPositioning;
+using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
+using AvaloniaEdit.Rendering;
+using ForkPlus.Git;
+using ForkPlus.Git.Commands;
+using ForkPlus.UI.UserControls.Preferences;
+
+namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
+{
+	/// <summary>行号 margin 命中结果：悬停的是旧/新哪一侧、对应两侧原始行号与行在视口中的位置。</summary>
+	internal sealed class LineBlameHitInfo
+	{
+		public bool OldSide;
+
+		public int OldLine;
+
+		public int NewLine;
+
+		public double Top;
+
+		public double Height;
+	}
+
+	/// <summary>
+	/// 行号 margin 悬停控制器：400ms 悬停后打开 blame 浮窗，鼠标离开行号区/浮窗、
+	/// 滚动、Esc 或上下文切换时关闭。浮窗挂在 RepositoryUserControl 根 Panel 中
+	///（与 GraphCellView 合并节点浮窗同款），保证 DynamicResource 主题资源可解析。
+	/// </summary>
+	internal sealed class LineBlameHoverController : IDisposable
+	{
+		private enum BlameSide
+		{
+			Old,
+			New
+		}
+
+		private sealed class BlameRequest
+		{
+			[Null]
+			public string Spec;
+
+			public bool OldSide;
+
+			public int Line;
+		}
+
+		private const int HoverDelayMs = 400;
+
+		private const int CloseDelayMs = 250;
+
+		private readonly DiffLineNumberMargin _margin;
+
+		private readonly LineBlameContext _context;
+
+		private readonly DispatcherTimer _hoverTimer;
+
+		private readonly DispatcherTimer _closeTimer;
+
+		[Null]
+		private Popup _popup;
+
+		[Null]
+		private LineBlamePopupUserControl _content;
+
+		[Null]
+		private Panel _popupHost;
+
+		[Null]
+		private TopLevel _topLevel;
+
+		[Null]
+		private EventHandler<KeyEventArgs> _escapeHandler;
+
+		[Null]
+		private EventHandler _scrollHandler;
+
+		[Null]
+		private LineBlameHitInfo _hoverHit;
+
+		[Null]
+		private LineBlamePopupData _lastData;
+
+		private bool _pointerPressedOnPopup;
+
+		private bool _disposed;
+
+		private int _generation;
+
+		public LineBlameHoverController(DiffLineNumberMargin margin, LineBlameContext context)
+		{
+			_margin = margin;
+			_context = context;
+			_hoverTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(HoverDelayMs) };
+			_hoverTimer.Tick += HoverTimer_Tick;
+			_closeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(CloseDelayMs) };
+			_closeTimer.Tick += CloseTimer_Tick;
+			TextView textView = margin.TextViewForBlame;
+			if (textView != null)
+			{
+				_scrollHandler = delegate
+				{
+					ClosePopup();
+				};
+				textView.ScrollOffsetChanged += _scrollHandler;
+			}
+		}
+
+		public void Dispose()
+		{
+			if (_disposed)
+			{
+				return;
+			}
+			_disposed = true;
+			_hoverTimer.Stop();
+			_closeTimer.Stop();
+			ClosePopup();
+			TextView textView = _margin.TextViewForBlame;
+			if (textView != null && _scrollHandler != null)
+			{
+				textView.ScrollOffsetChanged -= _scrollHandler;
+				_scrollHandler = null;
+			}
+		}
+
+		/// <summary>margin 临时离开视觉树（切换标签页等）：只收掉浮窗，保留控制器以便重新挂载后继续悬停。</summary>
+		public void OnMarginDetached()
+		{
+			_hoverTimer.Stop();
+			_closeTimer.Stop();
+			_hoverHit = null;
+			ClosePopup();
+		}
+
+		public void OnPointerMoved(PointerEventArgs e)
+		{
+			if (_disposed)
+			{
+				return;
+			}
+			LineBlameHitInfo hit = _margin.HitTestLineBlame(e.GetPosition(_margin));
+			if (hit == null)
+			{
+				_hoverTimer.Stop();
+				_hoverHit = null;
+				if (_popup != null && _popup.IsOpen)
+				{
+					StartCloseTimer();
+				}
+				return;
+			}
+			if (_hoverHit != null && _hoverHit.OldSide == hit.OldSide && _hoverHit.OldLine == hit.OldLine && _hoverHit.NewLine == hit.NewLine)
+			{
+				return;
+			}
+			_hoverTimer.Stop();
+			if (_popup != null && _popup.IsOpen)
+			{
+				ClosePopup();
+			}
+			_hoverHit = hit;
+			_hoverTimer.Start();
+		}
+
+		public void OnPointerExited()
+		{
+			if (_disposed)
+			{
+				return;
+			}
+			_hoverTimer.Stop();
+			_hoverHit = null;
+			if (_popup != null && _popup.IsOpen)
+			{
+				StartCloseTimer();
+			}
+		}
+
+		private void HoverTimer_Tick(object sender, EventArgs e)
+		{
+			_hoverTimer.Stop();
+			if (_disposed || _hoverHit == null || !_margin.IsPointerOver || _popup != null)
+			{
+				return;
+			}
+			LineBlameHitInfo hit = _hoverHit;
+			int generation = ++_generation;
+			try
+			{
+				OpenPopup(hit);
+				Load(generation, hit);
+			}
+			catch (Exception ex)
+			{
+				Log.Error("LineBlame popup open failed: " + ex);
+				ClosePopup();
+			}
+		}
+
+		private void CloseTimer_Tick(object sender, EventArgs e)
+		{
+			_closeTimer.Stop();
+			if (_disposed)
+			{
+				return;
+			}
+			bool pointerOverPopup = _content != null && _content.IsPointerOver;
+			bool pointerStillPressed = _pointerPressedOnPopup;
+			if (_margin.IsPointerOver || pointerOverPopup || pointerStillPressed)
+			{
+				return;
+			}
+			ClosePopup();
+		}
+
+		private void StartCloseTimer()
+		{
+			_closeTimer.Stop();
+			_closeTimer.Start();
+		}
+
+		private void OpenPopup(LineBlameHitInfo hit)
+		{
+			LineBlamePopupUserControl content = new LineBlamePopupUserControl();
+			_content = content;
+			content.ShaClicked += delegate(Sha sha, string path)
+			{
+				ClosePopup();
+				RevealRevision(sha, path ?? _context.Path);
+			};
+			content.HistoryExpanded += delegate
+			{
+				LoadHistory();
+			};
+			content.ViewFullHistoryRequested += delegate
+			{
+				OpenFullHistory();
+			};
+			content.PointerEntered += delegate
+			{
+				_closeTimer.Stop();
+			};
+			content.PointerMoved += delegate
+			{
+				_closeTimer.Stop();
+			};
+			content.PointerExited += delegate
+			{
+				StartCloseTimer();
+			};
+			content.PointerPressed += delegate
+			{
+				_pointerPressedOnPopup = true;
+				_closeTimer.Stop();
+			};
+			content.PointerReleased += delegate
+			{
+				_pointerPressedOnPopup = false;
+			};
+			content.PointerCaptureLost += delegate
+			{
+				_pointerPressedOnPopup = false;
+			};
+			content.ShowLoading();
+
+			Popup popup = new Popup
+			{
+				Placement = PlacementMode.AnchorAndGravity,
+				PlacementAnchor = PopupAnchor.TopRight,
+				PlacementGravity = PopupGravity.TopLeft,
+				PlacementRect = new Rect(Math.Max(0.0, _margin.Bounds.Width - 1.0), Math.Max(0.0, hit.Top), 2.0, Math.Max(1.0, hit.Height)),
+				HorizontalOffset = 6.0,
+				VerticalOffset = 0.0,
+				IsLightDismissEnabled = false,
+				PlacementTarget = _margin
+			};
+			VisualTreeAttachmentHelper.TrySetPopupChild(popup, content, GetType().Name + ".Popup");
+			_popup = popup;
+			AttachPopupToHost(popup);
+			popup.IsOpen = true;
+			HookEscape();
+		}
+
+		private void AttachPopupToHost(Popup popup)
+		{
+			Panel fallbackPanel = null;
+			global::Avalonia.Visual ancestor = _margin;
+			while ((ancestor = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(ancestor)) != null)
+			{
+				if (fallbackPanel == null && ancestor is Panel nearPanel)
+				{
+					fallbackPanel = nearPanel;
+				}
+				if (ancestor is global::ForkPlus.UI.UserControls.RepositoryUserControl)
+				{
+					foreach (global::Avalonia.Visual child in global::Avalonia.VisualTree.VisualExtensions.GetVisualChildren(ancestor))
+					{
+						if (child is Panel rootPanel)
+						{
+							_popupHost = rootPanel;
+							break;
+						}
+					}
+					break;
+				}
+			}
+			if (_popupHost == null)
+			{
+				_popupHost = fallbackPanel;
+			}
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Add(popup);
+				Popup capturedPopup = popup;
+				popup.Closed += delegate
+				{
+					DetachPopupFromHost(capturedPopup);
+				};
+			}
+		}
+
+		private void DetachPopupFromHost(Popup popup)
+		{
+			if (_popupHost != null)
+			{
+				_popupHost.Children.Remove(popup);
+				_popupHost = null;
+			}
+		}
+
+		private void HookEscape()
+		{
+			_topLevel = TopLevel.GetTopLevel(_margin);
+			if (_topLevel == null)
+			{
+				return;
+			}
+			_escapeHandler = delegate(object sender, KeyEventArgs e)
+			{
+				if (e.Key == Key.Escape)
+				{
+					ClosePopup();
+				}
+			};
+			_topLevel.AddHandler(InputElement.KeyDownEvent, _escapeHandler, RoutingStrategies.Tunnel, handledEventsToo: true);
+		}
+
+		private void UnhookEscape()
+		{
+			if (_topLevel != null && _escapeHandler != null)
+			{
+				_topLevel.RemoveHandler(InputElement.KeyDownEvent, _escapeHandler);
+				_escapeHandler = null;
+				_topLevel = null;
+			}
+		}
+
+		private void ClosePopup()
+		{
+			_hoverTimer.Stop();
+			_closeTimer.Stop();
+			_generation++;
+			_hoverHit = null;
+			_lastData = null;
+			UnhookEscape();
+			if (_popup != null)
+			{
+				Popup popup = _popup;
+				_popup = null;
+				_content = null;
+				try
+				{
+					popup.IsOpen = false;
+				}
+				catch (Exception ex)
+				{
+					Log.Warn("LineBlame close popup failed", ex);
+				}
+				VisualTreeAttachmentHelper.TrySetPopupChild(popup, null, GetType().Name + ".Popup");
+				DetachPopupFromHost(popup);
+			}
+			else
+			{
+				_content = null;
+			}
+		}
+
+		private void Load(int generation, LineBlameHitInfo hit)
+		{
+			BlameSide primarySide = (hit.OldSide ? BlameSide.Old : BlameSide.New);
+			BlameRequest primaryRequest = CreateRequest(primarySide, hit);
+			LineBlameLineItem primaryItem = TryCreateSynthesizedItem(primarySide, hit, primaryRequest);
+			if (primaryItem != null)
+			{
+				LoadOtherAndShow(generation, hit, primarySide, primaryItem);
+				return;
+			}
+			if (primaryRequest == null)
+			{
+				ShowError(generation, Current("Unable to read commit info"));
+				return;
+			}
+			_context.RequestBlame(primaryRequest.Spec, primaryRequest.OldSide, delegate(GitCommandResult<GetBlameGitCommand.BlameChunk[]> result)
+			{
+				if (_disposed || generation != _generation || _content == null)
+				{
+					return;
+				}
+				if (!result.Succeeded)
+				{
+					ShowError(generation, GetErrorMessage(result.Error));
+					return;
+				}
+				LineBlameLineItem item = CreateItem(primaryRequest, result.Result);
+				if (item == null)
+				{
+					ShowError(generation, Current("Unable to read commit info"));
+					return;
+				}
+				LoadOtherAndShow(generation, hit, primarySide, item);
+			});
+		}
+
+		private LineBlameLineItem TryCreateSynthesizedItem(BlameSide primarySide, LineBlameHitInfo hit, [Null] BlameRequest primaryRequest)
+		{
+			if (_context.Info.Mode != LineBlameMode.WorkingTree || primarySide == BlameSide.Old)
+			{
+				return null;
+			}
+			LineBlameUncommittedKind kind = LineBlameUncommittedKind.None;
+			if (_context.Info.IsUntracked)
+			{
+				kind = LineBlameUncommittedKind.Untracked;
+			}
+			else if (_context.Info.IsStaged && primaryRequest == null)
+			{
+				// 已暂存的新增行：HEAD 中不存在对应旧行（From 为空）。
+				kind = LineBlameUncommittedKind.Staged;
+			}
+			if (kind == LineBlameUncommittedKind.None)
+			{
+				return null;
+			}
+			LineBlameLineItem item = new LineBlameLineItem
+			{
+				IsUncommitted = true,
+				UncommittedKind = kind,
+				Line = hit.NewLine,
+				Path = _context.Path,
+				OldSide = false
+			};
+			return item;
+		}
+
+		private void LoadOtherAndShow(int generation, LineBlameHitInfo hit, BlameSide primarySide, LineBlameLineItem primaryItem)
+		{
+			BlameSide otherSide = ((primarySide == BlameSide.Old) ? BlameSide.New : BlameSide.Old);
+			BlameRequest otherRequest = CreateRequest(otherSide, hit);
+			if (otherRequest == null)
+			{
+				ShowData(generation, hit, primaryItem, null);
+				return;
+			}
+			_context.RequestBlame(otherRequest.Spec, otherRequest.OldSide, delegate(GitCommandResult<GetBlameGitCommand.BlameChunk[]> result)
+			{
+				if (_disposed || generation != _generation || _content == null)
+				{
+					return;
+				}
+				LineBlameLineItem otherItem = null;
+				if (result.Succeeded)
+				{
+					otherItem = CreateItem(otherRequest, result.Result);
+					if (otherItem != null && otherItem.IsUncommitted)
+					{
+						otherItem = null;
+					}
+				}
+				ShowData(generation, hit, primaryItem, otherItem);
+			});
+		}
+
+		private void ShowData(int generation, LineBlameHitInfo hit, LineBlameLineItem primaryItem, [Null] LineBlameLineItem otherItem)
+		{
+			if (_disposed || generation != _generation || _content == null)
+			{
+				return;
+			}
+			LineBlamePopupData data = BuildPopupData(hit, primaryItem, otherItem);
+			_lastData = data;
+			_content.ShowData(data);
+		}
+
+		private void ShowError(int generation, string message)
+		{
+			if (_disposed || generation != _generation || _content == null)
+			{
+				return;
+			}
+			_content.ShowError(message);
+		}
+
+		private LineBlamePopupData BuildPopupData(LineBlameHitInfo hit, LineBlameLineItem primaryItem, [Null] LineBlameLineItem otherItem)
+		{
+			LineBlamePopupData data = new LineBlamePopupData
+			{
+				Primary = primaryItem,
+				Other = ((otherItem != null && ItemsDiffer(primaryItem, otherItem)) ? otherItem : null),
+				FilePath = _context.Path
+			};
+			if (primaryItem.IsUncommitted || primaryItem.Revision == null)
+			{
+				return data;
+			}
+			data.HasHistory = true;
+			if (_context.Info.Mode == LineBlameMode.Revision)
+			{
+				data.HistoryPath = primaryItem.Path;
+				data.HistoryLine = primaryItem.Line;
+				data.HistoryStartSha = TryParseSha(primaryItem.RevisionSpec);
+			}
+			else if (hit.OldLine > 0)
+			{
+				// 工作区模式：按 HEAD 一侧的原始行号查历史（工作区行号不能用于已提交版本）。
+				// 文件路径同样取旧一侧路径，兼容重命名。
+				data.HistoryPath = _context.GetBlamePath(oldSide: true);
+				data.HistoryLine = hit.OldLine;
+				data.HistoryStartSha = TryParseSha(_context.Info.OldRevisionSpec);
+			}
+			else
+			{
+				data.HistoryPath = primaryItem.Path;
+				data.HistoryLine = primaryItem.Line;
+				data.HistoryStartSha = null;
+			}
+			return data;
+		}
+
+		private static bool ItemsDiffer(LineBlameLineItem primary, LineBlameLineItem other)
+		{
+			if (other == null || other.Revision == null)
+			{
+				return false;
+			}
+			if (primary.IsUncommitted || primary.Revision == null)
+			{
+				return true;
+			}
+			return primary.Revision.Sha != other.Revision.Sha;
+		}
+
+		[Null]
+		private BlameRequest CreateRequest(BlameSide side, LineBlameHitInfo hit)
+		{
+			if (side == BlameSide.Old)
+			{
+				if (hit.OldLine == 0)
+				{
+					return null;
+				}
+				return new BlameRequest
+				{
+					Spec = _context.GetOldRevisionSpec(),
+					OldSide = true,
+					Line = hit.OldLine
+				};
+			}
+			if (_context.Info.Mode == LineBlameMode.Revision)
+			{
+				if (hit.NewLine == 0)
+				{
+					return null;
+				}
+				return new BlameRequest
+				{
+					Spec = _context.Info.NewRevisionSpec,
+					OldSide = false,
+					Line = hit.NewLine
+				};
+			}
+			if (_context.Info.IsUntracked)
+			{
+				return null;
+			}
+			if (_context.Info.IsStaged)
+			{
+				if (hit.NewLine == 0 || hit.OldLine == 0)
+				{
+					return null;
+				}
+				// 已暂存内容：暂存区里能追溯到的内容都来自 HEAD，按 HEAD 的旧行号查；
+				// 新增行（From 为空）在上层已合成为“已暂存未提交”占位。
+				return new BlameRequest
+				{
+					Spec = _context.GetOldRevisionSpec(),
+					OldSide = true,
+					Line = hit.OldLine
+				};
+			}
+			if (hit.NewLine == 0)
+			{
+				return null;
+			}
+			return new BlameRequest
+			{
+				Spec = null,
+				OldSide = false,
+				Line = hit.NewLine
+			};
+		}
+
+		[Null]
+		private LineBlameLineItem CreateItem(BlameRequest request, [Null] GetBlameGitCommand.BlameChunk[] chunks)
+		{
+			if (!LineBlameContext.TryFindChunk(chunks, request.Line, out GetBlameGitCommand.BlameChunk chunk))
+			{
+				return null;
+			}
+			Revision revision = chunk.Revision;
+			bool uncommitted = revision == null || revision.Sha == Sha.Zero;
+			LineBlameLineItem item = new LineBlameLineItem
+			{
+				IsUncommitted = uncommitted,
+				UncommittedKind = (uncommitted ? (_context.Info.IsStaged ? LineBlameUncommittedKind.Staged : LineBlameUncommittedKind.WorkingTree) : LineBlameUncommittedKind.None),
+				Revision = (uncommitted ? null : revision),
+				Line = request.Line,
+				Path = _context.GetBlamePath(request.OldSide),
+				RevisionSpec = request.Spec,
+				OldSide = request.OldSide
+			};
+			return item;
+		}
+
+		private void LoadHistory()
+		{
+			if (_disposed || _content == null)
+			{
+				return;
+			}
+			int generation = _generation;
+			_content.ShowHistoryLoading();
+			// 浮窗数据可能刚被替换：重新装配历史目标，避免使用已过期的行号。
+			LineBlamePopupData data = _lastData;
+			if (data == null)
+			{
+				return;
+			}
+			string historyPath = data.HistoryPath;
+			int historyLine = data.HistoryLine;
+			Sha? historyStartSha = data.HistoryStartSha;
+			_context.RequestHistory(historyPath, historyLine, historyStartSha, delegate(GitCommandResult<(RevisionWithFiles[], string[])> result)
+			{
+				if (_disposed || generation != _generation || _content == null)
+				{
+					return;
+				}
+				if (!result.Succeeded)
+				{
+					_content.ShowHistoryError(GetErrorMessage(result.Error));
+					return;
+				}
+				_content.ShowHistory(result.Result.Item1);
+			});
+		}
+
+		private void OpenFullHistory()
+		{
+			LineBlamePopupData data = _lastData;
+			if (data == null || data.HistoryPath == null || data.HistoryLine <= 0)
+			{
+				return;
+			}
+			global::ForkPlus.UI.Commands.ShowFileHistoryWindowCommand.Mode.Hunk mode =
+				new global::ForkPlus.UI.Commands.ShowFileHistoryWindowCommand.Mode.Hunk(data.HistoryPath, new Range(data.HistoryLine, data.HistoryLine));
+			global::ForkPlus.UI.UserControls.RepositoryUserControl repositoryUserControl =
+				_context.RepositoryUserControl ?? global::ForkPlus.UI.MainWindow.ActiveRepositoryUserControl;
+			if (repositoryUserControl == null)
+			{
+				return;
+			}
+			ClosePopup();
+			new global::ForkPlus.UI.Commands.ShowFileHistoryWindowCommand().Execute(repositoryUserControl, mode, data.HistoryStartSha);
+		}
+
+		private void RevealRevision(Sha sha, string path)
+		{
+			(global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow?.Activate();
+			if (global::ForkPlus.UI.MainWindow.ActiveRepositoryUserControl?.GitModule != _context.GitModule)
+			{
+				global::Avalonia.Application.Current?.TabManager()?.OpenRepository(_context.GitModule.Path);
+			}
+			global::ForkPlus.UI.MainWindow.ActiveRepositoryUserControl?.ActivateRevisionView();
+			global::ForkPlus.UI.MainWindow.ActiveRepositoryUserControl?.SelectRevision(sha, path);
+		}
+
+		[Null]
+		private static Sha? TryParseSha([Null] string spec)
+		{
+			if (string.IsNullOrEmpty(spec))
+			{
+				return null;
+			}
+			return Sha.Parse(spec);
+		}
+
+		private static string GetErrorMessage(GitCommandError error)
+		{
+			if (error == null)
+			{
+				return Current("Unable to read commit info");
+			}
+			string message = error.FriendlyDescription;
+			return string.IsNullOrEmpty(message) ? error.ToString() : message;
+		}
+
+		private static string Current(string text)
+		{
+			return PreferencesLocalization.Current(text);
+		}
+	}
+}

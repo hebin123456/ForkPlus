@@ -1251,7 +1251,6 @@
     "No command history": "コマンド履歴なし",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "サブリポジトリがありません。まず同期ボタンをクリックし、その後開始ボタンをクリックして git mm 開発を始めてください。",
     "No sub repository is selected. Please select one from the top right.": "サブリポジトリが選択されていません。右上から選択してください",
-    "No conflict markers found in the file.": "ファイルに競合マーカーが見つかりません。",
     "No controls": "コントロールなし",
     "No fast-forward": "ファストフォワードしない",
     "No fast-forward on merge": "マージ時にファストフォワードしない",
@@ -1889,7 +1888,6 @@
     "GreenLight": "グリーンライト",
     "GreenDark": "グリーンダーク",
     "Presets": "プリセット",
-    "Reset": "リセット",
     "Color.BackgroundColor": "背景色",
     "Color.SecondaryBackgroundColor": "セカンダリ背景色",
     "Color.PanelBackgroundColor": "パネル背景色",
@@ -2472,6 +2470,20 @@
     "Pause": "一時停止",
     "Play": "再生",
     "Playback Speed": "再生速度",
-    "Previous Frame": "前のフレーム"
+    "Previous Frame": "前のフレーム",
+    "Loading commit info...": "コミット情報を読み込み中...",
+    "Unable to read commit info": "コミット情報を読み取れません",
+    "Older version": "旧バージョン",
+    "Change history": "変更履歴",
+    "View full history...": "完全な履歴を表示...",
+    "No history found for this line": "この行の履歴が見つかりません",
+    "Loading commit history...": "コミット履歴を読み込み中...",
+    "Uncommitted line": "未コミットの行",
+    "This line has not been committed yet": "この行はまだコミットされていません",
+    "Staged, not committed yet": "ステージ済み、未コミット",
+    "This line will be included in the next commit": "この行は次のコミットに含まれます",
+    "Untracked new file": "未追跡の新規ファイル",
+    "This file has not been added to the repository yet": "このファイルはまだリポジトリに追加されていません",
+    "Navigate to": "移動先"
   }
 }

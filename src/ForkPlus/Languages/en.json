@@ -173,6 +173,20 @@
     "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.": "Repository Statistics... counts code, comments and blank lines per language — powered by tokei with support for 200+ languages — and visualizes the mix as a pie chart. Switch the ref between workspace, branch or tag to compare.",
     "The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo.": "The Reflog keeps a timeline rail of every operation performed in ForkPlus: commits, checkouts, resets and more. Open it from the toolbar, then double-click an entry to jump back to that earlier state — safely, with undo.",
     "When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click.": "When a merge or rebase hits conflicts, the affected files appear in the commit view. Resolve them line by line in the side-by-side merger, pick a version from the context menu, or let AI resolve all conflicts in one click.",
-    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly."
+    "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.": "Make ForkPlus yours: 12 built-in themes — from Light and Dark to Dracula, Monokai and Solarized — plus custom colors, 8 interface languages, and a tab bar you can place at the top or on the left. Everything lives in Preferences and switches instantly.",
+    "Loading commit info...": "Loading commit info...",
+    "Unable to read commit info": "Unable to read commit info",
+    "Older version": "Older version",
+    "Change history": "Change history",
+    "View full history...": "View full history...",
+    "No history found for this line": "No history found for this line",
+    "Loading commit history...": "Loading commit history...",
+    "Uncommitted line": "Uncommitted line",
+    "This line has not been committed yet": "This line has not been committed yet",
+    "Staged, not committed yet": "Staged, not committed yet",
+    "This line will be included in the next commit": "This line will be included in the next commit",
+    "Untracked new file": "Untracked new file",
+    "This file has not been added to the repository yet": "This file has not been added to the repository yet",
+    "Navigate to": "Navigate to"
   }
 }

@@ -17,6 +17,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private readonly FileDiffControlTarget _target;
 
+		[Null]
+		protected LineBlame.LineBlameContext _lineBlameContext;
+
 		public DiffLayoutMode LayoutMode
 		{
 			get
@@ -66,6 +69,24 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			if (_child != null)
 			{
 				_child.SetDiff(diff, tabWidth, entireFile, location);
+			}
+		}
+
+		public void SetLineBlameContext([Null] LineBlame.LineBlameContext context)
+		{
+			_lineBlameContext = context;
+			if (_child != null)
+			{
+				_child.SetLineBlameContext(context);
+			}
+		}
+
+		/// <summary>布局切换后向新子控件重放当前 blame 上下文。</summary>
+		protected void ApplyLineBlameContext(ITextDiffControl child)
+		{
+			if (child != null && _lineBlameContext != null)
+			{
+				child.SetLineBlameContext(_lineBlameContext);
 			}
 		}
 
@@ -125,6 +146,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_child.RefreshDiffShowHiddenSymbols(ForkPlusSettings.Default.DiffShowHiddenSymbols);
 			_child.RefreshDiffWordWrap(ForkPlusSettings.Default.DiffWordWrap);
 			_child.RefreshDiffFont(ForkPlusSettings.Default.CodeEditorFontSize);
+			ApplyLineBlameContext(_child);
 			if (child != null && child.Diff != null)
 			{
 				_child.PositionCache = child.PositionCache;

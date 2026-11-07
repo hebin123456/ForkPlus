@@ -38,6 +38,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			}
 		}
 
+		public void SetLineBlameContext([Null] LineBlame.LineBlameContext context)
+		{
+			_editor.SetLineBlameContext(context);
+		}
+
 		public bool IsNewOrUntracked
 		{
 			get

@@ -2478,6 +2478,20 @@
     "Pause": "暫停",
     "Play": "播放",
     "Playback Speed": "播放速度",
-    "Previous Frame": "上一幀"
+    "Previous Frame": "上一幀",
+    "Loading commit info...": "正在讀取提交資訊...",
+    "Unable to read commit info": "無法讀取提交資訊",
+    "Older version": "舊版本",
+    "Change history": "變更歷史",
+    "View full history...": "查看完整歷史...",
+    "No history found for this line": "找不到該行的歷史",
+    "Loading commit history...": "正在載入提交歷史...",
+    "Uncommitted line": "未提交的行",
+    "This line has not been committed yet": "該行尚未提交",
+    "Staged, not committed yet": "已暫存，尚未提交",
+    "This line will be included in the next commit": "該行將包含在下一次提交中",
+    "Untracked new file": "未追蹤的新檔案",
+    "This file has not been added to the repository yet": "該檔案尚未加入儲存庫",
+    "Navigate to": "跳轉至"
   }
 }

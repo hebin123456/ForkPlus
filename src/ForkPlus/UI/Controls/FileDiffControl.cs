@@ -16,6 +16,7 @@ using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls.Editor;
 using ForkPlus.UI.Controls.Editor.Diff;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 using ForkPlus.Plugins.BuiltIn.HexDiff;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.BinaryDiff;
@@ -129,6 +130,24 @@ namespace ForkPlus.UI.Controls
 			{
 				SetValue(ContentProperty, value);
 			}
+		}
+
+		/// <summary>
+		/// 当前 diff 两侧对应的 git 版本信息，由使用方在设置 Content 前赋值。
+		/// null = 按工作区 diff 处理（未暂存/已暂存/未跟踪，旧一侧为 HEAD）。
+		/// </summary>
+		[Null]
+		public LineBlameInfo LineBlame { get; set; }
+
+		/// <summary>根据当前变更文件构造行号 blame 上下文。</summary>
+		protected LineBlameContext CreateLineBlameContext(ChangedFile changedFile, GitModule gitModule)
+		{
+			LineBlameInfo info = LineBlame ?? LineBlameInfo.WorkingTree(changedFile.Staged, !changedFile.Tracked || changedFile.New, null);
+			if (info.Mode == LineBlameMode.Disabled)
+			{
+				return null;
+			}
+			return new LineBlameContext(gitModule, RepositoryUserControl, changedFile.Path, changedFile.OldPath, info);
 		}
 
 		protected override void OnKeyDown(KeyEventArgs e)
@@ -308,6 +327,7 @@ namespace ForkPlus.UI.Controls
 							Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
 							Commands.CopyAsPatch.AddMenuItems(diffCodeEditor, contextMenu);
 						};
+						c.SetLineBlameContext(CreateLineBlameContext(changedFile, parsedDiffContent.GitModule));
 						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, DiffLocation.Revision);
 						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 					});
@@ -433,6 +453,7 @@ namespace ForkPlus.UI.Controls
 						return textDiffControl2;
 					}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
 					{
+						c.SetLineBlameContext(CreateLineBlameContext(changedFile, parsedDiffContent.GitModule));
 						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, DiffLocation.Revision);
 						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 					});
@@ -476,6 +497,10 @@ namespace ForkPlus.UI.Controls
 					return textDiffControl;
 				}, delegate(TextDiffControl c, FileControlHeaderUserControl h)
 				{
+					if (RepositoryUserControl?.GitModule != null)
+					{
+						c.SetLineBlameContext(CreateLineBlameContext(changedFile, RepositoryUserControl.GitModule));
+					}
 					c.SetDiff(diff, textContent.TabWidth, textContent.EntireFile, DiffLocation.Revision);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 				});

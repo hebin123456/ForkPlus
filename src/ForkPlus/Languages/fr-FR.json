@@ -1251,7 +1251,6 @@
     "No command history": "Aucun historique de commande",
     "No sub repositories. Click the Sync button first, then click the Start button to begin git mm development.": "Aucun sous-dépôt. Cliquez d'abord sur le bouton Synchroniser, puis sur le bouton Démarrer pour commencer le développement git mm.",
     "No sub repository is selected. Please select one from the top right.": "Aucun sous-dépôt sélectionné. Veuillez en sélectionner un en haut à droite.",
-    "No conflict markers found in the file.": "Aucun marqueur de conflit trouvé dans le fichier.",
     "No controls": "Aucun contrôle",
     "No fast-forward": "Pas d'avance rapide",
     "No fast-forward on merge": "Pas d'avance rapide lors de la fusion",
@@ -1889,7 +1888,6 @@
     "GreenLight": "Vert Clair",
     "GreenDark": "Vert Foncé",
     "Presets": "Préréglages",
-    "Reset": "Réinitialiser",
     "Color.BackgroundColor": "Couleur de fond",
     "Color.SecondaryBackgroundColor": "Couleur de fond secondaire",
     "Color.PanelBackgroundColor": "Couleur de fond du panneau",
@@ -2472,6 +2470,20 @@
     "Pause": "Pause",
     "Play": "Lecture",
     "Playback Speed": "Vitesse de lecture",
-    "Previous Frame": "Image précédente"
+    "Previous Frame": "Image précédente",
+    "Loading commit info...": "Chargement des informations du commit...",
+    "Unable to read commit info": "Impossible de lire les informations du commit",
+    "Older version": "Ancienne version",
+    "Change history": "Historique des modifications",
+    "View full history...": "Voir l'historique complet...",
+    "No history found for this line": "Aucun historique trouvé pour cette ligne",
+    "Loading commit history...": "Chargement de l'historique des commits...",
+    "Uncommitted line": "Ligne non validée",
+    "This line has not been committed yet": "Cette ligne n'a pas encore été validée",
+    "Staged, not committed yet": "Indexée, pas encore validée",
+    "This line will be included in the next commit": "Cette ligne sera incluse dans le prochain commit",
+    "Untracked new file": "Nouveau fichier non suivi",
+    "This file has not been added to the repository yet": "Ce fichier n'a pas encore été ajouté au dépôt",
+    "Navigate to": "Accéder à"
   }
 }

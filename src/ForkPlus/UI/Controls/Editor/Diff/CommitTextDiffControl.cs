@@ -81,6 +81,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_child.RefreshDiffShowHiddenSymbols(ForkPlusSettings.Default.DiffShowHiddenSymbols);
 			_child.RefreshDiffWordWrap(ForkPlusSettings.Default.DiffWordWrap);
 			_child.RefreshDiffFont(ForkPlusSettings.Default.CodeEditorFontSize);
+			ApplyLineBlameContext(_child);
 			(_child as ICommitTextDiffControl).ShowStageDiscardButtons = _showStageDiscardButtons;
 			if (child != null && child.Diff != null)
 			{

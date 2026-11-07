@@ -38,9 +38,11 @@ namespace ForkPlus.Git.Commands
 
 		public GitCommandResult<(RevisionWithFiles[], string[])> Execute(GitModule gitModule, string filePath, Range lineRange, Sha? sha)
 		{
-			// -L 语法为 start,end:file；filePath 含空格或特殊字符时需转义并加引号，避免被 git 当作多个参数或语法错误。
-			string escapedFilePath = "\"" + (filePath ?? "").Replace("\"", "\\\"") + "\"";
-			GitCommand gitCommand = new GitCommand("-c", "core.quotepath=false", "log", "--no-show-signature", "--pretty=format:--ForkRevisionHeaderStart--%n" + RevisionParser.Format + "%n--ForkRevisionHeaderEnd--", "-L", $"{lineRange.Start},{lineRange.End}:{escapedFilePath}");
+			// -L 语法为 start,end:file。GitRequest 以参数数组传给子进程（不经 shell），
+			// 参数内的引号会被 git 当作路径的一部分（"There is no path \"a.txt\" in the commit"），
+			// 因此这里直接传原始路径，含空格的路径由参数数组天然保留为一个参数。
+			string file = filePath ?? "";
+			GitCommand gitCommand = new GitCommand("-c", "core.quotepath=false", "log", "--no-show-signature", "--pretty=format:--ForkRevisionHeaderStart--%n" + RevisionParser.Format + "%n--ForkRevisionHeaderEnd--", "-L", $"{lineRange.Start},{lineRange.End}:{file}");
 			if (sha.HasValue)
 			{
 				gitCommand.Add(sha.Value.ToString());

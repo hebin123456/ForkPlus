@@ -24,6 +24,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		void SetDiff([Null] ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location);
 
+		/// <summary>注入行号 blame 上下文；null 表示当前 diff 不提供悬停 blame。</summary>
+		void SetLineBlameContext([Null] LineBlame.LineBlameContext context);
+
 		void RefreshDiffFont(double codeEditorFontSize);
 
 		void RefreshDiffWordWrap(bool diffWordWrap);

@@ -1,0 +1,64 @@
+<UserControl xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="ForkPlus.UI.Controls.Editor.Diff.LineBlame.LineBlamePopupUserControl" xmlns="https://github.com/avaloniaui" xmlns:controls="clr-namespace:ForkPlus.UI.Controls" Focusable="False">
+  <!-- 行号 blame 悬停浮窗：加载 / 错误 / 未提交占位 / 主卡 + 可选旧版本卡 + 可展开历史。
+       Popup 内容不抢焦点（Focusable=False + 子按钮 IsTabStop=False），保证悬停时编辑器
+       光标/选区不丢失。 -->
+  <Border Theme="{DynamicResource MenuShadowBorderStyle}">
+    <Border CornerRadius="5" Padding="10,8" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="{DynamicResource ListBox.Static.Background}" MinWidth="300" MaxWidth="470">
+      <Panel>
+        <StackPanel Orientation="Horizontal" Spacing="8" x:Name="BusyPanel">
+          <ProgressBar Width="14" Height="14" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource CircularProgressBar}" />
+          <TextBlock FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="LoadingTextBlock" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="False" x:Name="ErrorPanel">
+          <TextBlock Text="!" FontSize="12" FontWeight="Bold" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundBrush.Gray}" />
+          <TextBlock FontSize="12" TextWrapping="Wrap" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="ErrorTextBlock" />
+        </StackPanel>
+        <StackPanel Spacing="6" IsVisible="False" x:Name="ContentPanel">
+          <Grid ColumnDefinitions="Auto,*" IsVisible="False" x:Name="UncommittedPanel">
+            <Border Width="18" Height="18" CornerRadius="9" VerticalAlignment="Top" Margin="0,1,8,0" Background="{DynamicResource ForegroundBrush.Gray}">
+              <TextBlock Text="?" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource ListBox.Static.Background}" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="1">
+              <TextBlock FontSize="12" FontWeight="SemiBold" x:Name="UncommittedTitleTextBlock" />
+              <TextBlock FontSize="11" TextWrapping="Wrap" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="UncommittedHintTextBlock" />
+            </StackPanel>
+          </Grid>
+          <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" IsVisible="False" x:Name="PrimaryPanel">
+            <controls:AvatarImage Grid.RowSpan="2" Width="18" Height="18" Margin="0,1,8,0" VerticalAlignment="Top" x:Name="PrimaryAvatar" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+              <TextBlock FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" x:Name="PrimaryAuthorTextBlock" />
+              <TextBlock FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="PrimaryDateTextBlock" />
+            </StackPanel>
+            <Button Grid.Column="2" FontSize="12" Height="20" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="PrimaryShaButton_Click" x:Name="PrimaryShaButton" />
+            <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="PrimarySubjectTextBlock" />
+          </Grid>
+          <Border IsVisible="False" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Padding="0,6,0,0" x:Name="OtherBorder">
+            <StackPanel Spacing="4">
+              <TextBlock FontSize="11" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="OtherHeaderTextBlock" />
+              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                <controls:AvatarImage Grid.RowSpan="2" Width="16" Height="16" Margin="0,1,8,0" VerticalAlignment="Top" x:Name="OtherAvatar" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                  <TextBlock FontSize="12" TextTrimming="CharacterEllipsis" x:Name="OtherAuthorTextBlock" />
+                  <TextBlock FontSize="11" VerticalAlignment="Center" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="OtherDateTextBlock" />
+                </StackPanel>
+                <Button Grid.Column="2" FontSize="12" Height="18" Padding="2,0" Margin="8,-2,0,0" VerticalAlignment="Top" HorizontalAlignment="Right" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="OtherShaButton_Click" x:Name="OtherShaButton" />
+                <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="1" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="400" Foreground="{DynamicResource ForegroundBrush.Gray}" x:Name="OtherSubjectTextBlock" />
+              </Grid>
+            </StackPanel>
+          </Border>
+          <Border IsVisible="False" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource BorderBrush}" Padding="0,4,0,0" x:Name="HistoryBorder">
+            <StackPanel Spacing="2">
+              <Button HorizontalAlignment="Left" FontSize="12" Padding="0,0,2,0" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="HistoryToggleButton_Click" x:Name="HistoryToggleButton" />
+              <StackPanel Spacing="2" IsVisible="False" x:Name="HistoryPanel">
+                <TextBlock FontSize="11" Foreground="{DynamicResource ForegroundBrush.Gray}" TextWrapping="Wrap" IsVisible="False" x:Name="HistoryLoadingTextBlock" />
+                <TextBlock FontSize="11" Foreground="{DynamicResource ForegroundBrush.Gray}" IsVisible="False" x:Name="HistoryEmptyTextBlock" />
+                <StackPanel Spacing="1" x:Name="HistoryItemsPanel" />
+                <Button HorizontalAlignment="Left" Margin="0,2,0,0" FontSize="12" Padding="0,0,2,0" IsTabStop="False" Focusable="False" Foreground="{DynamicResource ForegroundBrush.Gray}" Theme="{DynamicResource TextButtonStyle}" Click="ViewFullHistoryButton_Click" x:Name="ViewFullHistoryButton" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Panel>
+    </Border>
+  </Border>
+</UserControl>

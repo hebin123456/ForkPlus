@@ -139,6 +139,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_lineHeightSynchronizer?.Dispose();
 		}
 
+		public void SetLineBlameContext([Null] LineBlame.LineBlameContext context)
+		{
+			_leftDiffCodeEditor.SetLineBlameContext(context);
+			_rightDiffCodeEditor.SetLineBlameContext(context);
+		}
+
 		public void SetDiff(ForkPlus.Git.Diff.Diff diff, int tabWidth, bool entireFile, DiffLocation location)
 		{
 			Diff = diff;

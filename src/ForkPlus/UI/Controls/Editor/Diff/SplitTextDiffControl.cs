@@ -102,6 +102,11 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			_editor.ScrollToLine(line);
 		}
 
+		public void SetLineBlameContext([Null] LineBlame.LineBlameContext context)
+		{
+			_editor.SetLineBlameContext(context);
+		}
+
 		public void ControlWillBeRemovedFromFileDiffControl()
 		{
 			PositionCache?.SaveScrollPosition(_editor);

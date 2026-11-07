@@ -17,6 +17,7 @@ using ForkPlus.Jobs;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.UserControls;
 using ForkPlus.UI.UserControls.Preferences;
@@ -614,6 +615,7 @@ namespace ForkPlus.UI.Dialogs
 					}
 					string diffString = _patches[selectedIndex];
 					FileDiffControl.RepositoryUserControl = _repositoryUserControl;
+					FileDiffControl.LineBlame = LineBlameInfo.Revision(historyEntry.Sha.ToString(), historyEntry.Sha + "~1");
 					FileDiffControl.Content = ParsePatch(diffString, historyEntry.ChangedFile, GitModule, tabWidth);
 					FileDiffControl.Target = FileDiffControlTarget.HunkHistory;
 				}
@@ -628,6 +630,9 @@ namespace ForkPlus.UI.Dialogs
 					{
 						target = new RevisionDiffTarget.Range(historyEntry.Sha, historyEntries[1].Sha);
 					}
+					LineBlameInfo lineBlame = ((target is RevisionDiffTarget.Range range)
+						? LineBlameInfo.Revision(range.Sha.ToString(), range.OtherSha.ToString())
+						: LineBlameInfo.Revision(target.Sha.ToString(), target.Sha + "~1"));
 					GitCommandResult<DiffContent> diffPresentationResult = new GetRevisionFileChangesGitCommand().Execute(GitModule, target, historyEntry.ChangedFile, ForkPlusSettings.Default.DiffContextSize, tabWidth, ForkPlusSettings.Default.DiffIgnoreWhitespaces, ForkPlusSettings.Default.DiffShowEntireFile);
 					if (!monitor.IsCanceled)
 					{
@@ -636,6 +641,7 @@ namespace ForkPlus.UI.Dialogs
 							if (!monitor.IsCanceled)
 							{
 								FileDiffControl.RepositoryUserControl = _repositoryUserControl;
+								FileDiffControl.LineBlame = lineBlame;
 								FileDiffControl.Content = diffPresentationResult;
 								FileDiffControl.Target = FileDiffControlTarget.History;
 								_showDiffJob = null;

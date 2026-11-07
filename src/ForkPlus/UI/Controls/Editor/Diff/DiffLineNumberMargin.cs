@@ -10,6 +10,7 @@ using AvaloniaEdit.Rendering;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 
 namespace ForkPlus.UI.Controls.Editor.Diff
 {
@@ -63,6 +64,9 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 
 		private bool _showDiffMarks;
 
+		[Null]
+		private LineBlameHoverController _lineBlameHoverController;
+
 		private double DiffMarksColumnWidth
 		{
 			get
@@ -104,6 +108,108 @@ namespace ForkPlus.UI.Controls.Editor.Diff
 			WeakEventManager<NotificationCenter, EventArgs<ThemeType>>.AddHandler(NotificationCenter.Current, "ApplicationThemeChanged", ApplicationThemeChanged);
 			WeakEventManager<NotificationCenter, EventArgs<bool>>.AddHandler(NotificationCenter.Current, "DiffShowChangeMarksChanged", DiffShowChangeMarksChanged);
 			RenderOptionsShim.SetClearTypeHint(this, ClearTypeHint.Enabled);
+		}
+
+		/// <summary>由 FileDiffControl 在每次内容刷新时注入 blame 上下文；null 表示当前 diff 不提供 blame。</summary>
+		internal void SetLineBlameContext([Null] LineBlameContext context)
+		{
+			_lineBlameHoverController?.Dispose();
+			_lineBlameHoverController = null;
+			if (context != null)
+			{
+				_lineBlameHoverController = new LineBlameHoverController(this, context);
+			}
+		}
+
+		internal global::AvaloniaEdit.Rendering.TextView TextViewForBlame => base.TextView;
+
+		/// <summary>
+		/// 行号区命中测试：返回悬停的是 diff 哪一侧、两侧原始行号以及该行在视口中的位置。
+		/// Split 模式下按 margin 水平中线分左右；所选一侧没有行号（新增行在旧侧/删除行在新侧）时
+		/// 回退到另一侧，避免悬停空白行号时无反应。
+		/// </summary>
+		[Null]
+		internal LineBlameHitInfo HitTestLineBlame(Point position)
+		{
+			global::AvaloniaEdit.Rendering.TextView textView = base.TextView;
+			if (textView == null || !textView.VisualLinesValid)
+			{
+				return null;
+			}
+			try
+			{
+				global::AvaloniaEdit.Rendering.VisualLine visualLine = textView.GetVisualLineFromVisualTop(position.Y + textView.ScrollOffset.Y);
+				if (visualLine == null)
+				{
+					return null;
+				}
+				if (!_lineNumbers.TryGetValue(visualLine.FirstDocumentLine.LineNumber - 1, out LineNumber value))
+				{
+					return null;
+				}
+				bool oldSide;
+				if (_diffViewMode == DiffViewMode.SideBySideOld)
+				{
+					oldSide = true;
+				}
+				else if (_diffViewMode == DiffViewMode.SideBySideNew)
+				{
+					oldSide = false;
+				}
+				else
+				{
+					oldSide = position.X < base.Bounds.Width / 2.0;
+				}
+				int oldLine = value.From ?? 0;
+				int newLine = value.To ?? 0;
+				if (oldSide && oldLine == 0)
+				{
+					if (newLine == 0)
+					{
+						return null;
+					}
+					oldSide = false;
+				}
+				else if (!oldSide && newLine == 0)
+				{
+					if (oldLine == 0)
+					{
+						return null;
+					}
+					oldSide = true;
+				}
+				return new LineBlameHitInfo
+				{
+					OldSide = oldSide,
+					OldLine = oldLine,
+					NewLine = newLine,
+					Top = visualLine.VisualTop - textView.ScrollOffset.Y,
+					Height = visualLine.Height
+				};
+			}
+			catch (Exception ex)
+			{
+				Log.Error("LineBlame hit test failed: " + ex);
+				return null;
+			}
+		}
+
+		protected override void OnPointerMoved(global::Avalonia.Input.PointerEventArgs e)
+		{
+			base.OnPointerMoved(e);
+			_lineBlameHoverController?.OnPointerMoved(e);
+		}
+
+		protected override void OnPointerExited(global::Avalonia.Input.PointerEventArgs e)
+		{
+			base.OnPointerExited(e);
+			_lineBlameHoverController?.OnPointerExited();
+		}
+
+		protected override void OnDetachedFromVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			base.OnDetachedFromVisualTree(e);
+			_lineBlameHoverController?.OnMarginDetached();
 		}
 
 		public void UpdateLineNumbersData([Null] VisualPatch visualPatch)

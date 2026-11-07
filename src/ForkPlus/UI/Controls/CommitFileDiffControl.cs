@@ -203,6 +203,7 @@ namespace ForkPlus.UI.Controls
 						FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor2, contextMenu2);
 						FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor2, contextMenu2);
 					};
+						c.SetLineBlameContext(CreateLineBlameContext(changedFile, parsedDiffContent.GitModule));
 						c.SetDiff(diff2, parsedDiffContent.TabWidth, parsedDiffContent.EntireFile, location2);
 						ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 					});
@@ -289,6 +290,10 @@ namespace ForkPlus.UI.Controls
 					FileDiffControl.Commands.Copy.AddMenuItems(diffCodeEditor, contextMenu);
 					FileDiffControl.Commands.CopyAsPatch.AddMenuItems(diffCodeEditor, contextMenu);
 				};
+					if (repositoryUserControl?.GitModule != null)
+					{
+						c.SetLineBlameContext(CreateLineBlameContext(changedFile, repositoryUserControl.GitModule));
+					}
 					c.SetDiff(diff, textContent.TabWidth, textContent.EntireFile, location);
 					ShowHeaderIfAllowed(h, changedFile, FileControlHeaderMode.Text);
 				});

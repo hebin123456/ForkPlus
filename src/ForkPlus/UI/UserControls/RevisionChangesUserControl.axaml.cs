@@ -14,6 +14,7 @@ using ForkPlus.Git.Commands;
 using ForkPlus.Settings;
 using ForkPlus.UI.Commands;
 using ForkPlus.UI.Controls;
+using ForkPlus.UI.Controls.Editor.Diff.LineBlame;
 using ForkPlus.UI.CustomCommands;
 using ForkPlus.UI.Dialogs;
 using Avalonia.Layout;
@@ -490,10 +491,31 @@ namespace ForkPlus.UI.UserControls
 						return;
 					}
 					GitCommandResult<DiffContent> gitCommandResult = diffTask.Result;
+					LineBlameInfo lineBlame = CreateLineBlameInfo(target, capturedFile);
+					FileDiffControl.LineBlame = lineBlame;
 					FileDiffControl.Content = gitCommandResult;
-					_diffPopupWindow?.UpdateDiff(gitCommandResult);
+					_diffPopupWindow?.UpdateDiff(gitCommandResult, lineBlame);
 				});
 			});
+		}
+
+		/// <summary>把版本对比目标映射成行号 blame 的两侧版本；多重提交对比无单一行号映射，不提供 blame。</summary>
+		[Null]
+		private static LineBlameInfo CreateLineBlameInfo([Null] RevisionDiffTarget target, ChangedFile changedFile)
+		{
+			if (target == null || target is RevisionDiffTarget.MultipleRevisions)
+			{
+				return LineBlameInfo.Disabled;
+			}
+			if (target is RevisionDiffTarget.WorkingDirectory)
+			{
+				return LineBlameInfo.WorkingTree(changedFile.Staged, !changedFile.Tracked || changedFile.New, target.Sha.ToString());
+			}
+			if (target is RevisionDiffTarget.Range range)
+			{
+				return LineBlameInfo.Revision(range.Sha.ToString(), range.OtherSha.ToString());
+			}
+			return LineBlameInfo.Revision(target.Sha.ToString(), target.Sha + "~1");
 		}
 
 		private void RefreshFileDiffControlTarget()
@@ -556,11 +578,11 @@ namespace ForkPlus.UI.UserControls
 			{
 				_diffPopupWindow = CreateNewDiffPopupWindow();
 				_diffPopupWindow.ShowAtCenter((global::Avalonia.Application.Current?.ApplicationLifetime as global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow);
-				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
+				_diffPopupWindow.UpdateDiff(FileDiffControl.Content, FileDiffControl.LineBlame);
 			}
 			else
 			{
-				_diffPopupWindow.UpdateDiff(FileDiffControl.Content);
+				_diffPopupWindow.UpdateDiff(FileDiffControl.Content, FileDiffControl.LineBlame);
 				_diffPopupWindow.Focus();
 			}
 		}
