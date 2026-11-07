@@ -180,9 +180,14 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 		{
 			Button button = new Button
 			{
-				Theme = Application.Current?.TryFindResource("TextButtonStyle") as ControlTheme,
+				// TextButtonStyle 的模板把 Content 当作字符串塞给 TextBlock（Grid 会显示成
+				// "Avalonia.Controls.Grid"）。历史行内容是多列 Grid，必须用带 ContentPresenter
+				// 的 TransparentButtonStyle。
+				Theme = Application.Current?.TryFindResource("TransparentButtonStyle") as ControlTheme,
 				IsTabStop = false,
 				Focusable = false,
+				Height = 20,
+				Margin = new Thickness(0),
 				Padding = new Thickness(0, 1, 0, 1),
 				HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch,
 				HorizontalContentAlignment = global::Avalonia.Layout.HorizontalAlignment.Left

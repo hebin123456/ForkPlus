@@ -79,6 +79,20 @@ namespace ForkPlus.Tests
 
 					popup.ShowHistory(new RevisionWithFiles[0]);
 					Assert.True(popup.HistoryEmptyTextBlock.IsVisible);
+
+					// 历史行内容是多列 Grid：必须由 ContentPresenter 渲染，而不是被
+					// TextButtonStyle 字符串化成 "Avalonia.Controls.Grid"。
+					Revision historyRevision = new Revision(ParseSha("dddddddddddddddddddddddddddddddddddddddd"),
+						new RevisionHeader(new UserIdentity("History", "history@example.com"), DateTime.Now.AddDays(-2), "history subject", hasBody: false));
+					popup.ShowHistory(new[] { new RevisionWithFiles(historyRevision, new ChangedFile[0]) });
+					Assert.False(popup.HistoryEmptyTextBlock.IsVisible);
+					Assert.True(popup.ViewFullHistoryButton.IsVisible);
+					Assert.Equal(1, popup.HistoryItemsPanel.Children.Count);
+					Button row = popup.HistoryItemsPanel.Children[0] as Button;
+					Assert.NotNull(row);
+					Grid rowGrid = row.Content as Grid;
+					Assert.NotNull(rowGrid);
+					Assert.Equal(3, rowGrid.Children.Count);
 					return (Exception)null;
 				}
 				catch (Exception ex)

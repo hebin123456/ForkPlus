@@ -84,6 +84,12 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 		private EventHandler<PointerEventArgs> _topLevelPointerExitedHandler;
 
 		[Null]
+		private EventHandler<PointerPressedEventArgs> _topLevelPointerPressedHandler;
+
+		[Null]
+		private EventHandler<PointerWheelEventArgs> _topLevelPointerWheelHandler;
+
+		[Null]
 		private EventHandler _scrollHandler;
 
 		[Null]
@@ -96,6 +102,13 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 
 		/// <summary>鼠标是否在浮窗内容上（Windows 独立 HWND 下 IsPointerOver 可能滞后，用事件标志兜底）。</summary>
 		private bool _pointerOverContent;
+
+		/// <summary>
+		/// 鼠标进入过浮窗后置 true：此后不再因鼠标移动/离开自动关窗，必须点击浮窗外、
+		/// 滚动、Esc 或切换行号才关闭。避免展开历史时布局变化引起的假 PointerExited
+		/// 让面板“稍微一动就消失”。
+		/// </summary>
+		private bool _popupPinned;
 
 		private bool _disposed;
 
@@ -218,7 +231,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			}
 			bool pointerOverPopup = _pointerOverContent || (_content != null && _content.IsPointerOver);
 			bool pointerStillPressed = _pointerPressedOnPopup;
-			if (_margin.IsPointerOver || pointerOverPopup || pointerStillPressed)
+			if (_popupPinned || _margin.IsPointerOver || pointerOverPopup || pointerStillPressed)
 			{
 				return;
 			}
@@ -251,21 +264,30 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			content.PointerEntered += delegate
 			{
 				_pointerOverContent = true;
+				_popupPinned = true;
 				_closeTimer.Stop();
 			};
 			content.PointerMoved += delegate
 			{
 				_pointerOverContent = true;
+				if (_pointerPressedOnPopup)
+				{
+					_popupPinned = true;
+				}
 				_closeTimer.Stop();
 			};
 			content.PointerExited += delegate
 			{
 				_pointerOverContent = false;
-				StartCloseTimer();
+				if (!_popupPinned)
+				{
+					StartCloseTimer();
+				}
 			};
 			content.PointerPressed += delegate
 			{
 				_pointerOverContent = true;
+				_popupPinned = true;
 				_pointerPressedOnPopup = true;
 				_closeTimer.Stop();
 			};
@@ -369,15 +391,61 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			{
 				StartCloseTimer();
 			};
+			_topLevelPointerPressedHandler = delegate(object sender, PointerPressedEventArgs e)
+			{
+				if (_popup == null || !_popup.IsOpen)
+				{
+					return;
+				}
+				// 点击浮窗内部不关（overlay 模式下事件会到达主窗口顶层）；
+				// 点击其它任何位置（编辑器、行号区、工具栏等）视为明确放弃浮窗。
+				if (!IsPointerEventFromPopup(e.Source))
+				{
+					ClosePopup();
+				}
+			};
+			// 鼠标在浮窗上时滚轮由浮窗接管：不滚动下面的 diff 编辑器，也不因此触发
+			// ScrollOffsetChanged → 关窗（Windows 独立 HWND 下滚轮本会发给焦点主窗口，
+			// Linux/overlay 模式下则会冒泡到主窗口，故统一在顶层 Tunnel 拦截）。
+			_topLevelPointerWheelHandler = delegate(object sender, PointerWheelEventArgs e)
+			{
+				if (_popup == null || !_popup.IsOpen)
+				{
+					return;
+				}
+				if (_pointerOverContent || (_content != null && _content.IsPointerOver) || IsPointerEventFromPopup(e.Source))
+				{
+					e.Handled = true;
+					_closeTimer.Stop();
+				}
+			};
 			_topLevel.AddHandler(InputElement.PointerMovedEvent, _topLevelPointerMovedHandler,
 				RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 			_topLevel.AddHandler(InputElement.PointerExitedEvent, _topLevelPointerExitedHandler,
 				RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+			_topLevel.AddHandler(InputElement.PointerPressedEvent, _topLevelPointerPressedHandler,
+				RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+			_topLevel.AddHandler(InputElement.PointerWheelChangedEvent, _topLevelPointerWheelHandler,
+				RoutingStrategies.Tunnel, handledEventsToo: true);
+		}
+
+		private bool IsPointerEventFromPopup(object source)
+		{
+			global::Avalonia.Visual visual = source as global::Avalonia.Visual;
+			while (visual != null)
+			{
+				if (visual == _content)
+				{
+					return true;
+				}
+				visual = global::Avalonia.VisualTree.VisualExtensions.GetVisualParent(visual);
+			}
+			return false;
 		}
 
 		private void OnTopLevelPointerMoved()
 		{
-			if (_popup == null || !_popup.IsOpen)
+			if (_popup == null || !_popup.IsOpen || _popupPinned)
 			{
 				return;
 			}
@@ -415,6 +483,16 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 				_topLevel.RemoveHandler(InputElement.PointerExitedEvent, _topLevelPointerExitedHandler);
 				_topLevelPointerExitedHandler = null;
 			}
+			if (_topLevelPointerPressedHandler != null)
+			{
+				_topLevel.RemoveHandler(InputElement.PointerPressedEvent, _topLevelPointerPressedHandler);
+				_topLevelPointerPressedHandler = null;
+			}
+			if (_topLevelPointerWheelHandler != null)
+			{
+				_topLevel.RemoveHandler(InputElement.PointerWheelChangedEvent, _topLevelPointerWheelHandler);
+				_topLevelPointerWheelHandler = null;
+			}
 			_topLevel = null;
 		}
 
@@ -427,6 +505,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			_lastData = null;
 			_pointerOverContent = false;
 			_pointerPressedOnPopup = false;
+			_popupPinned = false;
 			UnhookEscape();
 			if (_popup != null)
 			{
