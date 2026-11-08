@@ -15,6 +15,13 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-08，v5.4.3）：修复行号 blame 浮窗“展开变更历史后鼠标一动就消失”。
+//   根因三处：① 卡片上的 Button 在类处理器里把 PointerPressed 标记 handled，内容级订阅
+//   收不到 → _popupPinned 未置位；② 展开历史使卡片尺寸/位置重算，指针容易蹭回行号区，
+//   行号 PointerMoved 命中变化时旧逻辑无条件 ClosePopup；③ 顶层 PointerExited 无条件启动
+//   关闭定时器。修复：展开历史即钉住浮窗；内容级 PointerMoved/Pressed 改 handledEventsToo
+//   并一律钉住；钉住时行号掠过不再立即关窗，改为 400ms 悬停定时器决定是否切换到新行
+//   （同一行重复 tick 用 _openHit 判等，不重开浮窗）。
 // 版本号说明（2026-11-07，v5.4.2）：无功能变更，新增 Windows ARM64（win-arm64）发布平台。
 //   CI 增加 windows-11-arm 原生 ARM64 runner 腿（self-contained publish，PlatformTarget=arm64），
 //   发布资产 ForkPlus-<版本>-windows-arm64.zip；biturbo 拉取 Biturbo v1.1.5 起的
@@ -244,8 +251,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.4.2")]
-[assembly: AssemblyInformationalVersion("5.4.2")]
+[assembly: AssemblyFileVersion("5.4.3")]
+[assembly: AssemblyInformationalVersion("5.4.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.4.2.0")]
+[assembly: AssemblyVersion("5.4.3.0")]

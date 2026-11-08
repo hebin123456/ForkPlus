@@ -95,6 +95,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 		[Null]
 		private LineBlameHitInfo _hoverHit;
 
+		/// <summary>当前浮窗对应的行（用于判断悬停是否已经换到另一行，避免重复重开）。</summary>
+		[Null]
+		private LineBlameHitInfo _openHit;
+
 		[Null]
 		private LineBlamePopupData _lastData;
 
@@ -176,17 +180,31 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 				// 真正离开由顶层 PointerMoved / 浮窗内容事件驱动。
 				return;
 			}
-			if (_hoverHit != null && _hoverHit.OldSide == hit.OldSide && _hoverHit.OldLine == hit.OldLine && _hoverHit.NewLine == hit.NewLine)
+			if (_hoverHit != null && SameHit(_hoverHit, hit))
 			{
 				return;
 			}
 			_hoverTimer.Stop();
+			_hoverHit = hit;
 			if (_popup != null && _popup.IsOpen)
 			{
+				// 浮窗已被用户接管（进入/点击/展开过）时，鼠标掠过行号不能立刻关窗：
+				// 展开历史会让卡片尺寸变化、位置重算，指针很容易蹭回行号区——
+				// 旧逻辑在这里直接 ClosePopup()，用户看到的就是“面板刷新后鼠标一动就没”。
+				// 改为交给 400ms 悬停定时器：真的停在新行上才切换，路过不影响。
+				if (_popupPinned || IsPointerOverPopupContent())
+				{
+					_hoverTimer.Start();
+					return;
+				}
 				ClosePopup();
 			}
-			_hoverHit = hit;
 			_hoverTimer.Start();
+		}
+
+		private static bool SameHit(LineBlameHitInfo a, LineBlameHitInfo b)
+		{
+			return a.OldSide == b.OldSide && a.OldLine == b.OldLine && a.NewLine == b.NewLine;
 		}
 
 		public void OnPointerExited()
@@ -204,11 +222,21 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 		private void HoverTimer_Tick(object sender, EventArgs e)
 		{
 			_hoverTimer.Stop();
-			if (_disposed || _hoverHit == null || !_margin.IsPointerOver || _popup != null)
+			if (_disposed || _hoverHit == null || !_margin.IsPointerOver)
 			{
 				return;
 			}
 			LineBlameHitInfo hit = _hoverHit;
+			if (_popup != null && _popup.IsOpen)
+			{
+				// 同一行：保持现有浮窗（展开历史等操作不会重开）。
+				if (_openHit != null && SameHit(_openHit, hit))
+				{
+					return;
+				}
+				// 真的换到另一行了才切换。
+				ClosePopup();
+			}
 			int generation = ++_generation;
 			try
 			{
@@ -229,13 +257,18 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			{
 				return;
 			}
-			bool pointerOverPopup = _pointerOverContent || (_content != null && _content.IsPointerOver);
 			bool pointerStillPressed = _pointerPressedOnPopup;
-			if (_popupPinned || _margin.IsPointerOver || pointerOverPopup || pointerStillPressed)
+			if (_popupPinned || _margin.IsPointerOver || IsPointerOverPopupContent() || pointerStillPressed)
 			{
 				return;
 			}
 			ClosePopup();
+		}
+
+		/// <summary>指针是否在浮窗内容上（Windows 独立 HWND 下 IsPointerOver 可能滞后，事件标志兜底）。</summary>
+		private bool IsPointerOverPopupContent()
+		{
+			return _pointerOverContent || (_content != null && _content.IsPointerOver);
 		}
 
 		private void StartCloseTimer()
@@ -248,6 +281,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 		{
 			LineBlamePopupUserControl content = new LineBlamePopupUserControl();
 			_content = content;
+			_openHit = hit;
 			content.ShaClicked += delegate(Sha sha, string path)
 			{
 				ClosePopup();
@@ -255,6 +289,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			};
 			content.HistoryExpanded += delegate
 			{
+				// 展开历史本身就是明确的“接管浮窗”动作：立刻钉住，后续内容从加载态
+				// 长成列表（卡片尺寸/位置变化）也不会因为指针暂时离开而关窗。
+				_popupPinned = true;
+				_closeTimer.Stop();
 				LoadHistory();
 			};
 			content.ViewFullHistoryRequested += delegate
@@ -267,15 +305,16 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 				_popupPinned = true;
 				_closeTimer.Stop();
 			};
-			content.PointerMoved += delegate
+			content.AddHandler(InputElement.PointerMovedEvent, delegate(object sender, PointerEventArgs e)
 			{
+				// 指针确实在浮窗上移动过就视为用户接管（不再要求先按下）：
+				// 之前只在 _pointerPressedOnPopup 时才钉住，而卡片上的按钮会把
+				// PointerPressed 标记 handled，内容级 handler 收不到，导致点过
+				// “变更历史”后浮窗仍可能被关闭。
 				_pointerOverContent = true;
-				if (_pointerPressedOnPopup)
-				{
-					_popupPinned = true;
-				}
+				_popupPinned = true;
 				_closeTimer.Stop();
-			};
+			}, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 			content.PointerExited += delegate
 			{
 				_pointerOverContent = false;
@@ -284,21 +323,23 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 					StartCloseTimer();
 				}
 			};
-			content.PointerPressed += delegate
+			// handledEventsToo: true —— Button/HyperlinkButton 会在类处理器里把
+			// PointerPressed 标记为 handled，普通 += 订阅收不到，钉住状态就丢了。
+			content.AddHandler(InputElement.PointerPressedEvent, delegate(object sender, PointerPressedEventArgs e)
 			{
 				_pointerOverContent = true;
 				_popupPinned = true;
 				_pointerPressedOnPopup = true;
 				_closeTimer.Stop();
-			};
-			content.PointerReleased += delegate
+			}, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+			content.AddHandler(InputElement.PointerReleasedEvent, delegate(object sender, PointerReleasedEventArgs e)
 			{
 				_pointerPressedOnPopup = false;
-			};
-			content.PointerCaptureLost += delegate
+			}, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
+			content.AddHandler(InputElement.PointerCaptureLostEvent, delegate(object sender, PointerCaptureLostEventArgs e)
 			{
 				_pointerPressedOnPopup = false;
-			};
+			}, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
 			content.ShowLoading();
 
 			Popup popup = new Popup
@@ -389,7 +430,10 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			};
 			_topLevelPointerExitedHandler = delegate(object sender, PointerEventArgs e)
 			{
-				StartCloseTimer();
+				if (!_popupPinned)
+				{
+					StartCloseTimer();
+				}
 			};
 			_topLevelPointerPressedHandler = delegate(object sender, PointerPressedEventArgs e)
 			{
@@ -502,6 +546,7 @@ namespace ForkPlus.UI.Controls.Editor.Diff.LineBlame
 			_closeTimer.Stop();
 			_generation++;
 			_hoverHit = null;
+			_openHit = null;
 			_lastData = null;
 			_pointerOverContent = false;
 			_pointerPressedOnPopup = false;
