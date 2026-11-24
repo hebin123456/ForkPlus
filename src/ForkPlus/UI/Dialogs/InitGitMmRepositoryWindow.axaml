@@ -24,7 +24,14 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <TextBlock Grid.Column="0" Grid.Row="0" Text="Manifest Repository Url:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="0" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Manifest repository URL" Icon="{DynamicResource SubmoduleIcon}" x:Name="ManifestUrlTextBox" />
+      <Grid Grid.Row="0" Grid.Column="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Manifest repository URL" Icon="{DynamicResource SubmoduleIcon}" x:Name="ManifestUrlTextBox" />
+        <Button Grid.Column="1" Content="Load" Margin="4,4,0,4" MinWidth="52" ToolTip.Tip="Load branches and manifest files from repository" Click="LoadManifestButton_Click" x:Name="LoadManifestButton" />
+      </Grid>
       <TextBlock Grid.Column="0" Grid.Row="1" Text="Parent Folder:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
       <Grid Grid.Column="1" Grid.Row="1">
         <Grid.ColumnDefinitions>
@@ -35,13 +42,20 @@
         <Button Grid.Column="1" Click="BrowseButton_Click" Theme="{DynamicResource BrowseButtonStyle}" />
       </Grid>
       <TextBlock Grid.Column="0" Grid.Row="2" Text="Name:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="2" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Repository name" x:Name="RepositoryNameTextBox" />
-      <TextBlock Grid.Column="0" Grid.Row="3" Text="Manifest File:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Manifest file" Text="dependency.xml" x:Name="ManifestFileTextBox" />
-      <TextBlock Grid.Column="0" Grid.Row="4" Text="Manifest Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Manifest branch" Text="master" x:Name="ManifestBranchTextBox" />
+      <Grid Grid.Row="2" Grid.Column="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Column="0" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Repository name" x:Name="RepositoryNameTextBox" />
+        <CheckBox Grid.Column="1" Content="Create subdirectory" VerticalAlignment="Center" Margin="6,4,0,4" IsCheckedChanged="CreateSubdirectoryCheckBox_IsCheckedChanged" x:Name="CreateSubdirectoryCheckBox" />
+      </Grid>
+      <TextBlock Grid.Column="0" Grid.Row="3" Text="Manifest Branch:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="3" Grid.Column="1" Margin="8,4,0,4" Height="26" VerticalContentAlignment="Center" IsEditable="True" PlaceholderText="Manifest branch" controls:ComboBoxSearch.IsEnabled="True" x:Name="ManifestBranchComboBox" />
+      <TextBlock Grid.Column="0" Grid.Row="4" Text="Manifest File:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
+      <ComboBox Grid.Row="4" Grid.Column="1" Margin="8,4,0,4" Height="26" VerticalContentAlignment="Center" IsEditable="True" PlaceholderText="Manifest file" controls:ComboBoxSearch.IsEnabled="True" x:Name="ManifestFileComboBox" />
       <TextBlock Grid.Column="0" Grid.Row="5" Text="Manifest Group:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" />
-      <controls:PlaceholderTextBox TextChanged="TextBox_TextChanged" Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" Padding="4,2,4,2" Placeholder="Manifest group" Text="default" x:Name="ManifestGroupTextBox" />
+      <ComboBox Grid.Row="5" Grid.Column="1" Margin="8,4,0,4" Height="26" VerticalContentAlignment="Center" IsEditable="True" PlaceholderText="Manifest group" controls:ComboBoxSearch.IsEnabled="True" x:Name="ManifestGroupComboBox" />
       <TextBlock Grid.Column="0" Grid.Row="6" Text="Command Preview:" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,0,0" />
       <Grid Grid.Column="1" Grid.Row="6" Margin="8,8,0,0">
         <Grid.ColumnDefinitions>

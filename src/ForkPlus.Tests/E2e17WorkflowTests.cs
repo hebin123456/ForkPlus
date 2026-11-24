@@ -513,9 +513,9 @@ namespace ForkPlus.Tests
 
 				// 2) 预览：manifest/branch/group 置空 → IsNullOrWhiteSpace 回退默认
 				//    （dependency.xml/master/default；-g 恒出现在预览，CreateInitArgs 固定 9 参数）
-				dialog.ManifestFileTextBox.Text = string.Empty;
-				dialog.ManifestBranchTextBox.Text = string.Empty;
-				dialog.ManifestGroupTextBox.Text = string.Empty;
+				dialog.ManifestFileComboBox.Text = string.Empty;
+				dialog.ManifestBranchComboBox.Text = string.Empty;
+				dialog.ManifestGroupComboBox.Text = string.Empty;
 				dialog.ManifestUrlTextBox.Text = "http://example.com/manifest.git";
 				dialog.ParentDirectoryTextBox.Text = "/tmp/fpe2e_gitmm_dest";
 				dialog.RepositoryNameTextBox.Text = "ws1";
@@ -525,9 +525,9 @@ namespace ForkPlus.Tests
 					CommandPreviewOf(dialog));
 
 				// 3) 自定义 manifest/branch/group + 空格 URL/group 引号转义
-				dialog.ManifestFileTextBox.Text = "deps.xml";
-				dialog.ManifestBranchTextBox.Text = "release";
-				dialog.ManifestGroupTextBox.Text = "team a";
+				dialog.ManifestFileComboBox.Text = "deps.xml";
+				dialog.ManifestBranchComboBox.Text = "release";
+				dialog.ManifestGroupComboBox.Text = "team a";
 				dialog.ManifestUrlTextBox.Text = "http://example.com/my manifest.git";
 				Dispatcher.UIThread.RunJobs();
 				Assert.Equal("git mm init -u \"http://example.com/my manifest.git\" -m deps.xml -b release -g \"team a\"",
@@ -554,6 +554,7 @@ namespace ForkPlus.Tests
 				File.WriteAllText(Path.Combine(occupied, "seed.txt"), "occupied");
 				dialog.ManifestUrlTextBox.Text = "http://example.com/manifest.git";
 				dialog.ParentDirectoryTextBox.Text = occupied;
+				dialog.CreateSubdirectoryCheckBox.IsChecked = true; // 恢复原 destination=parent/name 的守门检验
 				dialog.RepositoryNameTextBox.Text = "ws1"; // occupied 本身非空 → destination=occupied 非空
 				Dispatcher.UIThread.RunJobs();
 

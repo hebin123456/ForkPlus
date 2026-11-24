@@ -2,6 +2,13 @@
   "code": "en",
   "name": "English",
   "translations": {
+    "Load": "Load",
+    "Create subdirectory": "Create subdirectory",
+    "Load branches and manifest files from repository": "Load branches and manifest files from repository",
+    "Missing repository URL": "Missing repository URL",
+    "Please enter the manifest repository URL first.": "Please enter the manifest repository URL first.",
+    "Loading manifest repository...": "Loading manifest repository...",
+    "Failed to load manifest repository": "Failed to load manifest repository",
     "Staging {0} files...": "Staging {0} files...",
     "Staging {0}/{1}...": "Staging {0}/{1}...",
     "Locked '{0}'": "Locked '{0}'",
