@@ -82,6 +82,11 @@ namespace ForkPlus.Git.Commands
 			{
 				gitCommand.Add("--find-renames");
 			}
+			// v5.6.1：语义文本扩展名（如 .log）强制按文本 diff，避免 NUL 字节导致走 Hex 视图丢失部分暂存。
+			if (IsForceTextPath(changedFile.Path))
+			{
+				gitCommand.Add("--text");
+			}
 			if (showEntireFile)
 			{
 				gitCommand.Add("--inter-hunk-context=100000");

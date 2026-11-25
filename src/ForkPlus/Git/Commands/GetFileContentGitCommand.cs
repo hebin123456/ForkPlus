@@ -24,7 +24,8 @@ namespace ForkPlus.Git.Commands
 			{
 				return GitCommandResult<Content>.Failure(new GitCommandError.Bug($"Blob '{sha}:{filePath}' not found"));
 			}
-			string text = DecodeString(result);
+			// v5.6.1：.log 等语义文本扩展名即使夹带 NUL，也强制按文本解码展示（不做二进制 Hex 回退）。
+			string text = DecodeString(result, IsForceTextPath(filePath));
 			if (text != null && GetFileChangesGitCommand.IsLfsContent(text))
 			{
 				LfsPointer lfsPointer = LfsPointer.Parse(text);
@@ -51,18 +52,22 @@ namespace ForkPlus.Git.Commands
 		}
 
 		[Null]
-		private static string DecodeString(MemoryStream memoryStream)
+		private static string DecodeString(MemoryStream memoryStream, bool forceText = false)
 		{
 			int num = 0;
 			byte[] array = memoryStream.ToArray();
-			for (int i = 0; i < array.Length && i < 2000; i++)
+			// v5.6.1：强制文本扩展名（如 .log）跳过 NUL 检测，直接按 UTF-8 解码。
+			if (!forceText)
 			{
-				if (array[i] == 0)
+				for (int i = 0; i < array.Length && i < 2000; i++)
 				{
-					num++;
+					if (array[i] == 0)
+					{
+						num++;
+					}
 				}
 			}
-			if (num > 5)
+			if (!forceText && num > 5)
 			{
 				return null;
 			}

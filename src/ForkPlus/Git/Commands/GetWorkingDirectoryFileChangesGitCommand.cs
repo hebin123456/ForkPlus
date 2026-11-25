@@ -166,6 +166,12 @@ namespace ForkPlus.Git.Commands
 					gitCommand.Add("--cached");
 				}
 			}
+			// v5.6.1：语义文本扩展名（如 .log）即使夹带 NUL 被 git 判为二进制，也强制按文本 diff，
+			// 避免走 Hex 视图丢失部分暂存。放在 "--" 之前作为 diff 选项。
+			if (IsForceTextPath(changedFile.Path))
+			{
+				gitCommand.Add("--text");
+			}
 			if (showEntireFile)
 			{
 				gitCommand.Add("--inter-hunk-context=1000000");

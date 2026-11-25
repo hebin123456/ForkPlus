@@ -1,9 +1,17 @@
+using System;
 using System.Text.RegularExpressions;
 
 namespace ForkPlus.Git.Commands
 {
 	public abstract class GetFileChangesGitCommand
 	{
+		/// <summary>
+		/// v5.6.1：语义上应按文本对比的扩展名（即使内容含 NUL 字节被 git 判为二进制）。
+		/// .log 本质是文本日志，但程序写入时偶尔夹带 NUL，git 会据此输出 "Binary files ... differ"，
+		/// 导致走 Hex 视图、丢失部分暂存。对这些文件在 git diff 加 --text 强制按文本处理。
+		/// </summary>
+		private static readonly string[] ForceTextExtensions = new string[] { ".log" };
+
 		private static readonly Regex BinaryFileFallbackRegex = new Regex("^Binary files", RegexOptions.Multiline | RegexOptions.Compiled);
 
 		private static readonly Regex LfsFileDiffRegEx = new Regex("([-+])oid sha256:(\\b[0-9a-f]{64})\\n([-+])size (\\d*)", RegexOptions.Multiline | RegexOptions.Compiled);
@@ -27,6 +35,26 @@ namespace ForkPlus.Git.Commands
 			if (BinaryFileFallbackRegex.IsMatch(output))
 			{
 				return true;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// v5.6.1：路径是否属于「语义文本」扩展名，需要对 git diff 强制 --text。
+		/// 目前仅 .log（文本日志偶尔夹带 NUL 被 git 误判为二进制）。
+		/// </summary>
+		protected static bool IsForceTextPath([Null] string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return false;
+			}
+			foreach (string ext in ForceTextExtensions)
+			{
+				if (path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
 			}
 			return false;
 		}

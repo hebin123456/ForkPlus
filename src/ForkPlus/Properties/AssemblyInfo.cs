@@ -15,6 +15,10 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
+// 版本号说明（2026-11-26，v5.6.1）：.log 文件强制按文本 diff。
+//   .log 本质是文本日志，但程序写入时偶尔夹带 NUL 字节，被 git 判为二进制 → 走 Hex 视图、丢失「部分暂存」。
+//   对语义文本扩展名（.log）在 git diff 命令加 --text 强制文本输出；文件浏览 DecodeString 同步跳过 NUL 检测。
+//   仅宿主侧改动，插件仓与 SDK 契约不变。
 // 版本号说明（2026-11-24，v5.6.0）：git mm 初始化弹窗增强——清单仓库 URL 后新增「加载」按钮，
 //   在系统临时目录克隆清单仓库后，分支改为可搜索下拉并前移到清单文件上方；选中分支后
 //   自动读取该分支 git 树中的 xml 文件，填充同样可搜索的清单文件下拉框。
@@ -256,8 +260,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.6.0")]
-[assembly: AssemblyInformationalVersion("5.6.0")]
+[assembly: AssemblyFileVersion("5.6.1")]
+[assembly: AssemblyInformationalVersion("5.6.1")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.6.0.0")]
+[assembly: AssemblyVersion("5.6.1.0")]
