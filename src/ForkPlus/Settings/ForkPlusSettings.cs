@@ -1126,6 +1126,10 @@ namespace ForkPlus.Settings
 
 		private bool _aiCheckpointReportingEnabled = true;
 
+		// v5.6.0：被对比视图插件认领的文本文件（如 .json），默认走插件结构化视图；
+		// 开启此项后改走内置文本视图，从而保留「部分暂存 / Stage 选中行」能力。
+		private bool _preferTextDiffForClaimedFiles = false;
+
 		// 是否已完成新手引导（看过或跳过均算完成）：首次启动未完成时自动弹
 		// OnboardingTourWindow，完成后不再自动弹；帮助菜单可随时手动重看。
 		private bool _onboardingCompleted = false;
@@ -2622,6 +2626,13 @@ namespace ForkPlus.Settings
 		}
 
 		/// <summary>是否启用 AI 归属功能（git-ai：Blame 徽标 / AI 统计）。默认关闭（2026-09-07 用户约定），git-ai 未安装时自动降级。</summary>
+		/// <summary>v5.6.0：被插件认领的文本文件优先用内置文本视图（支持部分暂存），默认 false 走插件结构化视图。</summary>
+		public bool PreferTextDiffForClaimedFiles
+		{
+			get { return _preferTextDiffForClaimedFiles; }
+			set { _preferTextDiffForClaimedFiles = value; }
+		}
+
 		public bool AiAttributionEnabled
 		{
 			get
@@ -2965,6 +2976,7 @@ namespace ForkPlus.Settings
 			string gitAiInstancePath = json["GitAiInstancePath"]?.Value<string>();
 			bool aiAttributionEnabled = json["AiAttributionEnabled"]?.Value<bool>() ?? false;
 			bool aiCheckpointReportingEnabled = json["AiCheckpointReportingEnabled"]?.Value<bool>() ?? true;
+			bool preferTextDiffForClaimedFiles = json["PreferTextDiffForClaimedFiles"]?.Value<bool>() ?? false;
 			bool onboardingCompleted = json["OnboardingCompleted"]?.Value<bool>() ?? false;
 			bool verboseGitOutput = json["VerboseGitOutput"]?.Value<bool>() ?? false;
 			string[] sshKeys = JsonHelper.DecodeStringArray(json["SshKeys"] as JArray) ?? new string[0];
@@ -3097,6 +3109,7 @@ namespace ForkPlus.Settings
 				GitAiInstancePath = gitAiInstancePath,
 				AiAttributionEnabled = aiAttributionEnabled,
 				AiCheckpointReportingEnabled = aiCheckpointReportingEnabled,
+				PreferTextDiffForClaimedFiles = preferTextDiffForClaimedFiles,
 				OnboardingCompleted = onboardingCompleted,
 				VerboseGitOutput = verboseGitOutput,
 				SshKeys = sshKeys,
@@ -3689,6 +3702,10 @@ namespace ForkPlus.Settings
 			{
 				"AiCheckpointReportingEnabled",
 				new JValue(target.AiCheckpointReportingEnabled)
+			},
+			{
+				"PreferTextDiffForClaimedFiles",
+				new JValue(target.PreferTextDiffForClaimedFiles)
 			},
 			{
 				"OnboardingCompleted",

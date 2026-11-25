@@ -184,6 +184,38 @@ namespace ForkPlus.UI.Controls
 			}
 		}
 
+		protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			base.OnAttachedToVisualTree(e);
+			// v5.6.0：用户切换「结构化视图 / 文本视图」后重建当前 diff 视图。
+			base.Header.PreferTextDiffChanged -= Header_PreferTextDiffChanged;
+			base.Header.PreferTextDiffChanged += Header_PreferTextDiffChanged;
+		}
+
+		protected override void OnDetachedFromVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
+		{
+			base.Header.PreferTextDiffChanged -= Header_PreferTextDiffChanged;
+			base.OnDetachedFromVisualTree(e);
+		}
+
+		private void Header_PreferTextDiffChanged(object sender, EventArgs e)
+		{
+			UpdateView();
+		}
+
+		/// <summary>
+		/// v5.6.0：若该文本文件被对比视图插件认领，则在 header 显示「文本视图 / 结构化视图」切换按钮。
+		/// 供文本视图分支与插件视图分支共同调用。
+		/// </summary>
+		protected void ShowClaimedViewToggle(FileControlHeaderUserControl header, ChangedFile changedFile)
+		{
+			bool claimed = changedFile != null && DiffViewPluginRegistry.ResolveClaimed(changedFile.Path) != null;
+			if (header != null)
+			{
+				header.ShowClaimedViewToggle = claimed;
+			}
+		}
+
 		protected virtual void UpdateView(bool loadLargeDiff = false)
 		{
 			RepositoryUserControl repositoryUserControl = RepositoryUserControl;
@@ -998,6 +1030,12 @@ namespace ForkPlus.UI.Controls
 		{
 			return false;
 		}
+		// v5.6.0：用户偏好内置文本视图（保留「部分暂存 / Stage 选中行」）时，不接管该文件，
+		// 让调用方继续走内置 CommitTextDiffControl / TextDiffControl 路径。
+		if (ForkPlusSettings.Default.PreferTextDiffForClaimedFiles)
+		{
+			return false;
+		}
 		if (DiffViewPluginRegistry.ResolveClaimed(changedFile.Path) == null)
 		{
 			return false;
@@ -1022,6 +1060,8 @@ namespace ForkPlus.UI.Controls
 						{
 							c.UpdateDiff(repositoryUserControl, claimedContent);
 							ShowHeaderIfAllowed(h, changedFile);
+							// v5.6.0：插件视图下也显示切换按钮，用户可切到文本视图用部分暂存。
+							ShowClaimedViewToggle(h, changedFile);
 						});
 					}
 				}
@@ -1164,6 +1204,12 @@ namespace ForkPlus.UI.Controls
 			else
 			{
 				header.Show(changedFile.Path, changedFile.OldPath, mode);
+				// v5.6.0：文本视图下，若该文件被对比视图插件认领，显示「文本视图 / 结构化视图」切换按钮，
+				// 让用户能在需要部分暂存时切到文本视图、需要结构化对比时切回插件视图。
+				if (mode == FileControlHeaderMode.Text)
+				{
+					ShowClaimedViewToggle(header, changedFile);
+				}
 			}
 		}
 

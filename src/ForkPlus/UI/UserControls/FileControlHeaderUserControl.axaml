@@ -128,6 +128,17 @@
           </ToggleButton>
         </StackPanel.Children>
       </StackPanel>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ClaimedViewModeButtonsContainer" IsVisible="False">
+        <StackPanel.Children>
+          <ToggleButton IsTabStop="False" Click="PreferTextDiffToggleButton_Click" x:Name="PreferTextDiffToggleButton">
+            <ToggleButton.Theme>
+              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+            </ToggleButton.Theme>
+            <ToolTip.Tip>Use text view (supports partial staging)</ToolTip.Tip>
+            <TextBlock FontSize="11" Padding="4,0,4,0" Text="Text view" x:Name="PreferTextDiffToggleTextBlock" />
+          </ToggleButton>
+        </StackPanel.Children>
+      </StackPanel>
       <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ImageModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">

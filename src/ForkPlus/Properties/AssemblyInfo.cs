@@ -15,9 +15,11 @@ using Avalonia.Styling;
 [assembly: AssemblyCompany("ForkPlus")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyCopyright("Copyright © 2018")]
-// 版本号说明（2026-11-24，v5.5.0）：git mm 初始化弹窗增强——清单仓库 URL 后新增「加载」按钮，
+// 版本号说明（2026-11-24，v5.6.0）：git mm 初始化弹窗增强——清单仓库 URL 后新增「加载」按钮，
 //   在系统临时目录克隆清单仓库后，分支改为可搜索下拉并前移到清单文件上方；选中分支后
 //   自动读取该分支 git 树中的 xml 文件，填充同样可搜索的清单文件下拉框。
+// v5.6.0 补充：被对比视图插件认领的文本文件（如 .json），默认仍走插件结构化视图；
+//   新增 PreferTextDiffForClaimedFiles 选项，开启后改走内置文本视图，从而保留「部分暂存 / Stage 选中行」能力，两者可在 diff 头部一键切换。
 // 版本号说明（2026-11-08，v5.4.3）：修复行号 blame 浮窗“展开变更历史后鼠标一动就消失”。
 //   根因三处：① 卡片上的 Button 在类处理器里把 PointerPressed 标记 handled，内容级订阅
 //   收不到 → _popupPinned 未置位；② 展开历史使卡片尺寸/位置重算，指针容易蹭回行号区，
@@ -254,8 +256,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.5.0")]
-[assembly: AssemblyInformationalVersion("5.5.0")]
+[assembly: AssemblyFileVersion("5.6.0")]
+[assembly: AssemblyInformationalVersion("5.6.0")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.5.0.0")]
+[assembly: AssemblyVersion("5.6.0.0")]

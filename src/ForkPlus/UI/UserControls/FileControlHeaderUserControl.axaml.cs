@@ -23,6 +23,9 @@ namespace ForkPlus.UI.UserControls
 
 		private static readonly object SettingsSaveLock = new object();
 
+		/// <summary>v5.6.0：用户切换「结构化视图 / 文本视图」时触发，宿主据此重新 UpdateView。</summary>
+		public event EventHandler PreferTextDiffChanged;
+
 		public static readonly global::Avalonia.StyledProperty<string> FilePathProperty =
     global::Avalonia.AvaloniaProperty.Register<FileControlHeaderUserControl, string>("FilePath");
 
@@ -195,6 +198,38 @@ namespace ForkPlus.UI.UserControls
 		{
 			PreferencesLocalization.Apply(this, ForkPlusSettings.Default.UiLanguage);
 			UpdateDiffLayoutModeToggleButtonState();
+			UpdatePreferTextDiffToggleState();
+		}
+
+		/// <summary>v5.6.0：是否显示「文本视图」切换按钮（仅被插件认领的文本文件显示）。</summary>
+		public bool ShowClaimedViewToggle
+		{
+			set
+			{
+				ClaimedViewModeButtonsContainer.IsVisible = value;
+				if (value)
+				{
+					UpdatePreferTextDiffToggleState();
+				}
+			}
+		}
+
+		private void UpdatePreferTextDiffToggleState()
+		{
+			bool preferText = ForkPlusSettings.Default.PreferTextDiffForClaimedFiles;
+			PreferTextDiffToggleButton.IsChecked = preferText;
+			PreferTextDiffToggleTextBlock.Text = Translate(preferText ? "Structured view" : "Text view");
+			global::Avalonia.Controls.ToolTip.SetTip(PreferTextDiffToggleButton,
+				Translate(preferText ? "Switch to structured view" : "Use text view (supports partial staging)"));
+		}
+
+		private void PreferTextDiffToggleButton_Click(object sender, RoutedEventArgs e)
+		{
+			bool preferText = PreferTextDiffToggleButton.IsChecked.GetValueOrDefault();
+			ForkPlusSettings.Default.PreferTextDiffForClaimedFiles = preferText;
+			SaveSettingsAsync();
+			UpdatePreferTextDiffToggleState();
+			this.PreferTextDiffChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Show(string filePath, [Null] string oldFilePath, FileControlHeaderMode mode = FileControlHeaderMode.None)
@@ -419,6 +454,8 @@ namespace ForkPlus.UI.UserControls
 
 		private void RefreshToolbarLayout(FileControlHeaderMode mode)
 		{
+			// v5.6.0：默认隐藏，由宿主 ShowClaimedViewToggle 按文件是否被插件认领再打开。
+			ClaimedViewModeButtonsContainer.Collapse();
 			switch (mode)
 			{
 			case FileControlHeaderMode.None:
