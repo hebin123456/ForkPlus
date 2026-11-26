@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 20 章 · 查看器窗口</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.3.1</p>
+  <p>ForkPlus 用户手册 · 版本 v5.6.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -71,6 +71,11 @@
     <li><strong>排除模式</strong>：在 <code>Exclude</code> 输入框按行填写 glob 模式（语义同 .gitignore，例如 <code>tests/</code>、<code>**/*.Tests/</code>、<code>bin/</code>），点「Recount with excludes」按排除后的结果重新统计。</li>
     <li><strong>摘要</strong>：在面板顶部给出当前范围的「N files · N code · N comments · N blanks」总览。</li>
   </ul>
+  <figure>
+    <img src="screenshots/20-viewers/08-code-lines-tokei.png" alt="代码行数统计面板" loading="lazy">
+    <figcaption>图 20-8　代码行数统计：按语言列出文件/代码/注释/空白行，右侧为语言占比环形图</figcaption>
+  </figure>
+
   <div class="tip"><strong>小贴士：</strong>代码行数统计依赖 <code>tokei</code>。若提示 "tokei not found"，请从 <a href="https://github.com/XAMPPRocky/tokei/releases" target="_blank" rel="noopener">tokei 官方发布页</a> 下载对应平台的可执行文件放到 ForkPlus 程序目录（或安装到系统 PATH），再点「Refresh」重试。</div>
 
   <h2>修订详情（Revision Details）</h2>

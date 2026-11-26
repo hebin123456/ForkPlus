@@ -89,7 +89,10 @@
           <ComboBoxItem Content="10" />
         </ComboBox>
       </StackPanel>
-      <Expander Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Theme="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
+      <!-- 5.6.2：检出任务数下方新增「根 MR id」输入框（git mm sync -s <id>，仅正整数，留空不加） -->
+      <TextBlock Grid.Column="0" Grid.Row="2" Text="Root MR id:" FontSize="13" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,4,0,0" />
+      <TextBox Grid.Column="1" Grid.Row="2" Margin="8,4,0,4" Width="120" HorizontalAlignment="Left" x:Name="RootMrIdTextBox" ToolTip.Tip="-s &lt;id&gt; (positive integer)" />
+      <Expander Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,6,0,0" Header="Advanced Options" IsExpanded="False" Theme="{StaticResource GitMmAdvancedOptionsExpanderStyle}">
         <Grid Margin="0,4,0,0">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />

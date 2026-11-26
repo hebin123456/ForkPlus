@@ -447,6 +447,7 @@
     "Checkout branch in separate worktree": "별도의 워크트리에서 브랜치 체크아웃",
     "Checkout failed": "체크아웃 실패",
     "Checkout jobs:": "체크아웃 작업:",
+    "Root MR id:": "루트 MR id:",
     "Checkout local branch and fast-forward it to remote branch": "로컬 브랜치를 체크아웃하고 리모트 브랜치로 패스트포워드",
     "Checkout...": "체크아웃...",
     "Cherry Pick": "체리픽",

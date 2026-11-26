@@ -447,6 +447,7 @@
     "Checkout branch in separate worktree": "Extraire la branche dans un arbre de travail séparé",
     "Checkout failed": "Échec de l'extraction",
     "Checkout jobs:": "Tâches d'extraction :",
+    "Root MR id:": "ID MR racine :",
     "Checkout local branch and fast-forward it to remote branch": "Extraire la branche locale et la faire avancer rapidement vers la branche distante",
     "Checkout...": "Extraire...",
     "Cherry Pick": "Cherry-pick",

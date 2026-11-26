@@ -447,6 +447,7 @@
     "Checkout branch in separate worktree": "別のワークツリーでブランチをチェックアウト",
     "Checkout failed": "チェックアウトに失敗しました",
     "Checkout jobs:": "チェックアウトジョブ数:",
+    "Root MR id:": "ルート MR id:",
     "Checkout local branch and fast-forward it to remote branch": "ローカルブランチをチェックアウトし、リモートブランチにファストフォワード",
     "Checkout...": "チェックアウト...",
     "Cherry Pick": "チェリーピック",

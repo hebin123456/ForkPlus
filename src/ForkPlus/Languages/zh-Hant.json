@@ -447,6 +447,7 @@
     "Checkout branch in separate worktree": "在單獨的工作樹中簽出分支",
     "Checkout failed": "檢出失敗",
     "Checkout jobs:": "簽出工作數：",
+    "Root MR id:": "根 MR id：",
     "Checkout local branch and fast-forward it to remote branch": "簽出本機分支並快轉到遠端分支",
     "Checkout...": "切換...",
     "Cherry Pick": "揀選提交",

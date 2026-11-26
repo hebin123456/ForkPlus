@@ -51,6 +51,13 @@ namespace ForkPlus.UI.Dialogs
 			args.Add(SelectedCheckoutJobs().ToString());
 			args.Add("-j");
 			args.Add(SelectedFetchJobs().ToString());
+			// 5.6.2：根 MR id（git mm sync -s <id>）——留空 / 非法 / 0 都不加该参数
+			string rootMrId = DigitsOnly(RootMrIdTextBox?.Text);
+			if (int.TryParse(rootMrId, out int rootId) && rootId > 0)
+			{
+				args.Add("-s");
+				args.Add(rootId.ToString());
+			}
 			if (ForceSyncCheckBox.IsChecked.GetValueOrDefault())
 			{
 				args.Add("--force-sync");
@@ -81,6 +88,46 @@ namespace ForkPlus.UI.Dialogs
 			{
 				args.Add(flag);
 			}
+		}
+
+		// 5.6.2：根 MR id 输入框仅允许正整数——逐字符过滤非数字，去前导 0，
+		// 非法输入当场被剔除；留空即不为命令追加 -s 参数。
+		private bool _filteringRootMrId;
+
+		private void RootMrIdTextBox_TextChanged(object sender, Avalonia.Controls.TextChangedEventArgs e)
+		{
+			if (_filteringRootMrId)
+			{
+				return;
+			}
+			string text = RootMrIdTextBox.Text ?? string.Empty;
+			string digits = DigitsOnly(text).TrimStart('0');
+			if (!string.Equals(digits, text, System.StringComparison.Ordinal))
+			{
+				_filteringRootMrId = true;
+				int caret = System.Math.Min(RootMrIdTextBox.CaretIndex, digits.Length);
+				RootMrIdTextBox.Text = digits;
+				RootMrIdTextBox.CaretIndex = caret;
+				_filteringRootMrId = false;
+			}
+			RefreshCommandPreview();
+		}
+
+		private static string DigitsOnly(string text)
+		{
+			if (string.IsNullOrEmpty(text))
+			{
+				return string.Empty;
+			}
+			var builder = new System.Text.StringBuilder(text.Length);
+			foreach (char c in text)
+			{
+				if (c >= '0' && c <= '9')
+				{
+					builder.Append(c);
+				}
+			}
+			return builder.ToString();
 		}
 
 		private void SelectCheckoutJobs(string value)
@@ -192,6 +239,7 @@ namespace ForkPlus.UI.Dialogs
 		{
 			CheckoutJobsComboBox.SelectionChanged += delegate { RefreshCommandPreview(); };
 			FetchJobsComboBox.SelectionChanged += delegate { RefreshCommandPreview(); };
+			RootMrIdTextBox.TextChanged += RootMrIdTextBox_TextChanged;
 			foreach (CheckBox checkBox in new CheckBox[]
 			{
 				ForceSyncCheckBox,

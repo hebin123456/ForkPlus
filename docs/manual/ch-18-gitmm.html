@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>第 18 章 · Git Mm 工作区</h1>
-  <p>ForkPlus 用户手册 · 版本 v5.3.1</p>
+  <p>ForkPlus 用户手册 · 版本 v5.6.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html">总览</a>
@@ -27,15 +27,16 @@
   <h2>初始化 Git Mm 工作区</h2>
   <p>打开「初始化 Git Mm」窗口，填写三类信息：</p>
   <ul>
-    <li><strong>清单地址 Manifest URL</strong>：引用子仓库清单的远端仓库地址。</li>
-    <li><strong>父目录 Parent Directory</strong>：工作区将被创建在该目录下。</li>
+    <li><strong>清单仓库 URL</strong>：引用子仓库清单的远端仓库地址；右侧「<strong>加载</strong>」按钮会从该仓库读取分支与 XML 清单文件，自动填充下方两个下拉框。</li>
+    <li><strong>父目录 Parent Directory</strong>：工作区将被创建在该目录下；可勾选「创建子目录」在其下再建一层。</li>
     <li><strong>仓库名 Repository Name</strong>：工作区目录名。</li>
+    <li><strong>清单分支 / 清单文件 / 清单分组</strong>：均为可搜索下拉框，分别对应 <code>-b</code> / <code>-m</code> / <code>-g</code> 参数（分组默认 <code>default</code>）。</li>
   </ul>
   <p>窗口下方实时预览将执行的命令（如 <code>git mm init -u &lt;manifest&gt; -m dependency.xml -b master -g default</code>），确认后提交。</p>
 
   <figure>
     <img src="screenshots/18-gitmm/01-gitmm-init.png" alt="初始化 Git Mm 工作区窗口" loading="lazy">
-    <figcaption>图 18-1　初始化 Git Mm 工作区：填写清单地址、父目录、仓库名，下方为命令预览</figcaption>
+    <figcaption>图 18-1　初始化 Git Mm 工作区：清单仓库 URL + 加载按钮、父目录、名称、可搜索的清单分支/文件/分组下拉，下方为命令预览</figcaption>
   </figure>
 
   <h2>Git Mm 工作区标签页</h2>
@@ -76,8 +77,11 @@
 
   <figure>
     <img src="screenshots/18-gitmm/04-gitmm-sync.png" alt="Git Mm 同步窗口" loading="lazy">
-    <figcaption>图 18-4　同步（Sync）窗口：把子仓库同步到清单声明的版本，含命令预览</figcaption>
+    <figcaption>图 18-4　同步（Sync）窗口：把子仓库同步到清单声明的版本，含「根 MR id」与命令预览</figcaption>
   </figure>
+
+  <h3>同步窗口的「根 MR id」</h3>
+  <p>同步（Sync）窗口在「检出任务数」下方提供<strong>「根 MR id」</strong>输入框：填写一个正整数后，命令预览会实时追加 <code>-s &lt;id&gt;</code>（即 <code>git mm sync -s &lt;id&gt;</code>），用于按指定根 MR 同步；<strong>留空则不追加</strong>该参数。输入框仅接受正整数——非数字字符、负数、小数点会被自动剔除，前导 0 会被去掉（如输入 <code>007</code> 归一为 <code>7</code>），纯 <code>0</code> 视为留空。</p>
 
   <figure>
     <img src="screenshots/18-gitmm/05-gitmm-upload.png" alt="Git Mm 上传窗口" loading="lazy">

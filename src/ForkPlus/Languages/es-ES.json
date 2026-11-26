@@ -447,6 +447,7 @@
     "Checkout branch in separate worktree": "Hacer checkout de rama en worktree separado",
     "Checkout failed": "Checkout fallido",
     "Checkout jobs:": "Tareas de checkout:",
+    "Root MR id:": "ID de MR raíz:",
     "Checkout local branch and fast-forward it to remote branch": "Hacer checkout de rama local y fast-forward a rama remota",
     "Checkout...": "Checkout...",
     "Cherry Pick": "Cherry-pick",

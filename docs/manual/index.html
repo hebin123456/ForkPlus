@@ -9,7 +9,7 @@
 <body>
 <header class="manual-header">
   <h1>ForkPlus 用户手册</h1>
-  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.3.1</p>
+  <p>跨平台 Git 客户端 · Windows / Linux / macOS · 版本 v5.6.2</p>
 </header>
 <nav class="manual-nav">
   <a href="index.html" class="active">总览</a>
@@ -17,6 +17,21 @@
 <main class="manual-main">
   <h2>欢迎</h2>
   <p>本手册介绍 ForkPlus 的安装、界面与全部功能模块。各章节由自动化场景实测截图编写。</p>
+
+  <h2>v5.6.2 更新</h2>
+  <ul>
+    <li><strong>同步弹窗支持根 MR id</strong>：git mm <strong>同步（Sync）</strong>弹窗在「检出任务数」下方新增<strong>「根 MR id」</strong>输入框——填写后命令追加 <code>-s &lt;id&gt;</code>（对应 <code>git mm sync -s &lt;id&gt;</code>），留空则不追加；输入框仅接受正整数（非数字、负数、小数被剔除，前导 0 自动去掉），命令预览实时联动。详见<a href="ch-18-gitmm.html">第 18 章 · Git Mm</a>。</li>
+  </ul>
+
+  <h2>v5.6.1 更新</h2>
+  <ul>
+    <li><strong>.log 强制按文本对比</strong>：.log 本质是文本日志，但程序写入时偶尔夹带 NUL 字节，此前被 git 判为二进制、走十六进制视图而无法使用「部分暂存」。现对 .log 在 diff 命令加 <code>--text</code> 强制按文本输出，文件浏览同步跳过 NUL 检测，部分暂存恢复正常。</li>
+  </ul>
+
+  <h2>v5.6.0 更新</h2>
+  <ul>
+    <li><strong>初始化弹窗增强</strong>：git mm 初始化弹窗清单仓库 URL 后新增「加载」按钮，分支与清单文件改为可搜索下拉、自动从清单仓库读取；被对比视图插件认领的文本文件（如 .json）可切回文本视图以保留「部分暂存」，同时扩大非图片二进制插件的字节供给上限。详见<a href="ch-18-gitmm.html">第 18 章 · Git Mm</a>。</li>
+  </ul>
 
   <h2>v5.3.1 更新</h2>
   <ul>

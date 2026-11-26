@@ -457,6 +457,7 @@
     "Checkout branch in separate worktree": "在单独的工作树中检出分支",
     "Checkout failed": "检出失败",
     "Checkout jobs:": "检出任务数：",
+    "Root MR id:": "根 MR id：",
     "Checkout local branch and fast-forward it to remote branch": "检出本地分支并快进到远端分支",
     "Checkout...": "切换...",
     "Cherry Pick": "拣选提交",
