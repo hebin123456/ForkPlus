@@ -4,12 +4,13 @@
   </UserControl.BorderBrush>
   <Grid>
     <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="100" />
       <ColumnDefinition Width="*" />
       <ColumnDefinition Width="140" />
     </Grid.ColumnDefinitions>
     <Grid.Children>
-      <StackPanel Grid.Column="0" Orientation="Horizontal" x:Name="TextModeNavigationButtonsContainer" IsVisible="False">
+      <StackPanel Grid.Column="1" Orientation="Horizontal" x:Name="TextModeNavigationButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <Button IsTabStop="False" Click="PreviousButton_Click" x:Name="PreviousButton">
             <Button.Theme>
@@ -37,7 +38,7 @@
           </Button>
         </StackPanel.Children>
       </StackPanel>
-      <DockPanel Grid.Column="1" HorizontalAlignment="Center">
+      <DockPanel Grid.Column="2" HorizontalAlignment="Center">
         <DockPanel.Children>
           <Image DockPanel.Dock="Left" Margin="2,1,2,1" VerticalAlignment="Center" HorizontalAlignment="Right" x:Name="FileTypeImage" />
           <fuc:FilePathTextBlock x:Name="FilePathTextBlock">
@@ -48,7 +49,7 @@
           </fuc:FilePathTextBlock>
         </DockPanel.Children>
       </DockPanel>
-      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="TextModeButtonsContainer" IsVisible="False">
+      <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="TextModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="IgnoreWhitespacesToggleButton_Click" x:Name="IgnoreWhitespacesToggleButton">
             <ToggleButton.Theme>
@@ -128,18 +129,19 @@
           </ToggleButton>
         </StackPanel.Children>
       </StackPanel>
-      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ClaimedViewModeButtonsContainer" IsVisible="False">
+      <!-- v5.6.3：插件认领文件的视图切换放到左上角，使用独立的文本按钮样式，文字完整可读。 -->
+      <StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" x:Name="ClaimedViewModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="PreferTextDiffToggleButton_Click" x:Name="PreferTextDiffToggleButton">
             <ToggleButton.Theme>
-              <DynamicResource ResourceKey="CodeEditorHeaderToggleButtonStyle" />
+              <DynamicResource ResourceKey="ClaimedViewToggleButtonStyle" />
             </ToggleButton.Theme>
             <ToolTip.Tip>Use text view (supports partial staging)</ToolTip.Tip>
-            <TextBlock FontSize="11" Padding="4,0,4,0" Text="Text view" x:Name="PreferTextDiffToggleTextBlock" />
+            <TextBlock FontSize="12" Text="Text view" x:Name="PreferTextDiffToggleTextBlock" />
           </ToggleButton>
         </StackPanel.Children>
       </StackPanel>
-      <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ImageModeButtonsContainer" IsVisible="False">
+      <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" x:Name="ImageModeButtonsContainer" IsVisible="False">
         <StackPanel.Children>
           <ToggleButton IsTabStop="False" Click="HighlightPixelsToggleButton_Click" x:Name="HighlightPixelsToggleButton">
             <ToggleButton.Theme>

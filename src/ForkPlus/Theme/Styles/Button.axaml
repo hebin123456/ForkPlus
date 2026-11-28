@@ -589,6 +589,20 @@
         <Setter Property="Background" Value="#00FFFFFF" />
         <Setter Property="BorderBrush" Value="#00FFFFFF" />
     </Style></ControlTheme>
+
+  <!-- v5.6.3：插件认领文件的「文本 / 结构化」切换按钮。独立的文本按钮尺寸，
+       不再复用 16x16 图标按钮样式，避免按钮内文字被 12x12 的 ContentPresenter 裁切。 -->
+  <ControlTheme x:Key="ClaimedViewToggleButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource ToolbarToggleButton}">
+    <Setter Property="Height" Value="20" />
+    <Setter Property="MinWidth" Value="76" />
+    <Setter Property="Padding" Value="8,0,8,0" />
+    <Setter Property="Margin" Value="6,0,0,0" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+  </ControlTheme>
+
   <ControlTheme x:Key="TransparentButtonStyle" TargetType="Button">
     
     

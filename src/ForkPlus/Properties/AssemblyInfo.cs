@@ -9,6 +9,9 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 
+// 版本号说明（2026-11-28，v5.6.3）：插件认领文件的「文本 / 结构化」切换按钮从右上角移到左上角，
+//   改用独立的文本按钮样式（自动宽度、完整文字、边框与悬停/选中态），避免复用 16x16 图标按钮
+//   导致按钮文字比容器大、被裁切看不清。
 // 版本号说明（2026-11-26，v5.6.2）：git mm 同步弹窗新增「根 MR id」输入框，
 //   对应 git mm sync -s <id>：仅允许正整数，留空 / 0 / 非法输入都不追加该参数；
 //   命令预览实时联动。
@@ -263,8 +266,8 @@ using Avalonia.Styling;
 //   AssemblyVersion / AssemblyFileVersion 只接受纯数字（major.minor.build[.revision]）。
 //   App.Version 运行时优先读 InformationalVersion → 关于/更新检查/UserAgent 显示 "5.0.5"；
 //   程序集标识与文件版本同为 5.0.5（.0）。
-[assembly: AssemblyFileVersion("5.6.2")]
-[assembly: AssemblyInformationalVersion("5.6.2")]
+[assembly: AssemblyFileVersion("5.6.3")]
+[assembly: AssemblyInformationalVersion("5.6.3")]
 [assembly: AssemblyProduct("ForkPlus")]
 [assembly: AssemblyTitle("ForkPlus")]
-[assembly: AssemblyVersion("5.6.2.0")]
+[assembly: AssemblyVersion("5.6.3.0")]
